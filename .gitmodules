@@ -1,0 +1,6 @@
+[submodule "BE/common-lib"]
+	path = BE/common-lib
+	url = https://github.com/QuanNM210803/common-lib.git
+[submodule "FE"]
+	path = FE
+	url = https://github.com/duongtran2003/CVConnect.git
