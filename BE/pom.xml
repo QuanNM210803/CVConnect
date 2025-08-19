@@ -32,7 +32,7 @@
         <org.json>20231013</org.json>
         <jedis.version>4.3.1</jedis.version>
         <netty-socketio>2.0.13</netty-socketio>
-        <common-lib>1.0.0</common-lib>
+        <common-lib.version>1.0.0</common-lib.version>
     </properties>
 
     <dependencyManagement>
@@ -56,6 +56,13 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/quannm210803/common-lib</url>
+        </repository>
+    </repositories>
 
     <build>
         <pluginManagement>

@@ -1,0 +1,31 @@
+package com.cvconnect.constant;
+
+public class Messages {
+    /*
+     * Error messages
+     * */
+    public static final String LOGIN_FAILED= "login.failed";
+
+    /*
+     * Validation messages
+     * */
+    public static final String LOGIN_USERNAME_REQUIRE="login.username.require";
+    public static final String LOGIN_PASSWORD_REQUIRE="login.password.require";
+    public static final String REGISTER_USERNAME_REQUIRE="register.username.require";
+    public static final String REGISTER_PASSWORD_REQUIRE="register.password.require";
+    public static final String REGISTER_FULL_NAME_REQUIRE="register.full.name.require";
+    public static final String REGISTER_PHONE_REQUIRE="register.phone.require";
+    public static final String REGISTER_EMAIL_REQUIRE="register.email.require";
+    public static final String REGISTER_USERNAME_INVALID="register.username.invalid";
+    public static final String REGISTER_PASSWORD_INVALID="register.password.invalid";
+    public static final String REGISTER_PHONE_INVALID="register.phone.invalid";
+    public static final String REGISTER_EMAIL_INVALID="register.email.invalid";
+
+    /*
+     * Other messages
+     * */
+    public static final String LOGIN_SUCCESS = "login.success";
+    public static final String REGISTER_SUCCESS="register.success";
+    public static final String VERIFY_EMAIL_SUCCESS="verify.email.success";
+}
+

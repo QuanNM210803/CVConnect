@@ -1,9 +1,17 @@
 version: '3.8'
 services:
-  api-gateway:
-    build:
-      context: .
-      dockerfile: api-gateway/Dockerfile
-    container_name: api-gateway
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-cvconnect
+    hostname: mysql
+    restart: no
+    environment:
+      MYSQL_ROOT_PASSWORD: root
     ports:
-      - "8888:8888"
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/mysql.sql:/docker-entrypoint-initdb.d/mysql.sql:ro
+
+volumes:
+  mysql_data:
