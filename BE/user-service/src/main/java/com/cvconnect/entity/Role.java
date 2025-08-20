@@ -1,8 +1,7 @@
 package com.cvconnect.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.cvconnect.enums.MemberType;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -24,4 +23,8 @@ public class Role extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "member_type", nullable = false)
+    private MemberType memberType;
 }

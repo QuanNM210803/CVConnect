@@ -5,8 +5,8 @@ import lombok.Getter;
 @Getter
 public enum MemberType {
     CANDIDATE("Ứng viên"),
-    MANAGEMENT("Thành viên quản lý"),
-    ORGANIZATION("Thành viên tổ chức");
+    MANAGEMENT("Quản lý hệ thống"),
+    ORGANIZATION("Thành viên của tổ chức");
 
     private final String name;
 
