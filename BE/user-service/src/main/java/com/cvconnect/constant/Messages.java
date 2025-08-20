@@ -5,6 +5,7 @@ public class Messages {
      * Error messages
      * */
     public static final String LOGIN_FAILED= "login.failed";
+    public static final String ROLE_NOT_FOUND = "role.not.found";
 
     /*
      * Validation messages

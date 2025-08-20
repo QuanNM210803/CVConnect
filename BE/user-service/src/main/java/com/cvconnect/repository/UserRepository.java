@@ -12,4 +12,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.username = :username AND u.isDeleted = false AND u.accessMethod LIKE '%LOCAL%'")
     Optional<User> findByUsernameLogin(String username);
+
+    @Query("SELECT u FROM User u WHERE u.email = :email AND u.isDeleted = false")
+    Optional<User> findByEmail(String email);
 }

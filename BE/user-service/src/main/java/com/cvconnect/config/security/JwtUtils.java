@@ -1,8 +1,6 @@
 package com.cvconnect.config.security;
 
-import com.cvconnect.entity.Role;
 import com.cvconnect.entity.User;
-import com.cvconnect.repository.RoleRepository;
 import com.cvconnect.service.RoleService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

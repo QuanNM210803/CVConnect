@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 
 public enum UserErrorCode implements ErrorCode {
     LOGIN_FAIL(1001, Messages.LOGIN_FAILED, HttpStatus.UNAUTHORIZED),
+    ROLE_NOT_FOUND(1002, Messages.ROLE_NOT_FOUND, HttpStatus.NOT_FOUND),
     ;
 
     private final Integer code;
