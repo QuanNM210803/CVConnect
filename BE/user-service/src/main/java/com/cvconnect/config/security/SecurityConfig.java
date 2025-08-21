@@ -33,7 +33,7 @@ public class SecurityConfig {
     @Autowired
     private OAuth2FailureHandler oAuth2FailureHandler;
 
-    private static final String[] PUBLIC_URLS = {
+    public static final String[] PUBLIC_URLS = {
             "/v3/api-docs", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html",
             "/auth/**"
     };

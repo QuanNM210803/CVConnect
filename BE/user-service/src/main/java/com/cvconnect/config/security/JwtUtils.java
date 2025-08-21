@@ -23,11 +23,11 @@ public class JwtUtils {
     @Value("${jwt.secret-key}")
     private String SECRET_KEY;
 
-    @Value("${jwt.verify-email.expiration}")
-    private int EXPIRATION_VERIFY_EMAIL;
+    @Value("${jwt.refresh-secret-key}")
+    private String SECRET_KEY_REFRESH;
 
-    @Value("${jwt.verify-email.secret-key}")
-    private String SECRET_KEY_VERIFY_EMAIL;
+    @Value("${jwt.refresh-expiration}")
+    private int JWT_REFRESHABLE_DURATION;
 
     private final RoleMenuService roleMenuService;
 
@@ -37,14 +37,19 @@ public class JwtUtils {
         List<String> roles = roleMenuService.getAuthorities(user.getId());
         claims.put("roles", roles);
 
-        user.setPassword(null);
+        user.setIsActive(null);
+        user.setIsDeleted(null);
+        user.setCreatedAt(null);
+        user.setUpdatedAt(null);
+        user.setCreatedBy(null);
+        user.setUpdatedBy(null);
         claims.put("user", ObjectMapperUtils.convertToJson(user));
         try {
             return Jwts.builder()
                     .setClaims(claims)
                     .setSubject(user.getUsername())
                     .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION * 1000L))
-                    .signWith(nmquan.commonlib.utils.JwtUtils.getSignInKey(this.SECRET_KEY), SignatureAlgorithm.HS256)
+                    .signWith(nmquan.commonlib.utils.JwtUtils.getSignInKey(SECRET_KEY), SignatureAlgorithm.HS256)
                     .compact();
         }
         catch (Exception e) {
@@ -52,16 +57,16 @@ public class JwtUtils {
         }
     }
 
-    // functions to generate and verify JWT tokens for email verification
-    public String generateTokenVerifyEmail(User user) {
+    // function to generate a refresh token
+    public String generateRefreshToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", user.getId());
+        claims.put("id", user.getId());
         try {
             return Jwts.builder()
                     .setClaims(claims)
                     .setSubject(user.getUsername())
-                    .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_VERIFY_EMAIL * 1000L))
-                    .signWith(nmquan.commonlib.utils.JwtUtils.getSignInKey(this.SECRET_KEY_VERIFY_EMAIL), SignatureAlgorithm.HS256)
+                    .setExpiration(new Date(System.currentTimeMillis() + JWT_REFRESHABLE_DURATION * 1000L))
+                    .signWith(nmquan.commonlib.utils.JwtUtils.getSignInKey(SECRET_KEY_REFRESH), SignatureAlgorithm.HS256)
                     .compact();
         }
         catch (Exception e) {

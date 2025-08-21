@@ -6,11 +6,13 @@ public class Messages {
      * */
     public static final String LOGIN_FAILED= "login.failed";
     public static final String ROLE_NOT_FOUND = "role.not.found";
+    public static final String USER_NOT_FOUND = "user.not.found";
     public static final String USERNAME_NOT_EXISTS = "username.not.exists";
     public static final String USERNAME_EXISTS = "username.exists";
-    public static final String USER_NOT_VERIFIED= "user.not.verified";
+    public static final String EMAIL_NOT_VERIFIED= "email.not.verified";
     public static final String USER_ALREADY_VERIFIED="user.already.verified";
     public static final String EMAIL_EXISTS="email.exists";
+    public static final String ACCOUNT_NOT_ACTIVE = "account.not.active";
 
     /*
      * Validation messages

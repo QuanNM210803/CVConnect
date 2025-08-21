@@ -10,6 +10,16 @@ spring:
     hibernate:
       ddl-auto: none
     show_sql: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:af}
+            client-secret: ${GOOGLE_CLIENT_SECRET:fa}
+            scope:
+              - email
+              - profile
 
 server:
   port: 8080
@@ -31,9 +41,8 @@ springdoc:
 jwt:
   expiration: 86400 # 1 day in seconds
   secret-key: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
-  verify-email:
-    expiration: 604800 # 7 days in seconds
-    secret-key: pHuID1+T84ITaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
+  refresh-secret-key: 4f1d2c3b4a5e6d7c8b9a0b1c2d3e4f5g6h7i8j9k0l1
+  refresh-expiration: 604800 # 7 days in seconds
   x-internal-token: k118wSpPDIVURys
 
 frontend:

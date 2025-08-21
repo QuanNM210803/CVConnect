@@ -27,7 +27,7 @@ public class Filter implements GlobalFilter {
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/v3/api-docs", "/swagger-ui/", "/swagger-ui.html", "/swagger-ui/index.html",
-            "/user/auth/verify-token",
+            "/user/auth/",
     };
 
     @Override
