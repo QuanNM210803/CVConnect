@@ -1,6 +1,7 @@
 package com.cvconnect.config.security;
 
 import com.cvconnect.entity.User;
+import com.cvconnect.service.RoleMenuService;
 import com.cvconnect.service.RoleService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -28,12 +29,12 @@ public class JwtUtils {
     @Value("${jwt.verify-email.secret-key}")
     private String SECRET_KEY_VERIFY_EMAIL;
 
-    private final RoleService roleService;
+    private final RoleMenuService roleMenuService;
 
     // functions to generate and verify JWT tokens
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        List<String> roles = roleService.getAuthorities(user.getId());
+        List<String> roles = roleMenuService.getAuthorities(user.getId());
         claims.put("roles", roles);
 
         user.setPassword(null);

@@ -136,16 +136,6 @@
 #     FOREIGN KEY (user_id) REFERENCES `cvconnect-user-service`.users(id) ON DELETE CASCADE ON UPDATE CASCADE
 # );
 
-alter table `cvconnect-user-service`.role_menu
-modify column permission varchar(255) null;
-
-select * from `cvconnect-user-service`.users;
-select * from `cvconnect-user-service`.roles;
-select * from `cvconnect-user-service`.role_user;
-select * from `cvconnect-user-service`.management_members;
-select * from `cvconnect-user-service`.menus;
-select * from `cvconnect-user-service`.role_menu;
-
 # insert into `cvconnect-user-service`.users(username, password, email, full_name, phone_number, address, date_of_birth, avatar_url, is_email_verified, access_method, created_by)
 # values ('admin', '$2a$10$//aPySVETPhRYx/6xFKev.4S81w7Oq6zs44rnl9aeNe.u7W7GdFaq', 'nnmhqn2003@gmail.com', 'System Administrator', '0123456789', '123 Main St, City, Country', null, null, 1, 'LOCAL', 'anonymous');
 # insert into `cvconnect-user-service`.management_members(id, user_id, created_by)
@@ -161,19 +151,19 @@ select * from `cvconnect-user-service`.role_menu;
 # insert into `cvconnect-user-service`.role_user(user_id, role_id, created_by)
 # values (1,1, 'admin');
 
-insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, created_by) values
- (1, 'REPORT', 'Báo cáo', 'material-symbols:dashboard-2-outline', null, null, 1, 'admin')
-, (2, 'ORG', 'Tổ chức', 'material-symbols:person-play', '/organizations', null, 2, 'admin')
-, (3, 'USER', 'Người dùng', 'material-symbols:account-circle-full', '/users', null, 3, 'admin')
-,(4, 'SETUP', 'Thiết lập', 'material-symbols:settings-b-roll-outline', null, null, 4, 'admin')
-,(5, 'USER_GROUP', 'Nhóm người dùng', null, '/user-group', 4, 1, 'admin')
-, (6, 'CV_TEMPLATE', 'Mẫu CV', null, '/cv-templates', 4, 2, 'admin')
-;
-
-insert into `cvconnect-user-service`.role_menu(role_id, menu_id, permission, created_by) values
-(1, 1, null, 'admin')
-, (1, 2, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
-, (1, 3, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
-, (1, 4, null, 'admin')
-, (1, 5, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
-, (1, 6, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
+# insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, created_by) values
+#  (1, 'REPORT', 'Báo cáo', 'material-symbols:dashboard-2-outline', null, null, 1, 'admin')
+# , (2, 'ORG', 'Tổ chức', 'material-symbols:person-play', '/organizations', null, 2, 'admin')
+# , (3, 'USER', 'Người dùng', 'material-symbols:account-circle-full', '/users', null, 3, 'admin')
+# ,(4, 'SETUP', 'Thiết lập', 'material-symbols:settings-b-roll-outline', null, null, 4, 'admin')
+# ,(5, 'USER_GROUP', 'Nhóm người dùng', null, '/user-group', 4, 1, 'admin')
+# , (6, 'CV_TEMPLATE', 'Mẫu CV', null, '/cv-templates', 4, 2, 'admin')
+# ;
+#
+# insert into `cvconnect-user-service`.role_menu(role_id, menu_id, permission, created_by) values
+# (1, 1, null, 'admin')
+# , (1, 2, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
+# , (1, 3, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
+# , (1, 4, null, 'admin')
+# , (1, 5, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
+# , (1, 6, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin');
