@@ -1,4 +1,4 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.roleMenu;
 
 public interface RoleMenuProjection {
     Long getRoleMenuId();

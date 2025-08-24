@@ -35,4 +35,6 @@ public class Menu extends BaseEntity {
     @Column(name = "parent_id")
     private Long parentId;
 
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder;
 }

@@ -32,7 +32,6 @@ public class AccountStatusInterceptor implements HandlerInterceptor {
         UserErrorCode errorCode = null;
         if(Boolean.FALSE.equals(userDto.getIsEmailVerified())){
             errorCode = UserErrorCode.EMAIL_NOT_VERIFIED;
-
         }
         if(Boolean.FALSE.equals(userDto.getIsActive())){
             errorCode = UserErrorCode.ACCOUNT_NOT_ACTIVE;

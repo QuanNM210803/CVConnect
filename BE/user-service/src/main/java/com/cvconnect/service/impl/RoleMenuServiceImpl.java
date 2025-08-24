@@ -1,13 +1,12 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.RoleMenuProjection;
+import com.cvconnect.dto.roleMenu.RoleMenuProjection;
 import com.cvconnect.repository.RoleMenuRepository;
 import com.cvconnect.service.RoleMenuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -30,5 +29,4 @@ public class RoleMenuServiceImpl implements RoleMenuService {
                 })
                 .toList();
     }
-
 }

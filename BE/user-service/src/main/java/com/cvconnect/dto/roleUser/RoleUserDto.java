@@ -1,4 +1,4 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.roleUser;
 
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.user.UserDto;

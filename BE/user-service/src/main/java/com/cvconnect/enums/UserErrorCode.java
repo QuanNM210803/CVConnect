@@ -11,6 +11,8 @@ public enum UserErrorCode implements ErrorCode {
     EMAIL_NOT_VERIFIED(1004, Messages.EMAIL_NOT_VERIFIED, HttpStatus.UNAUTHORIZED),
     USERNAME_NOT_EXISTS(1005, Messages.USERNAME_NOT_EXISTS, HttpStatus.NOT_FOUND),
     ACCOUNT_NOT_ACTIVE(1006, Messages.ACCOUNT_NOT_ACTIVE, HttpStatus.UNAUTHORIZED),
+    USERNAME_EXISTS(1007, Messages.USERNAME_EXISTS, HttpStatus.BAD_REQUEST),
+    EMAIL_EXISTS(1008, Messages.EMAIL_EXISTS, HttpStatus.BAD_REQUEST)
     ;
 
     private final Integer code;

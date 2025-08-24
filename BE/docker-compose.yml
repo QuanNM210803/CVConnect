@@ -13,5 +13,16 @@ services:
       - mysql_data:/var/lib/mysql
       - ./scripts/mysql.sql:/docker-entrypoint-initdb.d/mysql.sql:ro
 
+  redis:
+    image: redis:7
+    container_name: redis-cvconnect
+    hostname: redis
+    restart: no
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
 volumes:
   mysql_data:
+  redis_data:

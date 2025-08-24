@@ -1,4 +1,4 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.roleUser;
 
 public interface RoleUserProjection {
     Long getId();

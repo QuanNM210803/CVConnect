@@ -10,12 +10,12 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    @Query("SELECT u FROM User u WHERE u.username = :username AND u.isDeleted = false AND u.accessMethod LIKE '%LOCAL%'")
+    @Query("SELECT u FROM User u WHERE u.username = :username AND u.accessMethod LIKE '%LOCAL%'")
     Optional<User> findByUsernameLogin(String username);
 
-    @Query("SELECT u FROM User u WHERE u.email = :email AND u.isDeleted = false")
+    @Query("SELECT u FROM User u WHERE u.email = :email")
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT u FROM User u WHERE u.username = :username AND u.isDeleted = false")
+    @Query("SELECT u FROM User u WHERE u.username = :username")
     Optional<User> findByUsername(String username);
 }

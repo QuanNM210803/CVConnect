@@ -4,6 +4,7 @@ import com.cvconnect.constant.Messages;
 import com.cvconnect.dto.LoginRequest;
 import com.cvconnect.dto.LoginResponse;
 import com.cvconnect.dto.RefreshTokenResponse;
+import com.cvconnect.dto.RegisterCandidateRequest;
 import com.cvconnect.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,5 +41,20 @@ public class AuthController {
     public ResponseEntity<Response<RefreshTokenResponse>> refreshToken(HttpServletRequest httpServletRequest
             , HttpServletResponse httpServletResponse) {
         return ResponseUtils.success(authService.refreshToken(httpServletRequest, httpServletResponse));
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Logout API")
+    public ResponseEntity<Response<Void>> logout(HttpServletRequest httpServletRequest
+            , HttpServletResponse httpServletResponse) {
+        authService.logout(httpServletRequest, httpServletResponse);
+        return ResponseUtils.success(null);
+    }
+
+    @PostMapping("/register-candidate")
+    @Operation(summary = "Register Candidate API")
+    public ResponseEntity<Response<Long>> registerCandidate(@Valid @RequestBody RegisterCandidateRequest request) {
+        return ResponseUtils.success(authService.registerCandidate(request),
+                localizationUtils.getLocalizedMessage(Messages.REGISTER_SUCCESS));
     }
 }

@@ -1,7 +1,7 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.RoleUserDto;
-import com.cvconnect.dto.RoleUserProjection;
+import com.cvconnect.dto.roleUser.RoleUserDto;
+import com.cvconnect.dto.roleUser.RoleUserProjection;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.entity.RoleUser;
 import com.cvconnect.repository.RoleUserRepository;
@@ -26,6 +26,9 @@ public class RoleUserServiceImpl implements RoleUserService {
     @Override
     public RoleUserDto findByUserIdAndRoleId(Long userId, Long roleId) {
         RoleUser roleUser = roleUserRepository.findByUserIdAndRoleId(userId, roleId);
+        if(roleUser == null) {
+            return null;
+        }
         return RoleUserDto.builder()
                 .id(roleUser.getId())
                 .userId(roleUser.getUserId())

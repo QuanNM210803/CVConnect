@@ -47,13 +47,16 @@ public class User extends BaseEntity implements UserDetails, OAuth2User {
 
     @Size(max = 20)
     @Column(name = "phone_number", length = 20)
+    @JsonIgnore
     private String phoneNumber;
 
     @Size(max = 255)
     @Column(name = "address")
+    @JsonIgnore
     private String address;
 
     @Column(name = "date_of_birth")
+    @JsonIgnore
     private LocalDate dateOfBirth;
 
     @Size(max = 255)

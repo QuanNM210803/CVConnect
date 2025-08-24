@@ -22,7 +22,6 @@ public class Messages {
     public static final String REGISTER_USERNAME_REQUIRE="register.username.require";
     public static final String REGISTER_PASSWORD_REQUIRE="register.password.require";
     public static final String REGISTER_FULL_NAME_REQUIRE="register.full.name.require";
-    public static final String REGISTER_PHONE_REQUIRE="register.phone.require";
     public static final String REGISTER_EMAIL_REQUIRE="register.email.require";
     public static final String REGISTER_USERNAME_INVALID="register.username.invalid";
     public static final String REGISTER_PASSWORD_INVALID="register.password.invalid";

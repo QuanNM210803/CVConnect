@@ -15,16 +15,19 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:af}
-            client-secret: ${GOOGLE_CLIENT_SECRET:fa}
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
             scope:
               - email
               - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
 server:
   port: 8080
   servlet:
     context-path: /user
+  host_redis: ${HOST_REDIS:localhost}
+  port_redis: ${PORT_REDIS:6379}
 
 logging:
   level:
@@ -41,7 +44,6 @@ springdoc:
 jwt:
   expiration: 86400 # 1 day in seconds
   secret-key: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
-  refresh-secret-key: 4f1d2c3b4a5e6d7c8b9a0b1c2d3e4f5g6h7i8j9k0l1
   refresh-expiration: 604800 # 7 days in seconds
   x-internal-token: k118wSpPDIVURys
 
@@ -56,3 +58,5 @@ open-api:
   url-localhost: http://localhost:${server.port}${server.servlet.context-path}
   url-radmin: http://26.9.175.39:${server.port}${server.servlet.context-path}
 
+redis:
+  token-key: token

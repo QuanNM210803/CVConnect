@@ -1,7 +1,7 @@
 package com.cvconnect.config.oauth2;
 
 import com.cvconnect.constant.Constants;
-import com.cvconnect.dto.RoleUserDto;
+import com.cvconnect.dto.roleUser.RoleUserDto;
 import com.cvconnect.dto.candidate.CandidateDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.entity.User;
@@ -10,6 +10,8 @@ import com.cvconnect.repository.UserRepository;
 import com.cvconnect.service.CandidateService;
 import com.cvconnect.service.RoleService;
 import com.cvconnect.service.RoleUserService;
+import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.exception.CommonErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -43,6 +45,9 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         String name = oAuth2User.getAttribute("name");
 
         RoleDto roleCandidate = roleService.getRoleByCode(Constants.RoleCode.CANDIDATE);
+        if(roleCandidate == null) {
+            throw new AppException(CommonErrorCode.ERROR);
+        }
 
         User user = userRepository.findByEmail(email)
                 .map(existingUser -> {
@@ -63,6 +68,11 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                                 .roleId(roleCandidate.getId())
                                 .build();
                         roleUserService.createRoleUser(roleUserDto);
+
+                        CandidateDto candidateDto = CandidateDto.builder()
+                                .userId(existingUser.getId())
+                                .build();
+                        candidateService.createCandidate(candidateDto);
                     }
                     return userRepository.save(existingUser);
                 })

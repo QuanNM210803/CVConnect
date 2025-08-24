@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Date;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,11 +18,21 @@ import lombok.NoArgsConstructor;
 public class UserDto {
     private Long id;
     private String username;
+    private String password;
     private String email;
     private String fullName;
     private String phoneNumber;
     private String avatarUrl;
-    private Boolean isActive;
+    private String address;
+    private LocalDate dateOfBirth;
     private Boolean isEmailVerified;
+    private String accessMethod;
+
+    private Boolean isActive;
+    private Boolean isDeleted;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private String createdBy;
+    private String updatedBy;
 
 }

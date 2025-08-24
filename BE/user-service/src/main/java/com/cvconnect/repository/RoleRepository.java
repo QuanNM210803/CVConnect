@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
 
-    @Query("SELECT r FROM Role r WHERE r.code = :code AND r.isDeleted = false")
+    @Query("SELECT r FROM Role r WHERE r.code = :code")
     Role findByCode(String code);
 }

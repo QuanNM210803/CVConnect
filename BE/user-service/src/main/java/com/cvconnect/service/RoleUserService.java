@@ -1,6 +1,6 @@
 package com.cvconnect.service;
 
-import com.cvconnect.dto.RoleUserDto;
+import com.cvconnect.dto.roleUser.RoleUserDto;
 
 import java.util.List;
 
