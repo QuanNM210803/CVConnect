@@ -1,4 +1,4 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.auth;
 
 import com.cvconnect.constant.Constants;
 import com.cvconnect.constant.Messages;

@@ -3,6 +3,7 @@ package com.cvconnect.service.impl;
 import com.cvconnect.config.security.JwtUtils;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.*;
+import com.cvconnect.dto.auth.*;
 import com.cvconnect.dto.candidate.CandidateDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.roleUser.RoleUserDto;
@@ -17,9 +18,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
+import nmquan.commonlib.exception.ErrorCode;
+import nmquan.commonlib.model.JwtUser;
+import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,9 +55,13 @@ public class AuthServiceImpl implements AuthService {
     private CandidateService candidateService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private LocalizationUtils localizationUtils;
 
     @Value("${jwt.refresh-expiration}")
     private int JWT_REFRESHABLE_DURATION;
+    @Value("${jwt.secret-key}")
+    private String SECRET_KEY;
 
     @Transactional
     @Override
@@ -136,7 +145,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public Long registerCandidate(RegisterCandidateRequest request) {
+    public RegisterCandidateResponse registerCandidate(RegisterCandidateRequest request) {
         UserDto existsByUsername = userService.findByUsername(request.getUsername());
         if (existsByUsername != null) {
             throw new AppException(UserErrorCode.USERNAME_EXISTS);
@@ -169,7 +178,12 @@ public class AuthServiceImpl implements AuthService {
                     .userId(userDto.getId())
                     .build();
             candidateService.createCandidate(candidateDto);
-            return userDto.getId();
+            // send email require verification
+
+            return RegisterCandidateResponse.builder()
+                    .id(userDto.getId())
+                    .needVerifyEmail(true)
+                    .build();
         } else {
             List<RoleUserDto> roleUserDtos = roleUserService.findByUserId(existsByEmail.getId());
             /*
@@ -194,8 +208,40 @@ public class AuthServiceImpl implements AuthService {
             existsByEmail.setFullName(request.getFullName());
             existsByEmail.setAccessMethod(String.join(",", providers));
             userService.create(existsByEmail);
-            return existsByEmail.getId();
+            return RegisterCandidateResponse.builder()
+                    .id(existsByEmail.getId())
+                    .needVerifyEmail(false)
+                    .build();
         }
     }
 
+    @Override
+    public VerifyResponse verify(VerifyRequest verifyRequest) {
+        try {
+            JwtUser jwtUser = nmquan.commonlib.utils.JwtUtils.validate(verifyRequest.getToken(), SECRET_KEY);
+            UserDto userDto = userService.findByUsername(jwtUser.getUsername());
+            if (Boolean.FALSE.equals(userDto.getIsEmailVerified())) {
+                return this.buildErrorResponse(UserErrorCode.EMAIL_NOT_VERIFIED);
+            }
+            if (Boolean.FALSE.equals(userDto.getIsActive())) {
+                return this.buildErrorResponse(UserErrorCode.ACCOUNT_NOT_ACTIVE);
+            }
+            return VerifyResponse.builder()
+                    .isValid(true)
+                    .status(HttpStatus.OK)
+                    .code(1000)
+                    .build();
+        } catch (Exception e) {
+            return this.buildErrorResponse(UserErrorCode.TOKEN_INVALID);
+        }
+    }
+
+    private VerifyResponse buildErrorResponse(ErrorCode errorCode) {
+        return VerifyResponse.builder()
+                .isValid(false)
+                .message(localizationUtils.getLocalizedMessage(errorCode.getMessage()))
+                .status(errorCode.getStatusCode())
+                .code(errorCode.getCode())
+                .build();
+    }
 }

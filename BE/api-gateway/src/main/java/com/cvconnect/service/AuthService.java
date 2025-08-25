@@ -13,8 +13,8 @@ import reactor.core.publisher.Mono;
 public class AuthService {
     private final AuthClient authClient;
 
-    public Mono<Response<VerifyResponse>> verifyToken(String token) {
-        return authClient.verifyToken(VerifyRequest.builder()
+    public Mono<Response<VerifyResponse>> verify(String token) {
+        return authClient.verify(VerifyRequest.builder()
                 .token(token)
                 .build());
     }

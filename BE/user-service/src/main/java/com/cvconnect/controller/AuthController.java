@@ -1,10 +1,7 @@
 package com.cvconnect.controller;
 
 import com.cvconnect.constant.Messages;
-import com.cvconnect.dto.LoginRequest;
-import com.cvconnect.dto.LoginResponse;
-import com.cvconnect.dto.RefreshTokenResponse;
-import com.cvconnect.dto.RegisterCandidateRequest;
+import com.cvconnect.dto.auth.*;
 import com.cvconnect.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,8 +50,14 @@ public class AuthController {
 
     @PostMapping("/register-candidate")
     @Operation(summary = "Register Candidate API")
-    public ResponseEntity<Response<Long>> registerCandidate(@Valid @RequestBody RegisterCandidateRequest request) {
+    public ResponseEntity<Response<RegisterCandidateResponse>> registerCandidate(@Valid @RequestBody RegisterCandidateRequest request) {
         return ResponseUtils.success(authService.registerCandidate(request),
                 localizationUtils.getLocalizedMessage(Messages.REGISTER_SUCCESS));
+    }
+
+    @PostMapping("/verify")
+    @Operation(summary = "Verify Token API")
+    public ResponseEntity<Response<VerifyResponse>> verify(@RequestBody VerifyRequest verifyRequest) {
+        return ResponseUtils.success(authService.verify(verifyRequest));
     }
 }

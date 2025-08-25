@@ -1,6 +1,7 @@
 package com.cvconnect.config;
 
 import com.cvconnect.dto.Response;
+import com.cvconnect.dto.VerifyResponse;
 import com.cvconnect.service.AuthService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,8 +28,7 @@ public class Filter implements GlobalFilter {
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/v3/api-docs", "/swagger-ui/", "/swagger-ui.html", "/swagger-ui/index.html",
-            "/user/auth/", "/user/oauth2/authorization/google", "/user/login/oauth2/code",
-            "/user/menu/menu-by-role"
+            "/user/auth/", "/user/oauth2/authorization/google", "/user/login/oauth2/code"
     };
 
     @Override
@@ -42,35 +42,36 @@ public class Filter implements GlobalFilter {
 
         List<String> authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || authHeader.isEmpty()) {
-            return this.unauthenticated(exchange.getResponse());
+            return this.unauthenticated(exchange.getResponse(), null, HttpStatus.UNAUTHORIZED, 401);
         }
 
         String token = authHeader.get(0).replace("Bearer ", "");
-        return authService.verifyToken(token).flatMap(verifyResponse -> {
-            if (verifyResponse.getData().getIsValid()){
+        return authService.verify(token).flatMap(verifyResponse -> {
+            VerifyResponse data = verifyResponse.getData();
+            if (data.getIsValid()){
                 return chain.filter(exchange); // dung map thi tra ve Mono<Mono<Void>>
             } else {
-                return this.unauthenticated(exchange.getResponse());
+                return this.unauthenticated(exchange.getResponse(), data.getMessage(), data.getStatus(), data.getCode());
             }
-        }).onErrorResume(throwable -> this.unauthenticated(exchange.getResponse()));
+        }).onErrorResume(throwable ->
+                this.unauthenticated(exchange.getResponse(), null, HttpStatus.INTERNAL_SERVER_ERROR, 500)
+        );
     }
 
-    Mono<Void> unauthenticated(ServerHttpResponse response) {
-        Response<?> apiResponse = Response.builder()
-                .code(401)
-                .build();
-
-        String body;
+    Mono<Void> unauthenticated(ServerHttpResponse response, String message, HttpStatus status, Integer code) {
         try {
-            body = objectMapper.writeValueAsString(apiResponse);
+            Response<Object> apiResponse = Response.builder()
+                    .message(message)
+                    .code(code)
+                    .build();
+            String body = objectMapper.writeValueAsString(apiResponse);
+            response.setStatusCode(status);
+            response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+            return response.writeWith(
+                    Mono.just(response.bufferFactory().wrap(body.getBytes()))
+            );
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-
-        response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        return response.writeWith(
-                Mono.just(response.bufferFactory().wrap(body.getBytes()))
-        );
     }
 }

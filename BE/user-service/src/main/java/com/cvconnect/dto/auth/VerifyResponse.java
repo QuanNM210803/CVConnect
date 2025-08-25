@@ -1,4 +1,4 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 @Builder
 public class VerifyResponse {
     private Boolean isValid;
+
     private String message;
     private HttpStatus status;
     private Integer code;
