@@ -1,15 +1,27 @@
 spring:
   application:
-    name: user-service
+    name: notify-service
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:3306/cvconnect-user-service
+    url: jdbc:h2:mem:notify-service
     username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: sadjfoasdhfnaoga
+    driver-class-name: org.h2.Driver
   jpa:
     hibernate:
       ddl-auto: none
-    show_sql: false
+    show-sql: false
+  h2:
+    console:
+      enabled: false
+      path: /h2-console
+  data:
+    mongodb:
+      host: ${DB_HOST:localhost}
+      port: 27017
+      database: cvconnect-notify-service
+      username: root
+      password: root
+      authentication-database: admin
   kafka:
     producer:
       bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
@@ -20,24 +32,24 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       group-id: notify-service
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID:1}
-            client-secret: ${GOOGLE_CLIENT_SECRET:1}
-            scope:
-              - email
-              - profile
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+  mail:
+    host: smtp-relay.brevo.com
+    port: 587
+    username: ${MAIL_USERNAME:784652002@smtp-brevo.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    sender: nnmhqn2003@gmail.com
 
 server:
-  port: 8080
+  port: 8081
+  port-socket: 9090
   servlet:
-    context-path: /user
-  host_redis: ${HOST_REDIS:localhost}
-  port_redis: ${PORT_REDIS:6379}
+    context-path: /notify
 
 logging:
   level:
