@@ -220,6 +220,9 @@ public class AuthServiceImpl implements AuthService {
         try {
             JwtUser jwtUser = nmquan.commonlib.utils.JwtUtils.validate(verifyRequest.getToken(), SECRET_KEY);
             UserDto userDto = userService.findByUsername(jwtUser.getUsername());
+            if(userDto == null) {
+                return this.buildErrorResponse(UserErrorCode.USER_NOT_FOUND);
+            }
             if (Boolean.FALSE.equals(userDto.getIsEmailVerified())) {
                 return this.buildErrorResponse(UserErrorCode.EMAIL_NOT_VERIFIED);
             }
@@ -231,15 +234,17 @@ public class AuthServiceImpl implements AuthService {
                     .status(HttpStatus.OK)
                     .code(1000)
                     .build();
-        } catch (Exception e) {
-            return this.buildErrorResponse(UserErrorCode.TOKEN_INVALID);
+        }catch (AppException e){
+            return this.buildErrorResponse(e.getErrorCode(), e.getParams());
+        }catch (Exception e) {
+            return this.buildErrorResponse(CommonErrorCode.ERROR);
         }
     }
 
-    private VerifyResponse buildErrorResponse(ErrorCode errorCode) {
+    private VerifyResponse buildErrorResponse(ErrorCode errorCode, Object... params) {
         return VerifyResponse.builder()
                 .isValid(false)
-                .message(localizationUtils.getLocalizedMessage(errorCode.getMessage()))
+                .message(localizationUtils.getLocalizedMessage(errorCode.getMessage(), params))
                 .status(errorCode.getStatusCode())
                 .code(errorCode.getCode())
                 .build();

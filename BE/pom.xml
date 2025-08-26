@@ -32,7 +32,7 @@
         <org.json>20231013</org.json>
         <jedis.version>4.3.1</jedis.version>
         <netty-socketio>2.0.13</netty-socketio>
-        <common-lib.version>1.0.0</common-lib.version>
+        <common-lib.version>1.0.1</common-lib.version>
     </properties>
 
     <dependencyManagement>

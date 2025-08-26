@@ -13,7 +13,6 @@ public class Messages {
     public static final String USER_ALREADY_VERIFIED="user.already.verified";
     public static final String EMAIL_EXISTS="email.exists";
     public static final String ACCOUNT_NOT_ACTIVE = "account.not.active";
-    public static final String TOKEN_INVALID = "token.invalid";
 
     /*
      * Validation messages

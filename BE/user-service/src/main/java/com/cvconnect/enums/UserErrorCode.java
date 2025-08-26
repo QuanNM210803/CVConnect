@@ -13,7 +13,6 @@ public enum UserErrorCode implements ErrorCode {
     ACCOUNT_NOT_ACTIVE(1006, Messages.ACCOUNT_NOT_ACTIVE, HttpStatus.UNAUTHORIZED),
     USERNAME_EXISTS(1007, Messages.USERNAME_EXISTS, HttpStatus.BAD_REQUEST),
     EMAIL_EXISTS(1008, Messages.EMAIL_EXISTS, HttpStatus.BAD_REQUEST),
-    TOKEN_INVALID(1009, Messages.TOKEN_INVALID, HttpStatus.UNAUTHORIZED),
     ;
 
     private final Integer code;
