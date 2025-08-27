@@ -1,6 +1,6 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.config.security.JwtUtils;
+import com.cvconnect.utils.JwtUtils;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.*;
 import com.cvconnect.dto.auth.*;

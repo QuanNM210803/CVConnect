@@ -1,4 +1,4 @@
-package com.cvconnect.config.security;
+package com.cvconnect.utils;
 
 import com.cvconnect.dto.user.UserDto;
 import com.cvconnect.service.RoleMenuService;
@@ -27,8 +27,8 @@ public class JwtUtils {
     // functions to generate and verify JWT tokens
     public String generateToken(UserDto user) {
         Map<String, Object> claims = new HashMap<>();
-        List<String> roles = roleMenuService.getAuthorities(user.getId());
-        claims.put("roles", roles);
+        Map<String, List<String>> permissionMap = roleMenuService.getAuthorities(user.getId());
+        claims.put("permissions", permissionMap);
 
         UserDto userDto = UserDto.builder()
                 .id(user.getId())

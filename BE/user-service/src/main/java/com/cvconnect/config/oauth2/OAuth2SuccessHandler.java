@@ -1,6 +1,6 @@
 package com.cvconnect.config.oauth2;
 
-import com.cvconnect.config.security.JwtUtils;
+import com.cvconnect.utils.JwtUtils;
 import com.cvconnect.dto.TokenInfo;
 import com.cvconnect.entity.User;
 import com.cvconnect.enums.TokenType;

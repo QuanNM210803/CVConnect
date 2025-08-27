@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -15,7 +16,7 @@ public class RoleMenuServiceImpl implements RoleMenuService {
     private RoleMenuRepository roleMenuRepository;
 
     @Override
-    public List<String> getAuthorities(Long userId) {
+    public Map<String, List<String>> getAuthorities(Long userId) {
         List<RoleMenuProjection> roleMenuProjections = roleMenuRepository.findAuthoritiesByUserId(userId);
         return roleMenuProjections.stream()
                 .flatMap(object -> {
@@ -23,10 +24,13 @@ public class RoleMenuServiceImpl implements RoleMenuService {
                     String permission = object.getPermission();
                     if (permission != null && !permission.isEmpty()) {
                         return Arrays.stream(permission.split(","))
-                                .map(per -> per + ":" + menuCode);
+                                .map(per -> Map.entry(menuCode, per.trim()));
                     }
-                    return Stream.of();
+                    return Stream.empty();
                 })
-                .toList();
+                .collect(Collectors.groupingBy(
+                        Map.Entry::getKey,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())
+                ));
     }
 }
