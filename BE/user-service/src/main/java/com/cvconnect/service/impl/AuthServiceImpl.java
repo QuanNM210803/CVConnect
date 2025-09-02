@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.enums.EmailTemplateEnum;
 import com.cvconnect.utils.JwtUtils;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.*;
@@ -21,20 +22,17 @@ import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.exception.ErrorCode;
 import nmquan.commonlib.model.JwtUser;
 import nmquan.commonlib.utils.LocalizationUtils;
-import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,14 +52,24 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private CandidateService candidateService;
     @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
     private LocalizationUtils localizationUtils;
+    @Autowired
+    private RedisUtils redis;
+    @Autowired
+    private SendEmailService sendEmailService;
 
     @Value("${jwt.refresh-expiration}")
     private int JWT_REFRESHABLE_DURATION;
     @Value("${jwt.secret-key}")
     private String SECRET_KEY;
+    @Value("${frontend.url-verify-email}")
+    private String URL_VERIFY_EMAIL;
+    @Value("${frontend.url-reset-password}")
+    private String URL_RESET_PASSWORD;
+    @Value("${jwt.verify-expiration}")
+    private int JWT_VERIFY_EMAIL_DURATION;
+    @Value("${jwt.reset-password-expiration}")
+    private int JWT_RESET_PASSWORD_DURATION;
 
     @Transactional
     @Override
@@ -70,6 +78,7 @@ public class AuthServiceImpl implements AuthService {
         if (user == null) {
             throw new AppException(UserErrorCode.LOGIN_FAIL);
         }
+        this.checkAccountStatus(user);
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginRequest.getUsername(), loginRequest.getPassword()
         );
@@ -86,11 +95,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         String refreshToken = jwtUtils.generateRefreshToken();
-        TokenInfo tokenInfo = TokenInfo.builder()
-                .userId(user.getId())
-                .type(TokenType.REFRESH)
-                .build();
-        redisUtils.saveObject(refreshToken, tokenInfo, JWT_REFRESHABLE_DURATION);
+        this.saveToken(user.getId(), TokenType.REFRESH, refreshToken, JWT_REFRESHABLE_DURATION);
         CookieUtils.setRefreshTokenCookie(refreshToken, JWT_REFRESHABLE_DURATION, httpServletResponse);
 
         return loginResponse;
@@ -104,16 +109,15 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(CommonErrorCode.UNAUTHENTICATED);
         }
 
-        String refreshTokenKey = redisUtils.getFreshTokenKey(rfToken);
-        Object raw = redisUtils.getObjectByKey(refreshTokenKey);
-        if (raw == null) {
+        String refreshTokenKey = redisUtils.getTokenKey(rfToken);
+        TokenInfo tokenInfo = redisUtils.getObject(refreshTokenKey, TokenInfo.class);
+        if (tokenInfo == null) {
             CookieUtils.deleteRefreshTokenCookie(httpServletResponse);
             throw new AppException(CommonErrorCode.UNAUTHENTICATED);
         }
         redisUtils.deleteByKey(refreshTokenKey);
 
-        TokenInfo tokenInfo = ObjectMapperUtils.convertToObject(raw.toString(), TokenInfo.class);
-        if (tokenInfo == null || !TokenType.REFRESH.equals(tokenInfo.getType())) {
+        if (!TokenType.REFRESH.equals(tokenInfo.getType())) {
             CookieUtils.deleteRefreshTokenCookie(httpServletResponse);
             throw new AppException(CommonErrorCode.UNAUTHENTICATED);
         }
@@ -123,8 +127,9 @@ public class AuthServiceImpl implements AuthService {
             CookieUtils.deleteRefreshTokenCookie(httpServletResponse);
             throw new AppException(CommonErrorCode.UNAUTHENTICATED);
         }
+        this.checkAccountStatus(user);
         String newRefreshToken = jwtUtils.generateRefreshToken();
-        redisUtils.saveObject(newRefreshToken, tokenInfo, JWT_REFRESHABLE_DURATION);
+        redisUtils.saveObject(redisUtils.getTokenKey(newRefreshToken), tokenInfo, JWT_REFRESHABLE_DURATION);
         CookieUtils.setRefreshTokenCookie(newRefreshToken, JWT_REFRESHABLE_DURATION, httpServletResponse);
 
         List<RoleUserDto> roleUserDtos = roleUserService.findByUserId(user.getId());
@@ -178,7 +183,20 @@ public class AuthServiceImpl implements AuthService {
                     .userId(userDto.getId())
                     .build();
             candidateService.createCandidate(candidateDto);
+
             // send email require verification
+            String token = jwtUtils.generateTokenVerifyEmail();
+            Map<String, String> dataPlaceHolders = new HashMap<>();
+            dataPlaceHolders.put("username", userDto.getFullName());
+            dataPlaceHolders.put("verifyUrl", URL_VERIFY_EMAIL + "?token=" + token);
+            dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
+            sendEmailService.sendEmailWithTemplate(
+                    List.of(userDto.getEmail()),
+                    null,
+                    EmailTemplateEnum.VERIFY_EMAIL,
+                    dataPlaceHolders
+            );
+            this.saveToken(userDto.getId(), TokenType.VERIFY_EMAIL, token, JWT_VERIFY_EMAIL_DURATION);
 
             return RegisterCandidateResponse.builder()
                     .id(userDto.getId())
@@ -204,7 +222,7 @@ public class AuthServiceImpl implements AuthService {
             }
             providers.add(AccessMethod.LOCAL.name());
             existsByEmail.setUsername(request.getUsername());
-            existsByEmail.setPassword(passwordEncoder.encode(request.getPassword()));
+            existsByEmail.setPassword(request.getPassword());
             existsByEmail.setFullName(request.getFullName());
             existsByEmail.setAccessMethod(String.join(",", providers));
             userService.create(existsByEmail);
@@ -223,12 +241,7 @@ public class AuthServiceImpl implements AuthService {
             if(userDto == null) {
                 return this.buildErrorResponse(UserErrorCode.USER_NOT_FOUND);
             }
-            if (Boolean.FALSE.equals(userDto.getIsEmailVerified())) {
-                return this.buildErrorResponse(UserErrorCode.EMAIL_NOT_VERIFIED);
-            }
-            if (Boolean.FALSE.equals(userDto.getIsActive())) {
-                return this.buildErrorResponse(UserErrorCode.ACCOUNT_NOT_ACTIVE);
-            }
+            this.checkAccountStatus(userDto);
             return VerifyResponse.builder()
                     .isValid(true)
                     .status(HttpStatus.OK)
@@ -241,6 +254,114 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    @Override
+    public RequestResendVerifyEmailResponse requestResendVerifyEmail(String identifier) {
+        UserDto userDto = userService.findByUsername(identifier);
+        if (userDto == null) {
+            userDto = userService.findByEmail(identifier);
+        }
+        if(userDto == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        if(Boolean.TRUE.equals(userDto.getIsEmailVerified())) {
+            throw new AppException(UserErrorCode.USER_ALREADY_VERIFIED);
+        }
+        String token = jwtUtils.generateTokenVerifyEmail();
+        Map<String, String> dataPlaceHolders = new HashMap<>();
+        dataPlaceHolders.put("username", userDto.getFullName());
+        dataPlaceHolders.put("verifyUrl", URL_VERIFY_EMAIL + "?token=" + token);
+        dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
+        sendEmailService.sendEmailWithTemplate(
+                List.of(userDto.getEmail()),
+                null,
+                EmailTemplateEnum.VERIFY_EMAIL,
+                dataPlaceHolders
+        );
+        this.saveToken(userDto.getId(), TokenType.VERIFY_EMAIL, token, JWT_VERIFY_EMAIL_DURATION);
+        return RequestResendVerifyEmailResponse.builder()
+                .email(userDto.getEmail())
+                .duration((long) JWT_VERIFY_EMAIL_DURATION)
+                .build();
+    }
+
+    @Override
+    public VerifyEmailResponse verifyEmail(String token) {
+        String tokenKey = redisUtils.getTokenKey(token);
+        TokenInfo tokenInfo = redisUtils.getObject(tokenKey, TokenInfo.class);
+        if (tokenInfo == null) {
+            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+        }
+        if(!TokenType.VERIFY_EMAIL.equals(tokenInfo.getType())) {
+            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+        }
+        UserDto userDto = userService.findById(tokenInfo.getUserId());
+        if (userDto == null) {
+            redisUtils.deleteByKey(tokenKey);
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        if(Boolean.TRUE.equals(userDto.getIsEmailVerified())) {
+            redisUtils.deleteByKey(tokenKey);
+            throw new AppException(UserErrorCode.USER_ALREADY_VERIFIED);
+        }
+        userService.updateEmailVerified(userDto.getId(), true);
+        redisUtils.deleteByKey(tokenKey);
+        return VerifyEmailResponse.builder()
+                .username(userDto.getUsername())
+                .build();
+    }
+
+    @Override
+    public RequestResetPasswordResponse requestResetPassword(String identifier) {
+        UserDto userDto = userService.findByUsername(identifier);
+        if (userDto == null) {
+            userDto = userService.findByEmail(identifier);
+        }
+        if(userDto == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        this.checkAccountStatus(userDto);
+        // send email reset password
+        String token = jwtUtils.generateTokenResetPassword();
+        Map<String, String> dataPlaceHolders = new HashMap<>();
+        dataPlaceHolders.put("username", userDto.getUsername());
+        dataPlaceHolders.put("resetUrl", URL_RESET_PASSWORD + "?token=" + token);
+        dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
+        sendEmailService.sendEmailWithTemplate(
+                List.of(userDto.getEmail()),
+                null,
+                EmailTemplateEnum.RESET_PASSWORD,
+                dataPlaceHolders
+        );
+        this.saveToken(userDto.getId(), TokenType.RESET_PASSWORD, token, JWT_RESET_PASSWORD_DURATION);
+        return RequestResetPasswordResponse.builder()
+                .email(userDto.getEmail())
+                .duration((long) JWT_RESET_PASSWORD_DURATION)
+                .build();
+    }
+
+    @Override
+    public ResetPasswordResponse resetPassword(ResetPasswordRequest request) {
+        String tokenKey = redisUtils.getTokenKey(request.getToken());
+        TokenInfo tokenInfo = redisUtils.getObject(tokenKey, TokenInfo.class);
+        if (tokenInfo == null) {
+            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+        }
+        if(!TokenType.RESET_PASSWORD.equals(tokenInfo.getType())) {
+            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+        }
+        UserDto userDto = userService.findById(tokenInfo.getUserId());
+        if (userDto == null) {
+            redisUtils.deleteByKey(tokenKey);
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        this.checkAccountStatus(userDto);
+        userService.updatePassword(userDto.getId(), request.getNewPassword());
+        redisUtils.deleteByKey(tokenKey);
+        return ResetPasswordResponse.builder()
+                .username(userDto.getUsername())
+                .build();
+    }
+
     private VerifyResponse buildErrorResponse(ErrorCode errorCode, Object... params) {
         return VerifyResponse.builder()
                 .isValid(false)
@@ -248,5 +369,22 @@ public class AuthServiceImpl implements AuthService {
                 .status(errorCode.getStatusCode())
                 .code(errorCode.getCode())
                 .build();
+    }
+
+    private void saveToken(Long userId, TokenType tokenType, String token, int duration){
+        TokenInfo tokenInfo = TokenInfo.builder()
+                .userId(userId)
+                .type(tokenType)
+                .build();
+        redis.saveObject(redis.getTokenKey(token), tokenInfo, duration);
+    }
+
+    private void checkAccountStatus(UserDto userDto){
+        if (Boolean.FALSE.equals(userDto.getIsEmailVerified())) {
+            throw new AppException(UserErrorCode.EMAIL_NOT_VERIFIED);
+        }
+        if (Boolean.FALSE.equals(userDto.getIsActive())) {
+            throw new AppException(UserErrorCode.ACCOUNT_NOT_ACTIVE);
+        }
     }
 }

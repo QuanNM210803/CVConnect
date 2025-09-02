@@ -2,18 +2,14 @@ spring:
   application:
     name: notify-service
   datasource:
-    url: jdbc:h2:mem:notify-service
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/cvconnect-notify-service
     username: root
-    password: sadjfoasdhfnaoga
-    driver-class-name: org.h2.Driver
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: none
     show-sql: false
-  h2:
-    console:
-      enabled: false
-      path: /h2-console
   data:
     mongodb:
       host: ${DB_HOST:localhost}
@@ -27,23 +23,21 @@ spring:
       bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 3
+      acks: all
+      properties:
+        retry.backoff.ms: 2000
     consumer:
       bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       group-id: notify-service
-  mail:
-    host: smtp-relay.brevo.com
-    port: 587
-    username: ${MAIL_USERNAME:784652002@smtp-brevo.com}
-    password: ${MAIL_PASSWORD:}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-    sender: nnmhqn2003@gmail.com
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
 
 server:
   port: 8081
@@ -82,3 +76,6 @@ open-api:
 
 redis:
   token-key: token
+kafka:
+  topic:
+    send-email: send-email-topic

@@ -7,4 +7,7 @@ public interface UserService {
     UserDto findByUsername(String username);
     UserDto findByEmail(String email);
     UserDto create(UserDto user);
+    UserDto getMyInfo(Long roleId);
+    void updatePassword(Long userId, String newPassword);
+    void updateEmailVerified(Long userId, Boolean emailVerified);
 }

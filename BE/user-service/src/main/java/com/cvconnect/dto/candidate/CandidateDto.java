@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,4 +16,11 @@ import lombok.NoArgsConstructor;
 public class CandidateDto {
     private Long id;
     private Long userId;
+
+    private Boolean isActive;
+    private Boolean isDeleted;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private String createdBy;
+    private String updatedBy;
 }

@@ -12,10 +12,7 @@ import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -59,5 +56,32 @@ public class AuthController {
     @Operation(summary = "Verify Token API")
     public ResponseEntity<Response<VerifyResponse>> verify(@RequestBody VerifyRequest verifyRequest) {
         return ResponseUtils.success(authService.verify(verifyRequest));
+    }
+
+    @GetMapping("/request-resend-verify-email")
+    @Operation(summary = "Request Resend Verify Email API")
+    public ResponseEntity<Response<RequestResendVerifyEmailResponse>> requestResendVerifyEmail(@RequestParam String identifier) {
+        return ResponseUtils.success(authService.requestResendVerifyEmail(identifier),
+                localizationUtils.getLocalizedMessage(Messages.REQUEST_RESEND_VERIFY_EMAIL_SUCCESS));
+    }
+
+    @PutMapping("/verify-email/{token}")
+    @Operation(summary = "Verify Email API")
+    public ResponseEntity<Response<VerifyEmailResponse>> verifyEmail(@PathVariable String token) {
+        return ResponseUtils.success(authService.verifyEmail(token), localizationUtils.getLocalizedMessage(Messages.VERIFY_EMAIL_SUCCESS));
+    }
+
+    @GetMapping("/request-reset-password")
+    @Operation(summary = "Request Reset Password API")
+    public ResponseEntity<Response<RequestResetPasswordResponse>> requestResetPassword(@RequestParam String identifier) {
+        return ResponseUtils.success(authService.requestResetPassword(identifier),
+                localizationUtils.getLocalizedMessage(Messages.REQUEST_RESET_PASSWORD_SUCCESS));
+    }
+
+    @PutMapping("/reset-password")
+    @Operation(summary = "Reset Password API")
+    public ResponseEntity<Response<ResetPasswordResponse>> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        return ResponseUtils.success(authService.resetPassword(resetPasswordRequest),
+                localizationUtils.getLocalizedMessage(Messages.RESET_PASSWORD_SUCCESS));
     }
 }

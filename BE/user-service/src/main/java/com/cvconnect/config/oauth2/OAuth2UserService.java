@@ -61,6 +61,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                             existingUser.setAccessMethod(String.join(",", accessMethods));
                         }
                     }
+                    existingUser.setIsEmailVerified(true);
                     RoleUserDto roleUserDto = roleUserService.findByUserIdAndRoleId(existingUser.getId(), roleCandidate.getId());
                     if (roleUserDto == null) {
                         roleUserDto = RoleUserDto.builder()

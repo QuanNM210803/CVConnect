@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: core-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/cvconnect-core-service
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+  kafka:
+    producer:
+      bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 3
+      acks: all
+      properties:
+        retry.backoff.ms: 2000
+    consumer:
+      bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      group-id: core-service
+
+server:
+  port: 8082
+  servlet:
+    context-path: /core
+
+logging:
+  level:
+    org:
+      springframework:
+        security: info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+jwt:
+  expiration: 86400 # 1 day in seconds
+  secret-key: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
+  refresh-expiration: 604800 # 7 days in seconds
+  x-internal-token: k118wSpPDIVURys
+
+frontend:
+  url-candidate: http://localhost:3000
+  url-management-member: http://localhost:3000
+  url-organization-member: http://localhost:3000
+
+open-api:
+  url-gateway-localhost: http://localhost:8888/api/v1${server.servlet.context-path}
+  url-gateway-radmin: http://26.9.175.39:8888/api/v1${server.servlet.context-path}
+  url-localhost: http://localhost:${server.port}${server.servlet.context-path}
+  url-radmin: http://26.9.175.39:${server.port}${server.servlet.context-path}
+
+redis:
+  token-key: token
+kafka:
+  topic:
+    send-email: send-email-topic

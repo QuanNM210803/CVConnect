@@ -1,7 +1,8 @@
 package com.cvconnect.dto.menu;
 
-public interface MenuProjection {
-    Long getId();
+import nmquan.commonlib.dto.BaseRepositoryDto;
+
+public interface MenuProjection extends BaseRepositoryDto {
     String getMenuCode();
     String getMenuLabel();
     String getMenuIcon();

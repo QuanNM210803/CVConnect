@@ -1,5 +1,6 @@
 package com.cvconnect.dto.user;
 
+import com.cvconnect.dto.role.RoleDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -35,4 +36,7 @@ public class UserDto {
     private String createdBy;
     private String updatedBy;
 
+    private List<RoleDto> roles;
+
+    private List<UserDetailDto> userDetails;
 }

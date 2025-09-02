@@ -35,7 +35,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                                         Authentication authentication) throws IOException {
         User user = (User) authentication.getPrincipal();
         String refreshToken = jwtUtils.generateRefreshToken();
-        String refreshTokenKey = redisUtils.getFreshTokenKey(refreshToken);
+        String refreshTokenKey = redisUtils.getTokenKey(refreshToken);
         TokenInfo tokenInfo = TokenInfo.builder()
                 .userId(user.getId())
                 .type(TokenType.REFRESH)

@@ -14,7 +14,7 @@ public class CookieUtils {
     public static void setRefreshTokenCookie(String refreshToken, int JWT_REFRESHABLE_DURATION, HttpServletResponse httpServletResponse){
         ResponseCookie responseCookie = ResponseCookie
                 .from(NAME_COOKIE_REFRESH_TOKEN, refreshToken)
-                .secure(true)
+                .secure(false)
                 .httpOnly(true)
                 .path("/")
                 .maxAge(JWT_REFRESHABLE_DURATION)
@@ -26,7 +26,7 @@ public class CookieUtils {
     public static void deleteRefreshTokenCookie(HttpServletResponse httpServletResponse){
         ResponseCookie responseCookie = ResponseCookie
                 .from(NAME_COOKIE_REFRESH_TOKEN, null)
-                .secure(true)
+                .secure(false)
                 .httpOnly(true)
                 .path("/")
                 .maxAge(0)

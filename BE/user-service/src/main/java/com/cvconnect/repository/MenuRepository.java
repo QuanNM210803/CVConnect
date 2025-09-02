@@ -18,4 +18,20 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
             "WHERE rm.roleId = :roleId AND rm.isActive = true AND m.isActive = true " +
             "ORDER BY m.sortOrder ASC, m.id ASC")
     List<MenuProjection> findMenusByRoleId(Long roleId);
+
+    @Query("SELECT m.id AS id, m.code AS menuCode, m.label AS menuLabel, " +
+            "m.icon AS menuIcon, m.url AS menuUrl, m.parentId AS parentId, m.sortOrder AS menuSortOrder " +
+            "FROM Menu m " +
+            "WHERE m.isActive = true " +
+            "ORDER BY m.sortOrder ASC, m.id ASC")
+    List<MenuProjection> findAllMenu();
+
+
+    @Query("SELECT m.id AS id, m.code AS menuCode, m.label AS menuLabel, " +
+            "m.icon AS menuIcon, m.url AS menuUrl, m.parentId AS parentId, m.sortOrder AS menuSortOrder " +
+            "FROM Menu m " +
+            "WHERE m.id IN :ids AND m.isActive = true " +
+            "ORDER BY m.sortOrder ASC, m.id ASC")
+    List<MenuProjection> findByIds(List<Long> ids);
+
 }

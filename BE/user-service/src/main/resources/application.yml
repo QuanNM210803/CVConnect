@@ -15,11 +15,15 @@ spring:
       bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 3
+      acks: all
+      properties:
+        retry.backoff.ms: 2000
     consumer:
       bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      group-id: notify-service
+      group-id: user-service
   security:
     oauth2:
       client:
@@ -38,6 +42,7 @@ server:
     context-path: /user
   host_redis: ${HOST_REDIS:localhost}
   port_redis: ${PORT_REDIS:6379}
+  email-admin : nnmhqn2003@gmail.com
 
 logging:
   level:
@@ -55,12 +60,16 @@ jwt:
   expiration: 86400 # 1 day in seconds
   secret-key: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
   refresh-expiration: 604800 # 7 days in seconds
+  verify-expiration: 172800 # 2 days in seconds
+  reset-password-expiration: 3600 # 1 hour in seconds
   x-internal-token: k118wSpPDIVURys
 
 frontend:
   url-candidate: http://localhost:3000
   url-management-member: http://localhost:3000
   url-organization-member: http://localhost:3000
+  url-verify-email: ${frontend.url-candidate}/account/verify-email
+  url-reset-password: ${frontend.url-candidate}/account/recovery
 
 open-api:
   url-gateway-localhost: http://localhost:8888/api/v1${server.servlet.context-path}
@@ -70,3 +79,6 @@ open-api:
 
 redis:
   token-key: token
+kafka:
+  topic:
+    send-email: send-email-topic

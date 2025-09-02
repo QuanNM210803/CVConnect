@@ -4,6 +4,8 @@ server:
   port_user_service: ${PORT_USER_SERVICE:8080}
   host_notify_service: ${HOST_NOTIFY_SERVICE:localhost}
   port_notify_service: ${PORT_NOTIFY_SERVICE:8081}
+  host_core_service: ${HOST_CORE_SERVICE:localhost}
+  port_core_service: ${PORT_CORE_SERVICE:8082}
 
 app:
   api-prefix: /api/v1
@@ -26,6 +28,12 @@ spring:
             - Path=${app.api-prefix}/notify/**
           filters:
             - StripPrefix=2
+        - id: core-service
+          uri: http://${server.host_core_service}:${server.port_core_service}
+          predicates:
+            - Path=${app.api-prefix}/core/**
+          filters:
+            - StripPrefix=2
 
 springdoc:
   swagger-ui:
@@ -35,3 +43,5 @@ springdoc:
         url: ${app.api-prefix}/user/v3/api-docs
       - name: notify-service
         url: ${app.api-prefix}/notify/v3/api-docs
+      - name: core-service
+        url: ${app.api-prefix}/core/v3/api-docs

@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.dto.menu.MenuDto;
 import com.cvconnect.dto.menu.MenuMetadata;
 import com.cvconnect.dto.menu.MenuProjection;
 import com.cvconnect.dto.roleUser.RoleUserDto;
@@ -29,10 +30,22 @@ public class MenuServiceImpl implements MenuService {
             throw new AppException(CommonErrorCode.UNAUTHENTICATED);
         }
         List<MenuProjection> projections = menuRepository.findMenusByRoleId(roleId);
-        return this.buildMenuTree(projections);
+        return this.buildMenuTree(projections, true);
     }
 
-    public List<MenuMetadata> buildMenuTree(List<MenuProjection> projections) {
+    @Override
+    public List<MenuMetadata> getAllMenus() {
+        List<MenuProjection> projections = menuRepository.findAllMenu();
+        return this.buildMenuTree(projections, false);
+    }
+
+    @Override
+    public List<MenuDto> getMenuByIds(List<Long> ids) {
+        List<MenuProjection> projections = menuRepository.findByIds(ids);
+        return this.buildMenuDtos(projections);
+    }
+
+    public List<MenuMetadata> buildMenuTree(List<MenuProjection> projections, boolean includePermissions) {
         Map<Long, MenuMetadata> menuMap = new HashMap<>();
         for (MenuProjection p : projections) {
             MenuMetadata menu = new MenuMetadata();
@@ -43,7 +56,7 @@ public class MenuServiceImpl implements MenuService {
             menu.setMenuUrl(p.getMenuUrl());
             menu.setParentId(p.getParentId());
             menu.setMenuSortOrder(p.getMenuSortOrder());
-            if(p.getPermission() != null) {
+            if(includePermissions && p.getPermission() != null) {
                 menu.setPermissions(List.of(p.getPermission().split(",")));
             }
             menuMap.put(menu.getId(), menu);
@@ -78,5 +91,18 @@ public class MenuServiceImpl implements MenuService {
         for (MenuMetadata child : menu.getChildren()) {
             sortChildren(child);
         }
+    }
+
+    private List<MenuDto> buildMenuDtos(List<MenuProjection> projections) {
+        return projections.stream()
+                .map(projection -> MenuDto.builder()
+                        .id(projection.getId())
+                        .code(projection.getMenuCode())
+                        .label(projection.getMenuLabel())
+                        .icon(projection.getMenuIcon())
+                        .parentId(projection.getParentId())
+                        .sortOrder(projection.getMenuSortOrder())
+                        .build())
+                .toList();
     }
 }

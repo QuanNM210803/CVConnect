@@ -1,8 +1,30 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.dto.candidate.CandidateDto;
+import com.cvconnect.dto.orgMember.OrgMemberDto;
+import com.cvconnect.entity.Candidate;
+import com.cvconnect.entity.OrgMember;
+import com.cvconnect.repository.OrgMemberRepository;
 import com.cvconnect.service.OrgMemberService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class OrgMemberServiceImpl implements OrgMemberService {
+    @Autowired
+    private OrgMemberRepository orgMemberRepository;
+    @Override
+    public OrgMemberDto getOrgMember(Long userId) {
+        Optional<OrgMember> orgMember = orgMemberRepository.findById(userId);
+        OrgMember entity = orgMember.orElse(null);
+        if(entity == null) {
+            return null;
+        }
+        return OrgMemberDto.builder()
+                .id(entity.getId())
+                .userId(entity.getUserId())
+                .build();
+    }
 }

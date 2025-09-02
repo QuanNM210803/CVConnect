@@ -1,5 +1,6 @@
 package com.cvconnect.utils;
 
+import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,11 +24,13 @@ public class RedisUtils {
         redisTemplate.delete(key);
     }
 
-    public Object getObjectByKey(String key) {
-        return redisTemplate.opsForValue().get(key);
+    public <T> T getObject(String key, Class<T> clazz) {
+        Object obj = redisTemplate.opsForValue().get(key);
+        if (obj == null) return null;
+        return ObjectMapperUtils.convertToObject(obj, clazz);
     }
 
-    public String getFreshTokenKey(String token) {
+    public String getTokenKey(String token) {
         return REDIS_TOKEN_KEY + ":" + token;
     }
 }

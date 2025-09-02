@@ -7,6 +7,7 @@ import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,5 +25,12 @@ public class MenuController {
     @Operation(summary = "Get menus by role ID")
     public ResponseEntity<Response<List<MenuMetadata>>> getMenusByRoleId(@PathVariable Long roleId) {
         return ResponseUtils.success(menuService.getMenusByRoleId(roleId));
+    }
+
+    @GetMapping("/all-menus")
+    @Operation(summary = "Get all menus")
+    @PreAuthorize("hasAnyAuthority('USER_GROUP:VIEW')")
+    public ResponseEntity<Response<List<MenuMetadata>>> getAllMenus() {
+        return ResponseUtils.success(menuService.getAllMenus());
     }
 }

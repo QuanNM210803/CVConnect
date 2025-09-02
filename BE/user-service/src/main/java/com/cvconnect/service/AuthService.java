@@ -10,4 +10,8 @@ public interface AuthService {
     void logout(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse);
     RegisterCandidateResponse registerCandidate(RegisterCandidateRequest request);
     VerifyResponse verify(VerifyRequest verifyRequest);
+    RequestResendVerifyEmailResponse requestResendVerifyEmail(String identifier);
+    VerifyEmailResponse verifyEmail(String token);
+    RequestResetPasswordResponse requestResetPassword(String identifier);
+    ResetPasswordResponse resetPassword(ResetPasswordRequest request);
 }

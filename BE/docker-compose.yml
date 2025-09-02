@@ -52,7 +52,22 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  postgres:
+    image: postgres:14
+    container_name: postgres-cvconnect
+    hostname: postgres
+    restart: no
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres.sql:/docker-entrypoint-initdb.d/postgres.sql:ro
+
 volumes:
   mysql_data:
   redis_data:
   mongo_data:
+  postgres_data:
