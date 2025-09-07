@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.dto.orgMember.OrgMemberDto;
 import com.cvconnect.enums.EmailTemplateEnum;
 import com.cvconnect.utils.JwtUtils;
 import com.cvconnect.constant.Constants;
@@ -17,19 +18,25 @@ import com.cvconnect.utils.CookieUtils;
 import com.cvconnect.utils.RedisUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import nmquan.commonlib.dto.response.IDResponse;
+import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.exception.ErrorCode;
 import nmquan.commonlib.model.JwtUser;
+import nmquan.commonlib.service.RestTemplateService;
 import nmquan.commonlib.utils.LocalizationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -57,6 +64,12 @@ public class AuthServiceImpl implements AuthService {
     private RedisUtils redis;
     @Autowired
     private SendEmailService sendEmailService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RestTemplateService restTemplateService;
+    @Autowired
+    private OrgMemberService orgMemberService;
 
     @Value("${jwt.refresh-expiration}")
     private int JWT_REFRESHABLE_DURATION;
@@ -70,6 +83,8 @@ public class AuthServiceImpl implements AuthService {
     private int JWT_VERIFY_EMAIL_DURATION;
     @Value("${jwt.reset-password-expiration}")
     private int JWT_RESET_PASSWORD_DURATION;
+    @Value("${server.core_service}")
+    private String SERVER_CORE_SERVICE;
 
     @Transactional
     @Override
@@ -165,24 +180,14 @@ public class AuthServiceImpl implements AuthService {
         if(existsByEmail == null) {
             UserDto userDto = UserDto.builder()
                     .username(request.getUsername())
-                    .password(request.getPassword())
+                    .password(passwordEncoder.encode(request.getPassword()))
                     .email(request.getEmail())
                     .fullName(request.getFullName())
                     .accessMethod(AccessMethod.LOCAL.name())
                     .isEmailVerified(false)
                     .build();
             userDto = userService.create(userDto);
-
-            RoleUserDto roleUserDto = RoleUserDto.builder()
-                    .userId(userDto.getId())
-                    .roleId(roleCandidate.getId())
-                    .build();
-            roleUserService.createRoleUser(roleUserDto);
-
-            CandidateDto candidateDto = CandidateDto.builder()
-                    .userId(userDto.getId())
-                    .build();
-            candidateService.createCandidate(candidateDto);
+            this.createCandidateForUser(userDto.getId(), roleCandidate.getId());
 
             // send email require verification
             String token = jwtUtils.generateTokenVerifyEmail();
@@ -200,34 +205,131 @@ public class AuthServiceImpl implements AuthService {
 
             return RegisterCandidateResponse.builder()
                     .id(userDto.getId())
+                    .username(userDto.getUsername())
                     .needVerifyEmail(true)
+                    .duration((long) JWT_VERIFY_EMAIL_DURATION)
                     .build();
         } else {
-            List<RoleUserDto> roleUserDtos = roleUserService.findByUserId(existsByEmail.getId());
             /*
-            * Only update when there is only 1 role CANDIDATE and there is no LOCAL access method
+            * Only update when created from OAuth2 and not have password
             * */
-            boolean hasCandidateRole = roleUserDtos.stream()
-                    .anyMatch(r -> roleCandidate.getId().equals(r.getRoleId()));
-            if (!hasCandidateRole) {
+            if(existsByEmail.getPassword() != null){
                 throw new AppException(UserErrorCode.EMAIL_EXISTS);
             }
-            if (roleUserDtos.size() > 1) {
-                throw new AppException(UserErrorCode.EMAIL_EXISTS);
-            }
-
             List<String> providers = new ArrayList<>(Arrays.asList(existsByEmail.getAccessMethod().split(",")));
             if (providers.contains(AccessMethod.LOCAL.name())) {
                 throw new AppException(UserErrorCode.EMAIL_EXISTS);
             }
             providers.add(AccessMethod.LOCAL.name());
+
+            RoleUserDto roleUserDto = roleUserService.findByUserIdAndRoleId(existsByEmail.getId(), roleCandidate.getId());
+            if (roleUserDto == null) {
+                this.createCandidateForUser(existsByEmail.getId(), roleCandidate.getId());
+            }
+
             existsByEmail.setUsername(request.getUsername());
-            existsByEmail.setPassword(request.getPassword());
+            existsByEmail.setPassword(passwordEncoder.encode(request.getPassword()));
             existsByEmail.setFullName(request.getFullName());
             existsByEmail.setAccessMethod(String.join(",", providers));
             userService.create(existsByEmail);
             return RegisterCandidateResponse.builder()
                     .id(existsByEmail.getId())
+                    .username(existsByEmail.getUsername())
+                    .needVerifyEmail(false)
+                    .build();
+        }
+    }
+
+    @Override
+    @Transactional
+    public RegisterOrgAdminResponse registerOrgAdmin(RegisterOrgAdminRequest request, MultipartFile logo, MultipartFile coverPhoto) {
+        UserDto existsByUsername = userService.findByUsername(request.getUsername());
+        if (existsByUsername != null) {
+            throw new AppException(UserErrorCode.USERNAME_EXISTS);
+        }
+
+        UserDto existsByEmail = userService.findByEmail(request.getEmail());
+        RoleDto roleOrgAdmin = roleService.getRoleByCode(Constants.RoleCode.ORG_ADMIN);
+        if(roleOrgAdmin == null) {
+            throw new AppException(CommonErrorCode.ERROR);
+        }
+
+        if(existsByEmail == null) {
+            // create account org-admin
+            UserDto userDto = UserDto.builder()
+                    .username(request.getUsername())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .email(request.getEmail())
+                    .fullName(request.getFullName())
+                    .accessMethod(AccessMethod.LOCAL.name())
+                    .isEmailVerified(false)
+                    .build();
+            userDto = userService.create(userDto);
+            OrgMemberDto saved = this.createOrgMemberForUser(userDto.getId(), roleOrgAdmin.getId());
+
+            // create organization
+            Response<IDResponse<Long>> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
+
+            // update orgId for org-admin
+            saved.setOrgId(orgResponse.getData().getId());
+            orgMemberService.createOrgMember(saved);
+
+            // send email require verification
+            String token = jwtUtils.generateTokenVerifyEmail();
+            Map<String, String> dataPlaceHolders = new HashMap<>();
+            dataPlaceHolders.put("orgName", request.getOrganization().getName());
+            dataPlaceHolders.put("verifyUrl", URL_VERIFY_EMAIL + "?token=" + token);
+            dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
+            sendEmailService.sendEmailWithTemplate(
+                    List.of(userDto.getEmail()),
+                    null,
+                    EmailTemplateEnum.VERIFY_ORG_EMAIL,
+                    dataPlaceHolders
+            );
+            this.saveToken(userDto.getId(), TokenType.VERIFY_EMAIL, token, JWT_VERIFY_EMAIL_DURATION);
+
+            return RegisterOrgAdminResponse.builder()
+                    .id(userDto.getId())
+                    .username(userDto.getUsername())
+                    .needVerifyEmail(true)
+                    .duration((long) JWT_VERIFY_EMAIL_DURATION)
+                    .build();
+        } else {
+            /*
+             * Only update when created from OAuth2 and not have password and not registered as org-member
+             * */
+            if(existsByEmail.getPassword() != null){
+                throw new AppException(UserErrorCode.EMAIL_EXISTS);
+            }
+            List<String> providers = new ArrayList<>(Arrays.asList(existsByEmail.getAccessMethod().split(",")));
+            if (providers.contains(AccessMethod.LOCAL.name())) {
+                throw new AppException(UserErrorCode.EMAIL_EXISTS);
+            }
+            providers.add(AccessMethod.LOCAL.name());
+
+            boolean existsOrgMember = orgMemberService.existsByUserId(existsByEmail.getId());
+            if(existsOrgMember) {
+                throw new AppException(UserErrorCode.ACCOUNT_REGISTERED_AS_ORG_MEMBER);
+            }
+
+            // create account org-admin
+            existsByEmail.setUsername(request.getUsername());
+            existsByEmail.setPassword(passwordEncoder.encode(request.getPassword()));
+            existsByEmail.setFullName(request.getFullName());
+            existsByEmail.setAccessMethod(String.join(",", providers));
+            userService.create(existsByEmail);
+            OrgMemberDto saved = this.createOrgMemberForUser(existsByEmail.getId(), roleOrgAdmin.getId());
+
+            // create organization
+            Response<IDResponse<Long>> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
+
+            // update orgId for org-admin
+            saved.setOrgId(orgResponse.getData().getId());
+            orgMemberService.createOrgMember(saved);
+
+            return RegisterOrgAdminResponse.builder()
+                    .id(existsByEmail.getId())
+                    .username(existsByEmail.getUsername())
                     .needVerifyEmail(false)
                     .build();
         }
@@ -386,5 +488,55 @@ public class AuthServiceImpl implements AuthService {
         if (Boolean.FALSE.equals(userDto.getIsActive())) {
             throw new AppException(UserErrorCode.ACCOUNT_NOT_ACTIVE);
         }
+    }
+
+    private Response<IDResponse<Long>> createOrg(OrganizationRequest orgRequest, MultipartFile logo, MultipartFile coverPhoto){
+        Response<IDResponse<Long>> logoResponse = restTemplateService.uploadFile(
+                SERVER_CORE_SERVICE + "/attach-file/internal/upload",
+                new ParameterizedTypeReference<Response<IDResponse<Long>>>() {},
+                logo
+        );
+        orgRequest.setLogoId(logoResponse.getData().getId());
+
+        if(coverPhoto != null) {
+            Response<IDResponse<Long>> coverPhotoResponse = restTemplateService.uploadFile(
+                    SERVER_CORE_SERVICE + "/attach-file/internal/upload",
+                    new ParameterizedTypeReference<Response<IDResponse<Long>>>() {},
+                    coverPhoto
+            );
+            orgRequest.setCoverPhotoId(coverPhotoResponse.getData().getId());
+        }
+        return restTemplateService.postMethodRestTemplate(
+                SERVER_CORE_SERVICE + "/org/internal/create",
+                new ParameterizedTypeReference<Response<IDResponse<Long>>>() {},
+                orgRequest
+        );
+    }
+
+    private OrgMemberDto createOrgMemberForUser(Long userId, Long roleSystemAdminId){
+        RoleUserDto roleUserDto = RoleUserDto.builder()
+                .userId(userId)
+                .roleId(roleSystemAdminId)
+                .build();
+        roleUserService.createRoleUser(roleUserDto);
+
+        OrgMemberDto orgMemberDto = OrgMemberDto.builder()
+                .userId(userId)
+                .orgId(0L)
+                .build();
+        return orgMemberService.createOrgMember(orgMemberDto);
+    }
+
+    private void createCandidateForUser(Long userId, Long roleCandidateId){
+        RoleUserDto roleUserDto = RoleUserDto.builder()
+                .userId(userId)
+                .roleId(roleCandidateId)
+                .build();
+        roleUserService.createRoleUser(roleUserDto);
+
+        CandidateDto candidateDto = CandidateDto.builder()
+                .userId(userId)
+                .build();
+        candidateService.createCandidate(candidateDto);
     }
 }

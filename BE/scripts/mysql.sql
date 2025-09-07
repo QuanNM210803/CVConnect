@@ -179,6 +179,23 @@ insert into `cvconnect-user-service`.role_menu(role_id, menu_id, permission, cre
 
 delete from `cvconnect-user-service`.menus where id = 7;
 update `cvconnect-user-service`.menus set icon = 'mdi:circle-medium' where icon is null;
+UPDATE `cvconnect-user-service`.menus
+SET url = CONCAT('/admin-system', url)
+WHERE url IS NOT NULL;
+
+update `cvconnect-user-service`.menus
+set sort_order = 1
+where id = 9;
+update `cvconnect-user-service`.menus
+set sort_order = 2
+where id = 8;
+
+alter table `cvconnect-user-service`.users
+change avatar_url avatar_id BIGINT NULL ;
+
+UPDATE `cvconnect-user-service`.menus
+SET url = REPLACE(url, '/admin-system/', '/system-admin/')
+WHERE url LIKE '/admin-system/%';
 
 
 #----------------------------------------------------------------------------------------------------------------------#

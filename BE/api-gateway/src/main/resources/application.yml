@@ -45,3 +45,11 @@ springdoc:
         url: ${app.api-prefix}/notify/v3/api-docs
       - name: core-service
         url: ${app.api-prefix}/core/v3/api-docs
+
+logging:
+  level:
+    org:
+      springframework:
+        security: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %clr(%-5level) [%clr(%-15.15t){magenta}] %clr(%-40.40logger{36}){cyan} : %msg%n"

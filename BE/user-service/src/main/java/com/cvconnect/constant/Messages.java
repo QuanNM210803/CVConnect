@@ -16,6 +16,8 @@ public class Messages {
     public static final String ROLE_CODE_EXISTED="role.code.existed";
     public static final String MENU_NOT_FOUND="menu.not.found";
     public static final String CANNOT_DELETE_ROLE="cannot.delete.role";
+    public static final String LOGO_REQUIRE="logo.require";
+    public static final String ACCOUNT_REGISTERED_AS_ORG_MEMBER="account.registered.as.org.member";
 
     /*
      * Validation messages
@@ -34,6 +36,9 @@ public class Messages {
     public static final String ROLE_NAME_NOT_BLANK="role.name.not.blank";
     public static final String ROLE_MEMBER_TYPE_NOT_BLANK="role.memberType.not.blank";
     public static final String TOKEN_REQUIRE = "token.require";
+    public static final String ORG_NAME_REQUIRE = "org.name.require";
+    public static final String PROVINCE_REQUIRE = "org.address.province.require";
+    public static final String DETAIL_ADDRESS_REQUIRE = "org.address.detailAddress.require";
 
     /*
      * Other messages

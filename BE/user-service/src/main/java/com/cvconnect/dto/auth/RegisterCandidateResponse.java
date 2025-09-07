@@ -13,5 +13,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RegisterCandidateResponse {
     private Long id;
+    private String username;
     private Boolean needVerifyEmail;
+    private Long duration; // in seconds
 }

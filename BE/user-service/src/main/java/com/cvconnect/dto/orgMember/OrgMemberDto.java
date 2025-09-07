@@ -2,25 +2,19 @@ package com.cvconnect.dto.orgMember;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import nmquan.commonlib.dto.BaseDto;
 
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class OrgMemberDto {
-    private Long id;
-
+public class OrgMemberDto extends BaseDto<Instant> {
     private Long userId;
-    private Boolean isActive;
-    private Boolean isDeleted;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String createdBy;
-    private String updatedBy;
+    private Long orgId;
 }

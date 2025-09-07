@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.dto.AttachFileDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.roleUser.RoleUserDto;
 import com.cvconnect.dto.user.UserDetailDto;
@@ -12,10 +13,15 @@ import com.cvconnect.enums.UserErrorCode;
 import com.cvconnect.repository.UserRepository;
 import com.cvconnect.service.*;
 import jakarta.annotation.PostConstruct;
+import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
+import nmquan.commonlib.service.RestTemplateService;
+import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +46,11 @@ public class UserServiceImpl implements UserService {
     private OrgMemberService orgMemberService;
     @Autowired
     private RoleService roleService;
+    @Autowired
+    private RestTemplateService restTemplateService;
+
+    @Value("${server.core_service}")
+    private String SERVER_CORE_SERVICE;
 
     private final Map<Class<?>, Function<Long, ?>> fetcherMap = new HashMap<>();
 
@@ -56,7 +67,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             return null;
         }
-        return this.buildUserDto(user);
+        return ObjectMapperUtils.convertToObject(user, UserDto.class);
     }
 
     @Override
@@ -65,7 +76,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             return null;
         }
-        return this.buildUserDto(user);
+        return ObjectMapperUtils.convertToObject(user, UserDto.class);
     }
 
     @Override
@@ -74,13 +85,13 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             return null;
         }
-        return this.buildUserDto(user);
+        return ObjectMapperUtils.convertToObject(user, UserDto.class);
     }
 
     @Override
     public UserDto create(UserDto userDto) {
-        User user = userRepository.save(this.buildUserEntity(userDto));
-        return this.buildUserDto(user);
+        User user = userRepository.save(ObjectMapperUtils.convertToObject(userDto, User.class));
+        return ObjectMapperUtils.convertToObject(user, UserDto.class);
     }
 
     @Override
@@ -89,10 +100,18 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new AppException(CommonErrorCode.UNAUTHENTICATED)
         );
-        UserDto userDto = this.buildUserDto(user);
+        UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
         UserDetailDto<?> userDetailDto = this.getUserDetail(userId, roleId);
         userDto.setUserDetails(userDetailDto != null ? List.of(userDetailDto) : null);
-        return userDto;
+        if(userDto.getAvatarId() != null){
+            Response<AttachFileDto> response = restTemplateService.getMethodRestTemplate(
+                    SERVER_CORE_SERVICE + "/attach-file/internal/get-by-id/{avatarId}",
+                    new ParameterizedTypeReference<Response<AttachFileDto>>() {},
+                    userDto.getAvatarId()
+            );
+            userDto.setAvatarUrl(response.getData().getSecureUrl());
+        }
+        return userDto.configResponse();
     }
 
     @Override
@@ -113,54 +132,6 @@ public class UserServiceImpl implements UserService {
         }
         user.setIsEmailVerified(emailVerified);
         userRepository.save(user);
-    }
-
-    private UserDto buildUserDto(User user) {
-        return UserDto.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .phoneNumber(user.getPhoneNumber())
-                .avatarUrl(user.getAvatarUrl())
-                .address(user.getAddress())
-                .dateOfBirth(user.getDateOfBirth())
-                .accessMethod(user.getAccessMethod())
-                .isEmailVerified(user.getIsEmailVerified())
-                .isActive(user.getIsActive())
-                .isDeleted(user.getIsDeleted())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .createdBy(user.getCreatedBy())
-                .updatedBy(user.getUpdatedBy())
-                .build();
-    }
-
-    private User buildUserEntity(UserDto userDto) {
-        User user = new User();
-        user.setId(userDto.getId());
-        user.setUsername(userDto.getUsername());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setEmail(userDto.getEmail());
-        user.setFullName(userDto.getFullName());
-        user.setPhoneNumber(userDto.getPhoneNumber());
-        user.setAvatarUrl(userDto.getAvatarUrl());
-        user.setAddress(userDto.getAddress());
-        user.setDateOfBirth(userDto.getDateOfBirth());
-        user.setAccessMethod(userDto.getAccessMethod());
-        user.setIsEmailVerified(userDto.getIsEmailVerified());
-
-        if (userDto.getIsActive() != null) {
-            user.setIsActive(userDto.getIsActive());
-        }
-        if (userDto.getIsDeleted() != null) {
-            user.setIsDeleted(userDto.getIsDeleted());
-        }
-        user.setCreatedBy(userDto.getCreatedBy());
-        user.setUpdatedBy(userDto.getUpdatedBy());
-        user.setCreatedAt(userDto.getCreatedAt());
-        user.setUpdatedAt(userDto.getUpdatedAt());
-        return user;
     }
 
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {
