@@ -18,6 +18,7 @@ import com.cvconnect.utils.CookieUtils;
 import com.cvconnect.utils.RedisUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import nmquan.commonlib.dto.request.ObjectAndFileRequest;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.exception.AppException;
@@ -490,26 +491,22 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    /**
+     * InternalRequest: core-service to create organization
+     * */
     private Response<IDResponse<Long>> createOrg(OrganizationRequest orgRequest, MultipartFile logo, MultipartFile coverPhoto){
-        Response<IDResponse<Long>> logoResponse = restTemplateService.uploadFile(
-                SERVER_CORE_SERVICE + "/attach-file/internal/upload",
-                new ParameterizedTypeReference<Response<IDResponse<Long>>>() {},
-                logo
-        );
-        orgRequest.setLogoId(logoResponse.getData().getId());
-
+        MultipartFile[] files = new MultipartFile[]{logo};
         if(coverPhoto != null) {
-            Response<IDResponse<Long>> coverPhotoResponse = restTemplateService.uploadFile(
-                    SERVER_CORE_SERVICE + "/attach-file/internal/upload",
-                    new ParameterizedTypeReference<Response<IDResponse<Long>>>() {},
-                    coverPhoto
-            );
-            orgRequest.setCoverPhotoId(coverPhotoResponse.getData().getId());
+            files = new MultipartFile[]{logo, coverPhoto};
         }
-        return restTemplateService.postMethodRestTemplate(
+        ObjectAndFileRequest<OrganizationRequest> request = ObjectAndFileRequest.<OrganizationRequest>builder()
+                .data(orgRequest)
+                .files(files)
+                .build();
+        return restTemplateService.uploadFilesWithObject(
                 SERVER_CORE_SERVICE + "/org/internal/create",
                 new ParameterizedTypeReference<Response<IDResponse<Long>>>() {},
-                orgRequest
+                request
         );
     }
 

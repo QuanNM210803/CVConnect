@@ -23,7 +23,6 @@ public class Role extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Size(max = 255)
     @NotNull
     @Column(name = "member_type", nullable = false)
     @Enumerated(EnumType.STRING)

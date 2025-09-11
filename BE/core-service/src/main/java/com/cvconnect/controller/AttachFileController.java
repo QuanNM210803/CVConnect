@@ -5,12 +5,14 @@ import com.cvconnect.dto.attachFile.AttachFileDto;
 import com.cvconnect.service.AttachFileService;
 import io.swagger.v3.oas.annotations.Operation;
 import nmquan.commonlib.annotation.InternalRequest;
+import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,7 +40,7 @@ public class AttachFileController {
 
     @InternalRequest
     @PostMapping("/internal/upload")
-    @Operation(summary = "Upload Attach File - Internal API")
+    @Operation(summary = "Upload Attach File")
     public ResponseEntity<Response<IDResponse<Long>>> uploadFileInternal(@RequestParam MultipartFile file) {
         MultipartFile[] multipartFile = new MultipartFile[]{file};
         List<Long> ids = attachFileService.uploadFile(multipartFile);
@@ -51,7 +53,7 @@ public class AttachFileController {
 
     @InternalRequest
     @GetMapping("/internal/get-by-id/{id}")
-    @Operation(summary = "Get Attach File by ID - Internal API")
+    @Operation(summary = "Get Attach File by ID")
     public ResponseEntity<Response<AttachFileDto>> getAttachFile(@PathVariable Long id) {
         return ResponseUtils.success(attachFileService.getAttachFiles(List.of(id)).get(0));
     }

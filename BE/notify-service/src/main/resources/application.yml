@@ -66,7 +66,7 @@ jwt:
   expiration: 86400 # 1 day in seconds
   secret-key: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
   refresh-expiration: 604800 # 7 days in seconds
-  x-internal-token: k118wSpPDIVURys
+  secret-internal: LmJHf7e5q3k8nPz9u2y4rXw6vT1sQ0aC3eFhJgKpR0tY=
 
 frontend:
   url-candidate: http://localhost:3000

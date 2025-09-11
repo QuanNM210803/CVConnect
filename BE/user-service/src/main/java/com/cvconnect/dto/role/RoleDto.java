@@ -23,6 +23,8 @@ public class RoleDto extends BaseDto<Instant> {
     private Boolean canUpdate;
     private Boolean canDelete;
 
+    private MemberTypeDto memberTypeDto;
+
     public RoleDto(Long id, String code, String name, MemberType memberType, Instant createdAt, Instant updatedAt, String createdBy, String updatedBy) {
         this.id = id;
         this.code = code;

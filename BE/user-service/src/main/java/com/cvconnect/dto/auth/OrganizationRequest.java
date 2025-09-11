@@ -23,8 +23,6 @@ public class OrganizationRequest {
     private String website;
     private Integer staffCountFrom;
     private Integer staffCountTo;
-    private Long logoId;
-    private Long coverPhotoId;
 
     private List<Long> industryIds;
     @Valid

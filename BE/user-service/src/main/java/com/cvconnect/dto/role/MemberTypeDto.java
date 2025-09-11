@@ -14,4 +14,5 @@ import lombok.NoArgsConstructor;
 public class MemberTypeDto {
     private String code;
     private String name;
+    private String memberType;
 }

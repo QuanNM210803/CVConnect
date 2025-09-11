@@ -23,8 +23,7 @@ public class RoleMenu extends BaseEntity {
     private Long menuId;
 
     @Size(max = 255)
-    @NotNull
-    @Column(name = "permission", nullable = false)
+    @Column(name = "permission")
     private String permission;
 
 }

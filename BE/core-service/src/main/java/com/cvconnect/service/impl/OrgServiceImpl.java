@@ -7,16 +7,14 @@ import com.cvconnect.dto.org.OrganizationRequest;
 import com.cvconnect.entity.Organization;
 import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.OrgRepository;
-import com.cvconnect.service.IndustryService;
-import com.cvconnect.service.OrgAddressService;
-import com.cvconnect.service.OrgIndustryService;
-import com.cvconnect.service.OrgService;
+import com.cvconnect.service.*;
 import nmquan.commonlib.dto.BaseDto;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,18 +29,22 @@ public class OrgServiceImpl implements OrgService {
     private OrgIndustryService orgIndustryService;
     @Autowired
     private IndustryService industryService;
+    @Autowired
+    private AttachFileService attachFileService;
 
     @Override
     @Transactional
-    public IDResponse<Long> createOrg(OrganizationRequest request) {
+    public IDResponse<Long> createOrg(OrganizationRequest request, MultipartFile[] files) {
+        List<Long> attachFileIds = attachFileService.uploadFile(files);
+
         Organization org = new Organization();
         org.setName(request.getName());
         org.setDescription(request.getDescription());
         org.setWebsite(request.getWebsite());
         org.setStaffCountFrom(request.getStaffCountFrom());
         org.setStaffCountTo(request.getStaffCountTo());
-        org.setLogoId(request.getLogoId());
-        org.setCoverPhotoId(request.getCoverPhotoId());
+        org.setLogoId(attachFileIds.get(0));
+        org.setCoverPhotoId(attachFileIds.size() > 1 ? attachFileIds.get(1) : null);
         orgRepository.save(org);
 
         if(request.getIndustryIds() != null && !request.getIndustryIds().isEmpty()) {

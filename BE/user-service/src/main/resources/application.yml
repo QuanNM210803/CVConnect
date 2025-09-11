@@ -67,7 +67,7 @@ jwt:
   refresh-expiration: 604800 # 7 days in seconds
   verify-expiration: 172800 # 2 days in seconds
   reset-password-expiration: 3600 # 1 hour in seconds
-  x-internal-token: k118wSpPDIVURys
+  secret-internal: LmJHf7e5q3k8nPz9u2y4rXw6vT1sQ0aC3eFhJgKpR0tY=
 
 frontend:
   url-candidate: http://localhost:3000

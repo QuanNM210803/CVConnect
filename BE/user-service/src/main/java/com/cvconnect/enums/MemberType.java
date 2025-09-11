@@ -9,7 +9,7 @@ import lombok.Getter;
 public enum MemberType {
     CANDIDATE("Ứng viên", Candidate.class),
     MANAGEMENT("Quản lý hệ thống", ManagementMember.class),
-    ORGANIZATION("Thành viên của tổ chức", OrgMember.class);
+    ORGANIZATION("Thành viên tổ chức", OrgMember.class);
 
     private final String name;
     private final Class<?> clazz;

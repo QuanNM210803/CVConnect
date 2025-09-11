@@ -115,11 +115,11 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public FilterResponse<RoleDto> filter(RoleFilterRequest request) {
-        if (request.getEndCreatedAt() != null) {
-            request.setEndCreatedAt(request.getEndCreatedAt().plus(1, ChronoUnit.DAYS));
+        if (request.getCreatedAtEnd() != null) {
+            request.setCreatedAtEnd(request.getCreatedAtEnd().plus(1, ChronoUnit.DAYS));
         }
-        if (request.getEndUpdatedAt() != null) {
-            request.setEndUpdatedAt(request.getEndUpdatedAt().plus(1, ChronoUnit.DAYS));
+        if (request.getUpdatedAtEnd() != null) {
+            request.setUpdatedAtEnd(request.getUpdatedAtEnd().plus(1, ChronoUnit.DAYS));
         }
         Page<RoleDto> page = roleRepository.filter(request, request.getPageable());
         List<String> roleCode = Constants.RoleCode.getAllRoleCodes();
@@ -127,7 +127,15 @@ public class RoleServiceImpl implements RoleService {
                 .map(dto -> {
                     if (roleCode.contains(dto.getCode())) {
                         dto.setCanDelete(false);
+                    } else {
+                        dto.setCanDelete(true);
                     }
+                    MemberTypeDto memberTypeDto = MemberTypeDto.builder()
+                            .code(dto.getMemberType().name())
+                            .memberType(dto.getMemberType().getName())
+                            .build();
+                    dto.setMemberTypeDto(memberTypeDto);
+                    dto.setMemberType(null);
                     return dto;
                 }).toList();
 
