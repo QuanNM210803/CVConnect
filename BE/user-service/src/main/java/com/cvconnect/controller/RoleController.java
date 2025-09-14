@@ -63,6 +63,6 @@ public class RoleController {
     @PreAuthorize("hasAnyAuthority('USER_GROUP:DELETE')")
     public ResponseEntity<Response<Void>> delete(@RequestBody List<Long> ids) {
         roleService.deleteByIds(ids);
-        return ResponseUtils.success(null);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.DELETE_SUCCESSFULLY));
     }
 }

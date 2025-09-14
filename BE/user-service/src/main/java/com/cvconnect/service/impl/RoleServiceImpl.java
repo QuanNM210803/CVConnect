@@ -17,6 +17,7 @@ import nmquan.commonlib.dto.PageInfo;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -138,18 +139,7 @@ public class RoleServiceImpl implements RoleService {
                     dto.setMemberType(null);
                     return dto;
                 }).toList();
-
-        PageInfo pageInfo = PageInfo.builder()
-                .pageIndex(page.getNumber())
-                .pageSize(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .hasNextPage(page.hasNext())
-                .build();
-        return FilterResponse.<RoleDto>builder()
-                .pageInfo(pageInfo)
-                .data(data)
-                .build();
+        return PageUtils.toFilterResponse(page, data);
     }
 
     @Override
