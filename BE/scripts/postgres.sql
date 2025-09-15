@@ -122,3 +122,27 @@ CREATE TABLE IF NOT EXISTS organization_address (
 
     FOREIGN KEY (org_id) REFERENCES organization (id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS process_type (
+    id BIGSERIAL PRIMARY KEY,
+
+    code VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    sort_order INT DEFAULT 0,
+    is_default BOOLEAN DEFAULT FALSE,
+
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100)
+);
+
+insert into process_type (code, name, sort_order, is_default, created_by) values
+('APPLY', 'Ứng tuyển', 1, true, 'admin'),
+('SCAN_CV', 'Lọc hồ sơ', 2, true, 'admin'),
+('CONTEST', 'Thi tuyển', 3, true, 'admin'),
+('INTERVIEW', 'Phỏng vấn', 4, true, 'admin'),
+('OFFER', 'Đề nghị làm việc', 5, true, 'admin'),
+('ONBOARD', 'Onboard', 6, true, 'admin');

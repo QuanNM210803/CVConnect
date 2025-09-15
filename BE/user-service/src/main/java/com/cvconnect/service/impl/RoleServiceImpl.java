@@ -163,6 +163,24 @@ public class RoleServiceImpl implements RoleService {
         return roleRepository.getRoleByUserId(userId);
     }
 
+    @Override
+    public RoleDto getDetail(Long id) {
+        Role role = roleRepository.findById(id).orElse(null);
+        if(role == null) {
+            throw new AppException(UserErrorCode.ROLE_NOT_FOUND);
+        }
+        return RoleDto.builder()
+                .id(role.getId())
+                .code(role.getCode())
+                .name(role.getName())
+                .memberTypeDto(MemberTypeDto.builder()
+                        .code(role.getMemberType().name())
+                        .name(role.getMemberType().getName())
+                        .build())
+                .roleMenus(roleMenuService.findByRoleId(id))
+                .build();
+    }
+
     void saveRoleMenus(Long roleId, List<RoleMenuDto> roleMenus) {
         if(roleMenus != null && !roleMenus.isEmpty()) {
             List<Long> menuIds = roleMenus.stream()

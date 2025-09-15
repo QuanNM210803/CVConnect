@@ -197,6 +197,11 @@ UPDATE `cvconnect-user-service`.menus
 SET url = REPLACE(url, '/admin-system/', '/system-admin/')
 WHERE url LIKE '/admin-system/%';
 
+insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, created_by) values
+ (10, 'PROCESS_TYPE', 'Vòng tuyển dụng', 'mdi:circle-medium', '/system-admin/process-type', 4, 3, 'admin');
+
+insert into `cvconnect-user-service`.role_menu (role_id, menu_id, permission, created_by) values
+ (1, 10, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin');
 
 #----------------------------------------------------------------------------------------------------------------------#
 

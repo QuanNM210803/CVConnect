@@ -71,4 +71,26 @@ public class RoleMenuServiceImpl implements RoleMenuService {
     public void deleteByRoleId(Long roleId) {
         roleMenuRepository.deleteByRoleId(roleId);
     }
+
+    @Override
+    public List<RoleMenuDto> findByRoleId(Long id) {
+        List<RoleMenu> roleMenus = roleMenuRepository.findByRoleId(id);
+        return roleMenus.stream()
+                .map(roleMenu -> {
+                    List<PermissionType> permissions = new ArrayList<>();
+                    if(roleMenu.getPermission() != null && !roleMenu.getPermission().isEmpty()) {
+                        permissions = Arrays.stream(roleMenu.getPermission().split(","))
+                                .map(String::trim)
+                                .map(PermissionType::valueOf)
+                                .toList();
+                    }
+                    return RoleMenuDto.builder()
+                            .id(roleMenu.getId())
+                            .roleId(roleMenu.getRoleId())
+                            .menuId(roleMenu.getMenuId())
+                            .permissions(permissions)
+                            .build();
+                })
+                .toList();
+    }
 }

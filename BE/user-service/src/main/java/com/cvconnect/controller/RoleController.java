@@ -65,4 +65,11 @@ public class RoleController {
         roleService.deleteByIds(ids);
         return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.DELETE_SUCCESSFULLY));
     }
+
+    @GetMapping("/detail/{id}")
+    @Operation(summary = "Get role detail")
+    @PreAuthorize("hasAnyAuthority('USER_GROUP:VIEW')")
+    public ResponseEntity<Response<RoleDto>> getDetail(@PathVariable Long id) {
+        return ResponseUtils.success(roleService.getDetail(id));
+    }
 }

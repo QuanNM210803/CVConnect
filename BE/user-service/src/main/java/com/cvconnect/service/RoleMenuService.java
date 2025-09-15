@@ -11,4 +11,5 @@ public interface RoleMenuService {
     List<PermissionTypeDto> getAllPermissionTypes();
     void saveAll(List<RoleMenuDto> roleMenuDtos);
     void deleteByRoleId(Long roleId);
+    List<RoleMenuDto> findByRoleId(Long id);
 }

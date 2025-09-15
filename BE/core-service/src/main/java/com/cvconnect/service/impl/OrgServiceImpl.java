@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.industry.IndustryDto;
 import com.cvconnect.dto.org.OrgAddressDto;
 import com.cvconnect.dto.org.OrgIndustryDto;
@@ -11,6 +12,7 @@ import com.cvconnect.service.*;
 import nmquan.commonlib.dto.BaseDto;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
+import org.apache.tomcat.util.bcel.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,6 +76,14 @@ public class OrgServiceImpl implements OrgService {
                                     .detailAddress(address.getDetailAddress())
                                     .build()
                             ).collect(Collectors.toList());
+            if(request.isHasRemote()){
+                addresses.add(OrgAddressDto.builder()
+                        .orgId(org.getId())
+                        .isHeadquarter(false)
+                        .province(Constants.REMOTE)
+                        .detailAddress(Constants.REMOTE)
+                        .build());
+            }
             orgAddressService.createAddresses(addresses);
         }
 

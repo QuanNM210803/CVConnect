@@ -1,5 +1,6 @@
 package com.cvconnect.dto.role;
 
+import com.cvconnect.dto.roleMenu.RoleMenuDto;
 import com.cvconnect.enums.MemberType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import nmquan.commonlib.dto.BaseDto;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -24,6 +26,7 @@ public class RoleDto extends BaseDto<Instant> {
     private Boolean canDelete;
 
     private MemberTypeDto memberTypeDto;
+    List<RoleMenuDto> roleMenus;
 
     public RoleDto(Long id, String code, String name, MemberType memberType, Instant createdAt, Instant updatedAt, String createdBy, String updatedBy) {
         this.id = id;

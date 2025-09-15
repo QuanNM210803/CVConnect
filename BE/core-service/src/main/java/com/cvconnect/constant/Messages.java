@@ -10,6 +10,8 @@ public class Messages {
     public static final String ATTACH_FILE_NOT_FOUND = "attach.file.not.found";
     public static final String DOWNLOAD_FILE_FAILED = "download.file.failed";
     public static final String INDUSTRY_NOT_FOUND = "industry.not.found";
+    public static final String PROCESS_TYPE_CANNOT_DELETE_DEFAULT = "process.type.cannot.delete.default";
+    public static final String PROCESS_TYPE_NOT_FOUND = "process.type.not.found";
 
 
 
@@ -19,6 +21,10 @@ public class Messages {
     public static final String ORG_NAME_REQUIRE = "org.name.require";
     public static final String PROVINCE_REQUIRE = "org.address.province.require";
     public static final String DETAIL_ADDRESS_REQUIRE = "org.address.detailAddress.require";
+    public static final String PROCESS_TYPE_CODE_REQUIRE = "process.type.code.require";
+    public static final String PROCESS_TYPE_NAME_REQUIRE = "process.type.name.require";
+    public static final String PROCESS_TYPE_SORT_ORDER_REQUIRE = "process.type.sort.order.require";
+    public static final String PROCESS_TYPE_CODE_DUPLICATED = "process.type.code.duplicated";
 
     /*
     * Other Messages

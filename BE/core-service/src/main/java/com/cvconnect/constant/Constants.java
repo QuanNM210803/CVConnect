@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Constants {
+    public static final String REMOTE = "REMOTE";
+
     public static class RoleCode {
         private RoleCode() {}
         public static final String CANDIDATE = "CANDIDATE";

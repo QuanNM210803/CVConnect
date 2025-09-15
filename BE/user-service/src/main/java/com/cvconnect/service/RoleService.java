@@ -18,4 +18,5 @@ public interface RoleService {
     FilterResponse<RoleDto> filter(RoleFilterRequest request);
     void deleteByIds(List<Long> ids);
     List<RoleDto> getRoleByUserId(Long userId);
+    RoleDto getDetail(Long id);
 }
