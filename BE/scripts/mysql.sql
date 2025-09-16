@@ -159,11 +159,11 @@
 # ,(5, 'USER_GROUP', 'Nhóm người dùng', null, '/user-group', 4, 1, 'admin')
 # , (6, 'CV_TEMPLATE', 'Mẫu CV', null, '/cv-templates', 4, 2, 'admin')
 # ;
-insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, created_by) values
- (7, 'REPORT_ORG', 'Tổ chức tham gia', null, '/report/org', 1, 1, 'admin')
-, (8, 'REPORT_JOB_POST', 'Tin tuyển dụng', null, '/report/job-post', 1, 2, 'admin')
-, (9, 'REPORT_CANDIDATE', 'Ứng viên', null, '/report/candidate', 1, 3, 'admin')
-;
+# insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, created_by) values
+#  (7, 'REPORT_ORG', 'Tổ chức tham gia', null, '/report/org', 1, 1, 'admin')
+# , (8, 'REPORT_JOB_POST', 'Tin tuyển dụng', null, '/report/job-post', 1, 2, 'admin')
+# , (9, 'REPORT_CANDIDATE', 'Ứng viên', null, '/report/candidate', 1, 3, 'admin')
+# ;
 #
 # insert into `cvconnect-user-service`.role_menu(role_id, menu_id, permission, created_by) values
 # (1, 1, null, 'admin')
@@ -172,36 +172,36 @@ insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id
 # , (1, 4, null, 'admin')
 # , (1, 5, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
 # , (1, 6, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin');
-insert into `cvconnect-user-service`.role_menu(role_id, menu_id, permission, created_by) values
- (1, 7, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
-, (1, 8, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
-, (1, 9, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin');
-
-delete from `cvconnect-user-service`.menus where id = 7;
-update `cvconnect-user-service`.menus set icon = 'mdi:circle-medium' where icon is null;
-UPDATE `cvconnect-user-service`.menus
-SET url = CONCAT('/admin-system', url)
-WHERE url IS NOT NULL;
-
-update `cvconnect-user-service`.menus
-set sort_order = 1
-where id = 9;
-update `cvconnect-user-service`.menus
-set sort_order = 2
-where id = 8;
-
-alter table `cvconnect-user-service`.users
-change avatar_url avatar_id BIGINT NULL ;
-
-UPDATE `cvconnect-user-service`.menus
-SET url = REPLACE(url, '/admin-system/', '/system-admin/')
-WHERE url LIKE '/admin-system/%';
-
-insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, created_by) values
- (10, 'PROCESS_TYPE', 'Vòng tuyển dụng', 'mdi:circle-medium', '/system-admin/process-type', 4, 3, 'admin');
-
-insert into `cvconnect-user-service`.role_menu (role_id, menu_id, permission, created_by) values
- (1, 10, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin');
+# insert into `cvconnect-user-service`.role_menu(role_id, menu_id, permission, created_by) values
+#  (1, 7, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
+# , (1, 8, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin')
+# , (1, 9, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin');
+#
+# delete from `cvconnect-user-service`.menus where id = 7;
+# update `cvconnect-user-service`.menus set icon = 'mdi:circle-medium' where icon is null;
+# UPDATE `cvconnect-user-service`.menus
+# SET url = CONCAT('/admin-system', url)
+# WHERE url IS NOT NULL;
+#
+# update `cvconnect-user-service`.menus
+# set sort_order = 1
+# where id = 9;
+# update `cvconnect-user-service`.menus
+# set sort_order = 2
+# where id = 8;
+#
+# alter table `cvconnect-user-service`.users
+# change avatar_url avatar_id BIGINT NULL ;
+#
+# UPDATE `cvconnect-user-service`.menus
+# SET url = REPLACE(url, '/admin-system/', '/system-admin/')
+# WHERE url LIKE '/admin-system/%';
+#
+# insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, created_by) values
+#  (10, 'PROCESS_TYPE', 'Vòng tuyển dụng', 'mdi:circle-medium', '/system-admin/process-type', 4, 3, 'admin');
+#
+# insert into `cvconnect-user-service`.role_menu (role_id, menu_id, permission, created_by) values
+#  (1, 10, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin');
 
 alter table `cvconnect-user-service`.menus
 add column for_member_type VARCHAR(100) after sort_order;
@@ -251,131 +251,131 @@ set icon = 'material-symbols:category-outline-rounded'
 where code = 'CATEGORY';
 #----------------------------------------------------------------------------------------------------------------------#
 
-create database if not exists `cvconnect-notify-service`;
-CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.email_config (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-
-    `host` VARCHAR(255) NOT NULL,
-    `port` INT NOT NULL,
-    `email` VARCHAR(255) NOT NULL,
-    `password` VARCHAR(255) NOT NULL,
-    `is_ssl` TINYINT(1) DEFAULT 0,
-    `protocol` VARCHAR(50) DEFAULT 'smtp',
-    `org_id` BIGINT UNIQUE,
-
-    `is_active` TINYINT(1) DEFAULT 1,
-    `is_deleted` TINYINT(1) DEFAULT 0,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME,
-    `created_by` VARCHAR(100),
-    `updated_by` VARCHAR(100)
-);
-
-CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.placeholders (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-
-    `code` VARCHAR(100) NOT NULL UNIQUE,
-    `label` VARCHAR(255) NOT NULL UNIQUE,
-    `description` VARCHAR(500),
-    `member_type_used` VARCHAR(255),
-
-    `is_active` TINYINT(1) DEFAULT 1,
-    `is_deleted` TINYINT(1) DEFAULT 0,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME,
-    `created_by` VARCHAR(100),
-    `updated_by` VARCHAR(100)
-);
-
-CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.email_templates (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-
-    `code` VARCHAR(100) NOT NULL UNIQUE,
-    `name` VARCHAR(255) NOT NULL,
-    `subject` VARCHAR(255) NOT NULL,
-    `body` TEXT NOT NULL,
-    `org_id` BIGINT,
-
-    `is_active` TINYINT(1) DEFAULT 1,
-    `is_deleted` TINYINT(1) DEFAULT 0,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME,
-    `created_by` VARCHAR(100),
-    `updated_by` VARCHAR(100)
-);
-
-CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.email_template_placeholder (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-
-    email_template_id BIGINT NOT NULL,
-    placeholder_id BIGINT NOT NULL,
-
-    `is_active` TINYINT(1) DEFAULT 1,
-    `is_deleted` TINYINT(1) DEFAULT 0,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME,
-    `created_by` VARCHAR(100),
-    `updated_by` VARCHAR(100),
-    UNIQUE(email_template_id, placeholder_id),
-    FOREIGN KEY (email_template_id) REFERENCES `cvconnect-notify-service`.email_templates(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (placeholder_id) REFERENCES `cvconnect-notify-service`.placeholders(id) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.email_logs (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-
-    `message_id` VARCHAR(255) UNIQUE ,
-    `reply_message_id` VARCHAR(255),
-    `email_group` VARCHAR(100),
-    `sender` VARCHAR(255) NOT NULL,
-    `recipients` TEXT NOT NULL,
-    `cc_list` TEXT,
-    `subject` VARCHAR(255) NOT NULL,
-    `body` TEXT,
-    `email_template_id` BIGINT,
-    `template` VARCHAR(100),
-    `template_variables` TEXT,
-    `status` VARCHAR(100) NOT NULL,
-    `error_message` TEXT,
-    `sent_at` DATETIME,
-
-    `is_active` TINYINT(1) DEFAULT 1,
-    `is_deleted` TINYINT(1) DEFAULT 0,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME,
-    `created_by` VARCHAR(100),
-    `updated_by` VARCHAR(100)
-);
-
-CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.job_config (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-
-    `job_name` VARCHAR(100) NOT NULL UNIQUE,
-    `schedule_type` VARCHAR(50) NOT NULL,
-    `expression` VARCHAR(100) NOT NULL,
-    `description` VARCHAR(500),
-
-    `is_active` TINYINT(1) DEFAULT 1,
-    `is_deleted` TINYINT(1) DEFAULT 0,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME,
-    `created_by` VARCHAR(100),
-    `updated_by` VARCHAR(100)
-);
-
-CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.shedlock (
-    name VARCHAR(64) NOT NULL,
-    lock_until DATETIME NOT NULL,
-    locked_at DATETIME NOT NULL,
-    locked_by VARCHAR(255) NOT NULL,
-    PRIMARY KEY (name)
-);
-
-insert into `cvconnect-notify-service`.email_config
-(host, port, email, password, is_ssl, protocol, org_id, created_by) values
-('smtp-relay.brevo.com', 587, '784652002@smtp-brevo.com', '', 0, 'smtp', null, 'admin');
-
-insert into `cvconnect-notify-service`.job_config
-(job_name, schedule_type, expression, description, created_by) values
-('email_resend', 'FIXED_RATE', '900', 'Gửi lại email thất bại', 'admin');
+# create database if not exists `cvconnect-notify-service`;
+# CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.email_config (
+#     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+#
+#     `host` VARCHAR(255) NOT NULL,
+#     `port` INT NOT NULL,
+#     `email` VARCHAR(255) NOT NULL,
+#     `password` VARCHAR(255) NOT NULL,
+#     `is_ssl` TINYINT(1) DEFAULT 0,
+#     `protocol` VARCHAR(50) DEFAULT 'smtp',
+#     `org_id` BIGINT UNIQUE,
+#
+#     `is_active` TINYINT(1) DEFAULT 1,
+#     `is_deleted` TINYINT(1) DEFAULT 0,
+#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     `updated_at` DATETIME,
+#     `created_by` VARCHAR(100),
+#     `updated_by` VARCHAR(100)
+# );
+#
+# CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.placeholders (
+#     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+#
+#     `code` VARCHAR(100) NOT NULL UNIQUE,
+#     `label` VARCHAR(255) NOT NULL UNIQUE,
+#     `description` VARCHAR(500),
+#     `member_type_used` VARCHAR(255),
+#
+#     `is_active` TINYINT(1) DEFAULT 1,
+#     `is_deleted` TINYINT(1) DEFAULT 0,
+#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     `updated_at` DATETIME,
+#     `created_by` VARCHAR(100),
+#     `updated_by` VARCHAR(100)
+# );
+#
+# CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.email_templates (
+#     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+#
+#     `code` VARCHAR(100) NOT NULL UNIQUE,
+#     `name` VARCHAR(255) NOT NULL,
+#     `subject` VARCHAR(255) NOT NULL,
+#     `body` TEXT NOT NULL,
+#     `org_id` BIGINT,
+#
+#     `is_active` TINYINT(1) DEFAULT 1,
+#     `is_deleted` TINYINT(1) DEFAULT 0,
+#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     `updated_at` DATETIME,
+#     `created_by` VARCHAR(100),
+#     `updated_by` VARCHAR(100)
+# );
+#
+# CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.email_template_placeholder (
+#     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+#
+#     email_template_id BIGINT NOT NULL,
+#     placeholder_id BIGINT NOT NULL,
+#
+#     `is_active` TINYINT(1) DEFAULT 1,
+#     `is_deleted` TINYINT(1) DEFAULT 0,
+#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     `updated_at` DATETIME,
+#     `created_by` VARCHAR(100),
+#     `updated_by` VARCHAR(100),
+#     UNIQUE(email_template_id, placeholder_id),
+#     FOREIGN KEY (email_template_id) REFERENCES `cvconnect-notify-service`.email_templates(id) ON DELETE CASCADE ON UPDATE CASCADE,
+#     FOREIGN KEY (placeholder_id) REFERENCES `cvconnect-notify-service`.placeholders(id) ON DELETE CASCADE ON UPDATE CASCADE
+# );
+#
+# CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.email_logs (
+#     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+#
+#     `message_id` VARCHAR(255) UNIQUE ,
+#     `reply_message_id` VARCHAR(255),
+#     `email_group` VARCHAR(100),
+#     `sender` VARCHAR(255) NOT NULL,
+#     `recipients` TEXT NOT NULL,
+#     `cc_list` TEXT,
+#     `subject` VARCHAR(255) NOT NULL,
+#     `body` TEXT,
+#     `email_template_id` BIGINT,
+#     `template` VARCHAR(100),
+#     `template_variables` TEXT,
+#     `status` VARCHAR(100) NOT NULL,
+#     `error_message` TEXT,
+#     `sent_at` DATETIME,
+#
+#     `is_active` TINYINT(1) DEFAULT 1,
+#     `is_deleted` TINYINT(1) DEFAULT 0,
+#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     `updated_at` DATETIME,
+#     `created_by` VARCHAR(100),
+#     `updated_by` VARCHAR(100)
+# );
+#
+# CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.job_config (
+#     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+#
+#     `job_name` VARCHAR(100) NOT NULL UNIQUE,
+#     `schedule_type` VARCHAR(50) NOT NULL,
+#     `expression` VARCHAR(100) NOT NULL,
+#     `description` VARCHAR(500),
+#
+#     `is_active` TINYINT(1) DEFAULT 1,
+#     `is_deleted` TINYINT(1) DEFAULT 0,
+#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     `updated_at` DATETIME,
+#     `created_by` VARCHAR(100),
+#     `updated_by` VARCHAR(100)
+# );
+#
+# CREATE TABLE IF NOT EXISTS `cvconnect-notify-service`.shedlock (
+#     name VARCHAR(64) NOT NULL,
+#     lock_until DATETIME NOT NULL,
+#     locked_at DATETIME NOT NULL,
+#     locked_by VARCHAR(255) NOT NULL,
+#     PRIMARY KEY (name)
+# );
+#
+# insert into `cvconnect-notify-service`.email_config
+# (host, port, email, password, is_ssl, protocol, org_id, created_by) values
+# ('smtp-relay.brevo.com', 587, '784652002@smtp-brevo.com', '', 0, 'smtp', null, 'admin');
+#
+# insert into `cvconnect-notify-service`.job_config
+# (job_name, schedule_type, expression, description, created_by) values
+# ('email_resend', 'FIXED_RATE', '900', 'Gửi lại email thất bại', 'admin');
 
