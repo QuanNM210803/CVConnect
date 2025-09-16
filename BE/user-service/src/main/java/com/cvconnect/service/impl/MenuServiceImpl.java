@@ -48,6 +48,9 @@ public class MenuServiceImpl implements MenuService {
     public List<MenuMetadata> buildMenuTree(List<MenuProjection> projections, boolean includePermissions) {
         Map<Long, MenuMetadata> menuMap = new HashMap<>();
         for (MenuProjection p : projections) {
+            if(!p.getIsShow()){
+                continue;
+            }
             MenuMetadata menu = new MenuMetadata();
             menu.setId(p.getId());
             menu.setMenuCode(p.getMenuCode());
@@ -56,6 +59,7 @@ public class MenuServiceImpl implements MenuService {
             menu.setMenuUrl(p.getMenuUrl());
             menu.setParentId(p.getParentId());
             menu.setMenuSortOrder(p.getMenuSortOrder());
+            menu.setForMemberType(p.getForMemberType());
             if(includePermissions && p.getPermission() != null) {
                 menu.setPermissions(List.of(p.getPermission().split(",")));
             }

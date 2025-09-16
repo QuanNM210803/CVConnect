@@ -203,6 +203,52 @@ insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id
 insert into `cvconnect-user-service`.role_menu (role_id, menu_id, permission, created_by) values
  (1, 10, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin');
 
+alter table `cvconnect-user-service`.menus
+add column for_member_type VARCHAR(100) after sort_order;
+alter table `cvconnect-user-service`.menus
+add column is_show TINYINT(1) DEFAULT 1 after for_member_type;
+
+update `cvconnect-user-service`.menus
+set label = 'Danh sách tổ chức'
+where code = 'ORG';
+update `cvconnect-user-service`.menus
+set label = 'Người dùng hệ thống'
+where code = 'USER';
+update `cvconnect-user-service`.menus
+set for_member_type = 'MANAGEMENT'
+where id > 0;
+update `cvconnect-user-service`.menus
+set for_member_type = null
+where code in ('REPORT', 'SETUP');
+
+insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, for_member_type, is_show, created_by) values
+(11, 'CATEGORY', 'Danh mục', 'material-symbols-light:category-outline-rounded', null, null, 5, null, 1, 'admin'),
+(12, 'LEVEL', 'Cấp bậc', 'mdi:circle-medium', '/system-admin/level', 11, 1, 'MANAGEMENT', 1, 'admin'),
+(13, 'INDUSTRY', 'Ngành nghề', 'mdi:circle-medium', '/system-admin/industry', 11, 2, 'MANAGEMENT', 1, 'admin'),
+(14, 'ORG_MEMBER', 'Thành viên tổ chức', 'material-symbols:account-circle-full', '/org-admin/org-member', null, 2, 'ORGANIZATION', 1, 'admin'),
+(15, 'ORG_ADDRESS', 'Địa điểm làm việc', 'mdi:circle-medium', '/org-admin/org-address', 4, 1, 'ORGANIZATION', 1, 'admin'),
+(16, 'ORG_INDUSTRY', 'Ngành nghề tổ chức', 'mdi:circle-medium', '/org-admin/org-industry', 4, 2, 'ORGANIZATION', 1, 'admin'),
+(17, 'DEPARTMENT', 'Phòng ban', 'mdi:circle-medium', '/org-admin/department', 11, 1, 'ORGANIZATION', 1, 'admin'),
+(18, 'POSITION', 'Vị trí công việc', 'mdi:circle-medium', '/org-admin/position', 11, 2, 'ORGANIZATION', 1, 'admin');
+
+insert into `cvconnect-user-service`.role_menu(role_id, menu_id, permission, created_by) values
+(1, 11, null, 'admin'),
+(1, 12, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin'),
+(1, 13, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin'),
+(3,1, null, 'admin'),
+(3, 14, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin'),
+(3, 15, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin'),
+(3, 16, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin'),
+(3, 17, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin'),
+(3, 18, 'VIEW,ADD,UPDATE,DELETE,EXPORT', 'admin');
+
+insert into `cvconnect-user-service`.role_menu(role_id, menu_id, permission, created_by) values
+(3, 4, null, 'admin'),
+(3, 11, null, 'admin');
+
+update `cvconnect-user-service`.menus
+set icon = 'material-symbols:category-outline-rounded'
+where code = 'CATEGORY';
 #----------------------------------------------------------------------------------------------------------------------#
 
 create database if not exists `cvconnect-notify-service`;

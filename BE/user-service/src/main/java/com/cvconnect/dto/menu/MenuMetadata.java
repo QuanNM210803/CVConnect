@@ -22,6 +22,7 @@ public class MenuMetadata {
     private String menuUrl;
     private Long parentId;
     private Integer menuSortOrder;
+    private String forMemberType;
     List<String> permissions = new ArrayList<>();
     private List<MenuMetadata> children = new ArrayList<>();
 }

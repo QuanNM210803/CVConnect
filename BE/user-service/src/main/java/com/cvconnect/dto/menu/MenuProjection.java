@@ -9,5 +9,7 @@ public interface MenuProjection extends BaseRepositoryDto {
     String getMenuUrl();
     Long getParentId();
     Integer getMenuSortOrder();
+    String getForMemberType();
+    Boolean getIsShow();
     String getPermission();
 }
