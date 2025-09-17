@@ -249,6 +249,16 @@ insert into `cvconnect-user-service`.role_menu(role_id, menu_id, permission, cre
 update `cvconnect-user-service`.menus
 set icon = 'material-symbols:category-outline-rounded'
 where code = 'CATEGORY';
+
+update `cvconnect-user-service`.menus
+set label = 'Danh sách doanh nghiệp'
+where code = 'ORG';
+update `cvconnect-user-service`.menus
+set label = 'Thành viên doanh nghiệp'
+where code = 'ORG_MEMBER';
+update `cvconnect-user-service`.menus
+set label = 'Ngành nghề doanh nghiệp'
+where code = 'ORG_INDUSTRY';
 #----------------------------------------------------------------------------------------------------------------------#
 
 # create database if not exists `cvconnect-notify-service`;

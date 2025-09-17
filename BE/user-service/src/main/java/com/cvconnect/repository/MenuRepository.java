@@ -12,7 +12,8 @@ import java.util.List;
 public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     @Query("SELECT m.id AS id, m.code AS menuCode, m.label AS menuLabel, " +
-            "m.icon AS menuIcon, m.url AS menuUrl, m.parentId AS parentId, m.sortOrder AS menuSortOrder, m.forMemberType AS forMemberType, m.isShow AS isShow, rm.permission AS permission " +
+            "m.icon AS menuIcon, m.url AS menuUrl, m.parentId AS parentId, m.sortOrder AS menuSortOrder, " +
+            "m.forMemberType AS forMemberType, m.isShow AS isShow, rm.permission AS permission " +
             "FROM RoleMenu rm " +
             "JOIN Menu m ON m.id = rm.menuId " +
             "WHERE rm.roleId = :roleId AND rm.isActive = true AND m.isActive = true " +
@@ -20,7 +21,8 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     List<MenuProjection> findMenusByRoleId(Long roleId);
 
     @Query("SELECT m.id AS id, m.code AS menuCode, m.label AS menuLabel, " +
-            "m.icon AS menuIcon, m.url AS menuUrl, m.parentId AS parentId, m.sortOrder AS menuSortOrder " +
+            "m.icon AS menuIcon, m.url AS menuUrl, m.parentId AS parentId, m.sortOrder AS menuSortOrder," +
+            "m.forMemberType AS forMemberType, m.isShow AS isShow " +
             "FROM Menu m " +
             "WHERE m.isActive = true " +
             "ORDER BY m.sortOrder ASC, m.id ASC")

@@ -12,6 +12,7 @@ public class Messages {
     public static final String INDUSTRY_NOT_FOUND = "industry.not.found";
     public static final String PROCESS_TYPE_CANNOT_DELETE_DEFAULT = "process.type.cannot.delete.default";
     public static final String PROCESS_TYPE_NOT_FOUND = "process.type.not.found";
+    public static final String INDUSTRY_EXCEED_LIMIT = "industry.exceed.limit";
 
 
 

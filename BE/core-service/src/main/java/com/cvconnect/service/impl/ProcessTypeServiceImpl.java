@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ public class ProcessTypeServiceImpl implements ProcessTypeService {
         if (processType == null) {
             return null;
         }
+        // TODO: check đã dùng thì chuyển isDefault về true, tức là không cho xoá
         return ProcessTypeDto.builder()
                 .id(processType.getId())
                 .name(processType.getName())
@@ -42,15 +44,15 @@ public class ProcessTypeServiceImpl implements ProcessTypeService {
                 .map(ProcessTypeRequest::getId)
                 .toList();
 
-        List<ProcessType> processTypes = processTypeRepository.findAll();
+        List<ProcessType> processTypes = new ArrayList<>(processTypeRepository.findAll());
         List<Long> idsDefault = processTypes.stream()
                 .filter(ProcessType::getIsDefault)
                 .map(ProcessType::getId)
                 .toList();
 
-        List<Long> idsInDb = processTypes.stream()
+        List<Long> idsInDb = new ArrayList<>(processTypes.stream()
                 .map(ProcessType::getId)
-                .toList();
+                .toList());
 
         // Delete: đã dùng thì không cho xoá và vòng mặc định không cho xoá
         List<Long> idsToDelete = idsInDb.stream()
@@ -66,9 +68,9 @@ public class ProcessTypeServiceImpl implements ProcessTypeService {
         processTypes.removeIf(pt -> idsToDelete.contains(pt.getId()));
         idsInDb.removeIf(idsToDelete::contains);
 
-        List<String> codeExist = processTypes.stream()
+        List<String> codeExist = new ArrayList<>(processTypes.stream()
                 .map(ProcessType::getCode)
-                .toList();
+                .toList());
         // Insert
         List<ProcessType> toInsert = request.stream()
                 .filter(r -> r.getId() == null)

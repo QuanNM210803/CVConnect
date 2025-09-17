@@ -50,6 +50,9 @@ public class OrgServiceImpl implements OrgService {
         orgRepository.save(org);
 
         if(request.getIndustryIds() != null && !request.getIndustryIds().isEmpty()) {
+            if(request.getIndustryIds().size() > Constants.MAX_INDUSTRY_PER_ORG) {
+                throw new AppException(CoreErrorCode.INDUSTRY_EXCEED_LIMIT, Constants.MAX_INDUSTRY_PER_ORG);
+            }
             List<IndustryDto> industryDtos = industryService.findByIds(request.getIndustryIds()).stream()
                     .filter(BaseDto::getIsActive)
                     .toList();
