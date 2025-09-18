@@ -36,6 +36,9 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuMetadata> getAllMenus(MemberType memberType) {
+        if(Objects.equals(memberType, MemberType.CANDIDATE)){
+            return Collections.emptyList();
+        }
         List<MenuProjection> projections = menuRepository.findAllMenu(memberType);
         return this.buildMenuTree(projections, false);
     }
@@ -47,6 +50,9 @@ public class MenuServiceImpl implements MenuService {
     }
 
     public List<MenuMetadata> buildMenuTree(List<MenuProjection> projections, boolean includePermissions) {
+        if(projections == null || projections.isEmpty()) {
+            return Collections.emptyList();
+        }
         Map<Long, MenuMetadata> menuMap = new HashMap<>();
         for (MenuProjection p : projections) {
             if(!p.getIsShow()){

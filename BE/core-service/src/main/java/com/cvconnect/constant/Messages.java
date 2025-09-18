@@ -13,6 +13,7 @@ public class Messages {
     public static final String PROCESS_TYPE_CANNOT_DELETE_DEFAULT = "process.type.cannot.delete.default";
     public static final String PROCESS_TYPE_NOT_FOUND = "process.type.not.found";
     public static final String INDUSTRY_EXCEED_LIMIT = "industry.exceed.limit";
+    public static final String LEVEL_CANNOT_DELETE_DEFAULT = "level.cannot.delete.default";
 
 
 
@@ -26,6 +27,10 @@ public class Messages {
     public static final String PROCESS_TYPE_NAME_REQUIRE = "process.type.name.require";
     public static final String PROCESS_TYPE_SORT_ORDER_REQUIRE = "process.type.sort.order.require";
     public static final String PROCESS_TYPE_CODE_DUPLICATED = "process.type.code.duplicated";
+    public static final String LEVEL_CODE_REQUIRE = "level.code.require";
+    public static final String LEVEL_NAME_REQUIRE = "level.name.require";
+    public static final String LEVEL_NOT_FOUND = "level.not.found";
+    public static final String LEVEL_CODE_DUPLICATED = "level.code.duplicated";
 
     /*
     * Other Messages
