@@ -1,6 +1,7 @@
 package com.cvconnect.controller;
 
 import com.cvconnect.dto.menu.MenuMetadata;
+import com.cvconnect.enums.MemberType;
 import com.cvconnect.service.MenuService;
 import io.swagger.v3.oas.annotations.Operation;
 import nmquan.commonlib.dto.response.Response;
@@ -8,10 +9,7 @@ import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,7 +28,7 @@ public class MenuController {
     @GetMapping("/all-menus")
     @Operation(summary = "Get all menus")
     @PreAuthorize("hasAnyAuthority('USER_GROUP:VIEW')")
-    public ResponseEntity<Response<List<MenuMetadata>>> getAllMenus() {
-        return ResponseUtils.success(menuService.getAllMenus());
+    public ResponseEntity<Response<List<MenuMetadata>>> getAllMenus(@RequestParam(required = true) MemberType memberType) {
+        return ResponseUtils.success(menuService.getAllMenus(memberType));
     }
 }

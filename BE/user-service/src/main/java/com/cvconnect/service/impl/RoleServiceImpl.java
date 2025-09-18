@@ -1,6 +1,7 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.constant.Constants;
+import com.cvconnect.dto.menu.MenuDto;
 import com.cvconnect.dto.role.MemberTypeDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.role.RoleFilterRequest;
@@ -85,7 +86,7 @@ public class RoleServiceImpl implements RoleService {
         role.setMemberType(request.getMemberType());
         roleRepository.save(role);
 
-        this.saveRoleMenus(role.getId(), request.getRoleMenus());
+        this.saveRoleMenus(role, request.getRoleMenus());
 
         return IDResponse.<Long>builder()
                 .id(role.getId())
@@ -107,7 +108,7 @@ public class RoleServiceImpl implements RoleService {
         roleRepository.save(role);
 
         roleMenuService.deleteByRoleId(role.getId());
-        this.saveRoleMenus(role.getId(), request.getRoleMenus());
+        this.saveRoleMenus(role, request.getRoleMenus());
 
         return IDResponse.<Long>builder()
                 .id(role.getId())
@@ -181,7 +182,7 @@ public class RoleServiceImpl implements RoleService {
                 .build();
     }
 
-    void saveRoleMenus(Long roleId, List<RoleMenuDto> roleMenus) {
+    void saveRoleMenus(Role role, List<RoleMenuDto> roleMenus) {
         if(roleMenus != null && !roleMenus.isEmpty()) {
             List<Long> menuIds = roleMenus.stream()
                     .map(RoleMenuDto::getMenuId)
@@ -189,12 +190,19 @@ public class RoleServiceImpl implements RoleService {
             if(menuIds.size() != roleMenus.size()) {
                 throw new AppException(UserErrorCode.MENU_NOT_FOUND);
             }
-            if(menuIds.size() != menuService.getMenuByIds(menuIds).size()) {
+            List<MenuDto> menus = menuService.getMenuByIds(menuIds);
+            if(menuIds.size() != menus.size()) {
                 throw new AppException(UserErrorCode.MENU_NOT_FOUND);
+            }
+            for (MenuDto menu : menus) {
+                String requiredType = menu.getForMemberType();
+                if (requiredType != null && !Objects.equals(requiredType, role.getMemberType().name())) {
+                    throw new AppException(UserErrorCode.MENU_NOT_FOUND);
+                }
             }
             List<RoleMenuDto> roleMenuDtos = roleMenus.stream()
                     .map(rm -> RoleMenuDto.builder()
-                            .roleId(roleId)
+                            .roleId(role.getId())
                             .menuId(rm.getMenuId())
                             .permissions(rm.getPermissions())
                             .build())

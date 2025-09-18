@@ -4,6 +4,7 @@ import com.cvconnect.dto.menu.MenuDto;
 import com.cvconnect.dto.menu.MenuMetadata;
 import com.cvconnect.dto.menu.MenuProjection;
 import com.cvconnect.dto.roleUser.RoleUserDto;
+import com.cvconnect.enums.MemberType;
 import com.cvconnect.repository.MenuRepository;
 import com.cvconnect.service.MenuService;
 import com.cvconnect.service.RoleUserService;
@@ -34,8 +35,8 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public List<MenuMetadata> getAllMenus() {
-        List<MenuProjection> projections = menuRepository.findAllMenu();
+    public List<MenuMetadata> getAllMenus(MemberType memberType) {
+        List<MenuProjection> projections = menuRepository.findAllMenu(memberType);
         return this.buildMenuTree(projections, false);
     }
 
@@ -106,6 +107,8 @@ public class MenuServiceImpl implements MenuService {
                         .icon(projection.getMenuIcon())
                         .parentId(projection.getParentId())
                         .sortOrder(projection.getMenuSortOrder())
+                        .isShow(projection.getIsShow())
+                        .forMemberType(projection.getForMemberType())
                         .build())
                 .toList();
     }
