@@ -105,6 +105,10 @@ public class AuthServiceImpl implements AuthService {
         }
 
         List<RoleUserDto> roleUserDtos = roleUserService.findByUserId(user.getId());
+        OrgMemberDto orgMemberDto = orgMemberService.getOrgMember(user.getId());
+        if(Objects.nonNull(orgMemberDto)){
+            user.setOrgId(orgMemberDto.getOrgId());
+        }
         LoginResponse loginResponse = LoginResponse.builder()
                 .token(jwtUtils.generateToken(user))
                 .roles(roleUserDtos.stream().map(RoleUserDto::getRole).collect(Collectors.toList()))

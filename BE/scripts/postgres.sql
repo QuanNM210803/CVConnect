@@ -147,27 +147,45 @@
 -- ('OFFER', 'Đề nghị làm việc', 5, true, 'admin'),
 -- ('ONBOARD', 'Onboard', 6, true, 'admin');
 
-CREATE TABLE IF NOT EXISTS level (
+-- CREATE TABLE IF NOT EXISTS level (
+--     id BIGSERIAL PRIMARY KEY,
+--
+--     code VARCHAR(50) UNIQUE NOT NULL,
+--     name VARCHAR(255) NOT NULL,
+--     is_default BOOLEAN DEFAULT FALSE,
+--
+--     is_active BOOLEAN DEFAULT TRUE,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITHOUT TIME ZONE,
+--     created_by VARCHAR(100),
+--     updated_by VARCHAR(100)
+-- );
+--
+-- insert into level (code, name, is_default, created_by) values
+-- ('INTERN', 'Thực tập sinh', true, 'admin'),
+-- ('STAFF', 'Nhân viên', true, 'admin'),
+-- ('LEADER', 'Trưởng nhóm', true, 'admin'),
+-- ('DEPARTMENT_HEAD', 'Trưởng/Phó phòng', true, 'admin'),
+-- ('MANAGER', 'Quản lý', true, 'admin'),
+-- ('BRANCH_HEAD', 'Trưởng/Phó chi nhánh', true, 'admin'),
+-- ('VICE_DIRECTOR', 'Phó Giám đốc', true, 'admin'),
+-- ('DIRECTOR', 'Giám đốc', true, 'admin');
+
+CREATE TABLE IF NOT EXISTS department (
     id BIGSERIAL PRIMARY KEY,
 
-    code VARCHAR(50) UNIQUE NOT NULL,
+    code VARCHAR(50) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    is_default BOOLEAN DEFAULT FALSE,
+    org_id BIGINT NOT NULL,
 
     is_active BOOLEAN DEFAULT TRUE,
     is_deleted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE,
     created_by VARCHAR(100),
-    updated_by VARCHAR(100)
-);
+    updated_by VARCHAR(100),
 
-insert into level (code, name, is_default, created_by) values
-('INTERN', 'Thực tập sinh', true, 'admin'),
-('STAFF', 'Nhân viên', true, 'admin'),
-('LEADER', 'Trưởng nhóm', true, 'admin'),
-('DEPARTMENT_HEAD', 'Trưởng/Phó phòng', true, 'admin'),
-('MANAGER', 'Quản lý', true, 'admin'),
-('BRANCH_HEAD', 'Trưởng/Phó chi nhánh', true, 'admin'),
-('VICE_DIRECTOR', 'Phó Giám đốc', true, 'admin'),
-('DIRECTOR', 'Giám đốc', true, 'admin');
+    FOREIGN KEY (org_id) REFERENCES organization (id) ON DELETE CASCADE,
+    CONSTRAINT uq_department_org_code UNIQUE (org_id, code)
+);

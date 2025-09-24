@@ -43,6 +43,7 @@ public class JwtUtils {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
+                .orgId(user.getOrgId())
                 .build();
         claims.put("user", ObjectMapperUtils.convertToJson(userDto));
         try {

@@ -32,6 +32,7 @@ public class UserDto extends BaseDto<Instant> {
     private List<RoleDto> roles;
     private List<UserDetailDto> userDetails;
     private String avatarUrl;
+    private Long orgId;
 
     public UserDto configResponse() {
         this.setIsDeleted(null);
