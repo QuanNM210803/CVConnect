@@ -14,6 +14,9 @@ public class Messages {
     public static final String PROCESS_TYPE_NOT_FOUND = "process.type.not.found";
     public static final String INDUSTRY_EXCEED_LIMIT = "industry.exceed.limit";
     public static final String LEVEL_CANNOT_DELETE_DEFAULT = "level.cannot.delete.default";
+    public static final String DEPARTMENT_NOT_FOUND = "department.not.found";
+    public static final String DEPARTMENT_CODE_DUPLICATED = "department.code.duplicated";
+    public static final String DEPARTMENT_ORG_ID_REQUIRE = "department.org.require";
 
 
 
@@ -31,6 +34,8 @@ public class Messages {
     public static final String LEVEL_NAME_REQUIRE = "level.name.require";
     public static final String LEVEL_NOT_FOUND = "level.not.found";
     public static final String LEVEL_CODE_DUPLICATED = "level.code.duplicated";
+    public static final String DEPARTMENT_CODE_REQUIRE = "department.code.require";
+    public static final String DEPARTMENT_NAME_REQUIRE = "department.name.require";
 
     /*
     * Other Messages

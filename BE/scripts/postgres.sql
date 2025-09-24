@@ -172,12 +172,30 @@
 -- ('VICE_DIRECTOR', 'Phó Giám đốc', true, 'admin'),
 -- ('DIRECTOR', 'Giám đốc', true, 'admin');
 
-CREATE TABLE IF NOT EXISTS department (
+-- CREATE TABLE IF NOT EXISTS department (
+--     id BIGSERIAL PRIMARY KEY,
+--
+--     code VARCHAR(50) NOT NULL,
+--     name VARCHAR(255) NOT NULL,
+--     org_id BIGINT NOT NULL,
+--
+--     is_active BOOLEAN DEFAULT TRUE,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITHOUT TIME ZONE,
+--     created_by VARCHAR(100),
+--     updated_by VARCHAR(100),
+--
+--     FOREIGN KEY (org_id) REFERENCES organization (id) ON DELETE CASCADE,
+--     CONSTRAINT uq_department_org_code UNIQUE (org_id, code)
+-- );
+
+CREATE TABLE IF NOT EXISTS position (
     id BIGSERIAL PRIMARY KEY,
 
     code VARCHAR(50) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    org_id BIGINT NOT NULL,
+    department_id BIGINT NOT NULL,
 
     is_active BOOLEAN DEFAULT TRUE,
     is_deleted BOOLEAN DEFAULT FALSE,
@@ -186,6 +204,44 @@ CREATE TABLE IF NOT EXISTS department (
     created_by VARCHAR(100),
     updated_by VARCHAR(100),
 
-    FOREIGN KEY (org_id) REFERENCES organization (id) ON DELETE CASCADE,
-    CONSTRAINT uq_department_org_code UNIQUE (org_id, code)
+    FOREIGN KEY (department_id) REFERENCES department (id) ON DELETE CASCADE,
+    CONSTRAINT uq_position_department_code UNIQUE (department_id, code)
 );
+
+CREATE TABLE IF NOT EXISTS position_level (
+    id BIGSERIAL PRIMARY KEY,
+
+    name VARCHAR(255) NOT NULL,
+    position_id BIGINT NOT NULL,
+    level_id BIGINT NOT NULL,
+
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+
+    FOREIGN KEY (position_id) REFERENCES position (id) ON DELETE CASCADE,
+    FOREIGN KEY (level_id) REFERENCES level (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS position_process (
+    id BIGSERIAL PRIMARY KEY,
+
+    name VARCHAR(255) NOT NULL,
+    position_id BIGINT NOT NULL,
+    process_type_id BIGINT NOT NULL,
+    sort_order INT NOT NULL ,
+
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+
+    FOREIGN KEY (position_id) REFERENCES position (id) ON DELETE CASCADE,
+    FOREIGN KEY (process_type_id) REFERENCES process_type (id) ON DELETE CASCADE
+);
+
