@@ -23,7 +23,7 @@ public class CandidateServiceImpl implements CandidateService {
 
     @Override
     public CandidateDto getCandidate(Long userId) {
-        Optional<Candidate> candidate = candidateRepository.findById(userId);
+        Optional<Candidate> candidate = candidateRepository.findByUserId(userId);
         Candidate entity = candidate.orElse(null);
         if(entity == null) {
             return null;

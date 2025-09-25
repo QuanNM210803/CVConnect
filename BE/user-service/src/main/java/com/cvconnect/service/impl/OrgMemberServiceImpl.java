@@ -15,7 +15,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     private OrgMemberRepository orgMemberRepository;
     @Override
     public OrgMemberDto getOrgMember(Long userId) {
-        Optional<OrgMember> orgMember = orgMemberRepository.findById(userId);
+        Optional<OrgMember> orgMember = orgMemberRepository.findByUserId(userId);
         OrgMember entity = orgMember.orElse(null);
         if(entity == null) {
             return null;
@@ -23,6 +23,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         return OrgMemberDto.builder()
                 .id(entity.getId())
                 .userId(entity.getUserId())
+                .orgId(entity.getOrgId())
                 .build();
     }
 

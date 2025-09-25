@@ -16,7 +16,7 @@ public class ManagementMemberServiceImpl implements ManagementMemberService {
 
     @Override
     public ManagementMemberDto getManagementMember(Long userId) {
-        Optional<ManagementMember> managementMember = managementMemberRepository.findById(userId);
+        Optional<ManagementMember> managementMember = managementMemberRepository.findByUserId(userId);
         ManagementMember entity = managementMember.orElse(null);
         if(entity == null) {
             return null;

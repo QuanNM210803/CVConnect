@@ -153,6 +153,11 @@ public class AuthServiceImpl implements AuthService {
         CookieUtils.setRefreshTokenCookie(newRefreshToken, JWT_REFRESHABLE_DURATION, httpServletResponse);
 
         List<RoleUserDto> roleUserDtos = roleUserService.findByUserId(user.getId());
+
+        OrgMemberDto orgMemberDto = orgMemberService.getOrgMember(user.getId());
+        if(Objects.nonNull(orgMemberDto)){
+            user.setOrgId(orgMemberDto.getOrgId());
+        }
         return RefreshTokenResponse.builder()
                 .token(jwtUtils.generateToken(user))
                 .roles(roleUserDtos.stream().map(RoleUserDto::getRole).collect(Collectors.toList()))
