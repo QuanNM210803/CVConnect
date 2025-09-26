@@ -36,7 +36,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public IDResponse<Long> create(DepartmentRequest request) {
         Long orgId = WebUtils.getCurrentOrgId();
         if(Objects.isNull(orgId)){
-            throw new AppException(CoreErrorCode.DEPARTMENT_ORG_ID_REQUIRE);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         boolean exists = departmentRepository.existsByCodeAndOrgId(request.getCode(), orgId);
         if (exists) {

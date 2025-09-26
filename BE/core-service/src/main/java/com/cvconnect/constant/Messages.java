@@ -17,6 +17,9 @@ public class Messages {
     public static final String DEPARTMENT_NOT_FOUND = "department.not.found";
     public static final String DEPARTMENT_CODE_DUPLICATED = "department.code.duplicated";
     public static final String DEPARTMENT_ORG_ID_REQUIRE = "department.org.require";
+    public static final String POSITION_CODE_DUPLICATED = "position.code.duplicated";
+    public static final String FIRST_PROCESS_MUST_BE_APPLY = "first.process.must.be.apply";
+    public static final String LAST_PROCESS_MUST_BE_ONBOARD = "last.process.must.be.onboard";
 
 
 
@@ -38,6 +41,14 @@ public class Messages {
     public static final String DEPARTMENT_NAME_REQUIRE = "department.name.require";
     public static final String IDS_REQUIRE = "ids.require";
     public static final String STATUS_ACTIVE_REQUIRE = "status.active.require";
+    public static final String POSITION_NAME_REQUIRED = "position.name.required";
+    public static final String POSITION_CODE_REQUIRED = "position.code.required";
+    public static final String DEPARTMENT_REQUIRED = "position.department.required";
+    public static final String POSITION_LEVEL_NAME_REQUIRED = "position.level.name.required";
+    public static final String LEVEL_REQUIRE = "level.require";
+    public static final String POSITION_PROCESS_NAME_REQUIRED = "position.process.name.required";
+    public static final String PROCESS_TYPE_REQUIRE = "position.process.type.require";
+    public static final String SORT_ORDER_REQUIRE = "position.process.sort.order.require";
 
     /*
     * Other Messages
