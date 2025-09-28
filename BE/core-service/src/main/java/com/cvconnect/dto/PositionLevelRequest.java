@@ -1,20 +1,19 @@
 package com.cvconnect.dto;
 
 import com.cvconnect.constant.Messages;
+import com.cvconnect.dto.common.Identifiable;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PositionLevelRequest {
+public class PositionLevelRequest implements Identifiable {
+    private Long id;
     @NotBlank(message = Messages.POSITION_LEVEL_NAME_REQUIRED)
     private String name;
 

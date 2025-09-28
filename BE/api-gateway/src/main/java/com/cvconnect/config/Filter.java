@@ -35,7 +35,7 @@ public class Filter implements GlobalFilter {
 
 
             // core service
-
+            "/core/industry/public"
     };
 
     @Override

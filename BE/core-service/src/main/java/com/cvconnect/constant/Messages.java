@@ -20,6 +20,7 @@ public class Messages {
     public static final String POSITION_CODE_DUPLICATED = "position.code.duplicated";
     public static final String FIRST_PROCESS_MUST_BE_APPLY = "first.process.must.be.apply";
     public static final String LAST_PROCESS_MUST_BE_ONBOARD = "last.process.must.be.onboard";
+    public static final String POSITION_NOT_FOUND = "position.not.found";
 
 
 

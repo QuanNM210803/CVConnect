@@ -2,6 +2,7 @@ package com.cvconnect.repository;
 
 import com.cvconnect.dto.department.DepartmentFilterRequest;
 import com.cvconnect.entity.Department;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,9 +21,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     @Query("SELECT d FROM Department d WHERE d.id = :id")
     Optional<Department> findById(Long id);
 
-    @Query("SELECT d FROM Department d WHERE d.id IN :ids")
-    List<Department> findAllById(List<Long> ids);
-
     @Query("SELECT d FROM Department d WHERE " +
             "(:#{#request.code} IS NULL OR LOWER(d.code) LIKE LOWER(CONCAT('%', :#{#request.code}, '%'))) " +
             "AND (:#{#request.name} IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :#{#request.name}, '%'))) " +
@@ -36,4 +34,11 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
             "AND (:#{#request.orgId} IS NULL OR d.orgId = :#{#request.orgId})"
     )
     Page<Department> filter(DepartmentFilterRequest request, Pageable pageable);
+
+    @Query("SELECT d FROM Department d WHERE d.id = :id AND d.orgId = :orgId")
+    Optional<Department> findByIdAndOrgId(Long id, Long orgId);
+
+    @Query("SELECT DISTINCT d FROM Department d " +
+            "WHERE d.id IN :ids AND d.orgId = :orgId")
+    List<Department> findByIdsAndOrgId(List<Long> ids, Long orgId);
 }

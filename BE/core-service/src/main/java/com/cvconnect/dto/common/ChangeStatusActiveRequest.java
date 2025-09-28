@@ -1,4 +1,4 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.common;
 
 import com.cvconnect.constant.Messages;
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -1,7 +1,6 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.constant.Constants;
-import com.cvconnect.dto.ChangeStatusActiveRequest;
+import com.cvconnect.dto.common.ChangeStatusActiveRequest;
 import com.cvconnect.dto.department.DepartmentDto;
 import com.cvconnect.dto.department.DepartmentFilterRequest;
 import com.cvconnect.dto.department.DepartmentRequest;
@@ -9,13 +8,12 @@ import com.cvconnect.entity.Department;
 import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.DepartmentRepository;
 import com.cvconnect.service.DepartmentService;
+import com.cvconnect.utils.CoreServiceUtils;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
-import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
-import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -34,10 +31,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional
     public IDResponse<Long> create(DepartmentRequest request) {
-        Long orgId = WebUtils.getCurrentOrgId();
-        if(Objects.isNull(orgId)){
-            throw new AppException(CommonErrorCode.ACCESS_DENIED);
-        }
+        Long orgId = CoreServiceUtils.getCurrentOrgId();
         boolean exists = departmentRepository.existsByCodeAndOrgId(request.getCode(), orgId);
         if (exists) {
             throw new AppException(CoreErrorCode.DEPARTMENT_CODE_DUPLICATED, request.getCode());
@@ -54,22 +48,19 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public DepartmentDto detail(Long id) {
-        Optional<Department> department = departmentRepository.findById(id);
-        if (department.isEmpty()) {
-            return null;
-        }
-        this.checkDataAuthorization(null, department.stream().toList());
-        return ObjectMapperUtils.convertToObject(department.get(), DepartmentDto.class);
+        Long orgId = CoreServiceUtils.getCurrentOrgId();
+        Optional<Department> department = departmentRepository.findByIdAndOrgId(id, orgId);
+        return department.map(value -> ObjectMapperUtils.convertToObject(value, DepartmentDto.class)).orElse(null);
     }
 
     @Override
     @Transactional
     public void changeStatusActive(ChangeStatusActiveRequest request) {
-        List<Department> departments = departmentRepository.findAllById(request.getIds());
+        Long orgId = CoreServiceUtils.getCurrentOrgId();
+        List<Department> departments = departmentRepository.findByIdsAndOrgId(request.getIds(), orgId);
         if (departments.size() != request.getIds().size()) {
             throw new AppException(CoreErrorCode.DEPARTMENT_NOT_FOUND);
         }
-        this.checkDataAuthorization(null, departments);
         departments.forEach(department -> department.setIsActive(request.getActive()));
         departmentRepository.saveAll(departments);
     }
@@ -77,29 +68,24 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional
     public void deleteByIds(List<Long> ids) {
-        List<Department> departments = departmentRepository.findAllById(ids);
+        Long orgId = CoreServiceUtils.getCurrentOrgId();
+        List<Department> departments = departmentRepository.findByIdsAndOrgId(ids, orgId);
         if (departments.size() != ids.size()) {
             throw new AppException(CoreErrorCode.DEPARTMENT_NOT_FOUND);
         }
-        this.checkDataAuthorization(null, departments);
         departmentRepository.deleteAll(departments);
     }
 
     @Override
     @Transactional
     public IDResponse<Long> update(DepartmentRequest request) {
-        Long orgId = WebUtils.getCurrentOrgId();
-        if(Objects.isNull(orgId)){
-            throw new AppException(CoreErrorCode.DEPARTMENT_ORG_ID_REQUIRE);
-        }
-
-        Optional<Department> optionalDepartment = departmentRepository.findById(request.getId());
+        Long orgId = CoreServiceUtils.getCurrentOrgId();
+        Optional<Department> optionalDepartment = departmentRepository.findByIdAndOrgId(request.getId(), orgId);
         if (optionalDepartment.isEmpty()) {
             throw new AppException(CoreErrorCode.DEPARTMENT_NOT_FOUND);
         }
-        Department department = optionalDepartment.get();
-        this.checkDataAuthorization(orgId, List.of(department));
 
+        Department department = optionalDepartment.get();
         boolean exists = departmentRepository.existsByCodeAndOrgId(request.getCode(), orgId);
         if (exists && !department.getCode().equals(request.getCode())) {
             throw new AppException(CoreErrorCode.DEPARTMENT_CODE_DUPLICATED, request.getCode());
@@ -114,10 +100,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public FilterResponse<DepartmentDto> filter(DepartmentFilterRequest request) {
-        Long orgId = WebUtils.getCurrentOrgId();
-        if(Objects.isNull(orgId)){
-            throw new AppException(CoreErrorCode.DEPARTMENT_ORG_ID_REQUIRE);
-        }
+        Long orgId = CoreServiceUtils.getCurrentOrgId();
         request.setOrgId(orgId);
         if (request.getCreatedAtEnd() != null) {
             request.setCreatedAtEnd(request.getCreatedAtEnd().plus(1, ChronoUnit.DAYS));
@@ -128,16 +111,5 @@ public class DepartmentServiceImpl implements DepartmentService {
         Page<Department> page = departmentRepository.filter(request, request.getPageable());
         List<DepartmentDto> data = ObjectMapperUtils.convertToList(page.getContent(), DepartmentDto.class);
         return PageUtils.toFilterResponse(page, data);
-    }
-
-    void checkDataAuthorization(Long orgId, List<Department> departments) {
-        if(Objects.isNull(orgId)){
-            orgId = WebUtils.getCurrentOrgId();
-        }
-        for (Department department : departments) {
-            if (!department.getOrgId().equals(orgId)) {
-                throw new AppException(CommonErrorCode.ACCESS_DENIED);
-            }
-        }
     }
 }

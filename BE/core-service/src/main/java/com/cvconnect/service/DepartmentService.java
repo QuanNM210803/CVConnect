@@ -1,6 +1,6 @@
 package com.cvconnect.service;
 
-import com.cvconnect.dto.ChangeStatusActiveRequest;
+import com.cvconnect.dto.common.ChangeStatusActiveRequest;
 import com.cvconnect.dto.department.DepartmentDto;
 import com.cvconnect.dto.department.DepartmentFilterRequest;
 import com.cvconnect.dto.department.DepartmentRequest;
