@@ -1,7 +1,6 @@
-package com.cvconnect.dto.industry;
+package com.cvconnect.dto;
 
-
-import com.cvconnect.dto.IndustrySubDto;
+import com.cvconnect.dto.common.Identifiable;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,18 +9,14 @@ import lombok.experimental.SuperBuilder;
 import nmquan.commonlib.dto.BaseDto;
 
 import java.time.Instant;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class IndustryDto extends BaseDto<Instant> {
+public class IndustrySubDto extends BaseDto<Instant> implements Identifiable {
     private String code;
     private String name;
-    private String description;
-
-    // attribute expansion
-    private List<IndustrySubDto> industrySubs;
+    private Long industryId;
 }

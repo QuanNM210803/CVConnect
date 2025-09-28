@@ -390,3 +390,6 @@
 # (job_name, schedule_type, expression, description, created_by) values
 # ('email_resend', 'FIXED_RATE', '900', 'Gửi lại email thất bại', 'admin');
 
+update `cvconnect-user-service`.menus
+set label = 'Thành viên'
+where code = 'ORG_MEMBER';

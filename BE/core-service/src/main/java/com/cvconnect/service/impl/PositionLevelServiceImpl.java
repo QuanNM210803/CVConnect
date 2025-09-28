@@ -49,7 +49,9 @@ public class PositionLevelServiceImpl implements PositionLevelService {
 
     @Override
     public void deleteByIds(List<Long> ids) {
-        positionLevelRepository.deleteAllById(ids);
+        if(Objects.nonNull(ids) && !ids.isEmpty()){
+            positionLevelRepository.deleteAllById(ids);
+        }
     }
 
     @Override

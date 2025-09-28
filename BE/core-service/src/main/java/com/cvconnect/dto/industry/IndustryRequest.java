@@ -1,15 +1,15 @@
 package com.cvconnect.dto.industry;
 
-
-import com.cvconnect.dto.IndustrySubDto;
+import com.cvconnect.constant.Messages;
+import com.cvconnect.dto.IndustrySubRequest;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import nmquan.commonlib.dto.BaseDto;
 
-import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -17,11 +17,14 @@ import java.util.List;
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class IndustryDto extends BaseDto<Instant> {
+public class IndustryRequest {
+    private Long id;
+    @NotBlank(message = Messages.INDUSTRY_CODE_REQUIRED)
     private String code;
+    @NotBlank(message = Messages.INDUSTRY_NAME_REQUIRED)
     private String name;
     private String description;
 
-    // attribute expansion
-    private List<IndustrySubDto> industrySubs;
+    @Valid
+    private List<IndustrySubRequest> industrySubs;
 }

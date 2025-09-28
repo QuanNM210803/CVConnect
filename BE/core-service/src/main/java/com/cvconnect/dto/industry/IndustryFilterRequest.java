@@ -17,7 +17,7 @@ import java.time.Instant;
 public class IndustryFilterRequest extends FilterRequest {
     private String name;
     private String code;
-    private Boolean isActive;
+    private String industrySubName;
     private Instant createdAtStart;
     private Instant createdAtEnd;
     private Instant updatedAtStart;

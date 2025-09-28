@@ -8,6 +8,7 @@ import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.utils.WebUtils;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -23,6 +24,12 @@ public class CoreServiceUtils {
     }
 
     public static <T extends Identifiable,G extends Identifiable> List<Long> getDeleteIds(List<T> newObjects, List<G> oldObjects){
+        if(Objects.isNull(newObjects)){
+            newObjects = new ArrayList<>();
+        }
+        if(Objects.isNull(oldObjects)){
+            oldObjects = new ArrayList<>();
+        }
         List<Long> idsInNew = newObjects.stream()
                 .map(T::getId)
                 .filter(Objects::nonNull)

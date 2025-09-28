@@ -49,6 +49,8 @@ public class PositionProcessServiceImpl implements PositionProcessService {
 
     @Override
     public void deleteByIds(List<Long> ids) {
-        positionProcessRepository.deleteAllById(ids);
+        if(Objects.nonNull(ids) && !ids.isEmpty()){
+            positionProcessRepository.deleteAllById(ids);
+        }
     }
 }

@@ -21,7 +21,9 @@ public class Messages {
     public static final String FIRST_PROCESS_MUST_BE_APPLY = "first.process.must.be.apply";
     public static final String LAST_PROCESS_MUST_BE_ONBOARD = "last.process.must.be.onboard";
     public static final String POSITION_NOT_FOUND = "position.not.found";
-
+    public static final String INDUSTRY_CODE_ALREADY_EXISTS = "industry.code.already.exists";
+    public static final String INDUSTRY_SUB_CODE_DUPLICATED = "industry.sub.code.duplicated";
+    public static final String INDUSTRY_SUB_CODE_EXISTS = "industry.sub.code.exists";
 
 
     /*
@@ -50,6 +52,10 @@ public class Messages {
     public static final String POSITION_PROCESS_NAME_REQUIRED = "position.process.name.required";
     public static final String PROCESS_TYPE_REQUIRE = "position.process.type.require";
     public static final String SORT_ORDER_REQUIRE = "position.process.sort.order.require";
+    public static final String INDUSTRY_CODE_REQUIRED = "industry.code.required";
+    public static final String INDUSTRY_NAME_REQUIRED = "industry.name.required";
+    public static final String INDUSTRY_SUB_CODE_REQUIRED = "industry.sub.code.required";
+    public static final String INDUSTRY_SUB_NAME_REQUIRED = "industry.sub.name.required";
 
     /*
     * Other Messages
