@@ -10,18 +10,19 @@ import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.IndustryRepository;
 import com.cvconnect.service.IndustryService;
 import com.cvconnect.service.IndustrySubService;
-import com.cvconnect.utils.CoreServiceUtils;
+import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
+import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,10 +45,10 @@ public class IndustryServiceImpl implements IndustryService {
     @Override
     public FilterResponse<IndustryDto> filter(IndustryFilterRequest request) {
         if (request.getCreatedAtEnd() != null) {
-            request.setCreatedAtEnd(request.getCreatedAtEnd().plus(1, ChronoUnit.DAYS));
+            request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
         }
         if (request.getUpdatedAtEnd() != null) {
-            request.setUpdatedAtEnd(request.getUpdatedAtEnd().plus(1, ChronoUnit.DAYS));
+            request.setUpdatedAtEnd(DateUtils.endOfDay(request.getUpdatedAtEnd(), CommonConstants.ZONE.UTC));
         }
         Page<Industry> page = industryRepository.filter(request, request.getPageable());
         List<IndustryDto> data = ObjectMapperUtils.convertToList(page.getContent(), IndustryDto.class);
@@ -70,7 +71,7 @@ public class IndustryServiceImpl implements IndustryService {
         response.getData().forEach(industryDto -> {
             industryDto.setIndustrySubs(null);
         });
-        return CoreServiceUtils.configResponsePublic(response);
+        return WebUtils.configResponsePublic(response);
     }
 
     @Override
@@ -134,7 +135,7 @@ public class IndustryServiceImpl implements IndustryService {
         Long industryId = entity.getId();
         List<IndustrySubRequest> industrySubInRequest = request.getIndustrySubs();
         List<IndustrySubDto> industrySubInDB = industrySubService.getIndustryIds(List.of(industryId)).get(industryId);
-        List<Long> deleteIds = CoreServiceUtils.getDeleteIds(industrySubInRequest, industrySubInDB);
+        List<Long> deleteIds = WebUtils.getDeleteIds(industrySubInRequest, industrySubInDB);
         industrySubService.deleteByIds(deleteIds);
         this.createIndustrySubs(industrySubInRequest, industryId);
 

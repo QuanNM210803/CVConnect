@@ -1,6 +1,5 @@
 package com.cvconnect.dto;
 
-import com.cvconnect.dto.common.Identifiable;
 import com.cvconnect.dto.level.LevelDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -8,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import nmquan.commonlib.dto.BaseDto;
+import nmquan.commonlib.dto.Identifiable;
 
 import java.time.Instant;
 

@@ -16,10 +16,10 @@ public interface IndustryRepository extends JpaRepository<Industry, Long> {
             "LEFT JOIN IndustrySub is ON is.industryId = i.id " +
             "WHERE (:#{#request.code} IS NULL OR LOWER(i.code) LIKE LOWER(CONCAT('%', :#{#request.code}, '%'))) " +
             "AND (:#{#request.name} IS NULL OR LOWER(i.name) LIKE LOWER(CONCAT('%', :#{#request.name}, '%'))) " +
-            "AND (:#{#request.createdAtStart} IS NULL OR i.createdAt >= :#{#request.createdAtStart}) " +
-            "AND (:#{#request.createdAtEnd} IS NULL OR i.createdAt < :#{#request.createdAtEnd}) " +
-            "AND (:#{#request.updatedAtStart} IS NULL OR i.updatedAt >= :#{#request.updatedAtStart}) " +
-            "AND (:#{#request.updatedAtEnd} IS NULL OR i.updatedAt < :#{#request.updatedAtEnd}) " +
+            "AND (i.createdAt >= COALESCE(:#{#request.createdAtStart}, i.createdAt)) " +
+            "AND (i.createdAt <= COALESCE(:#{#request.createdAtEnd}, i.createdAt)) " +
+            "AND (COALESCE(:#{#request.updatedAtStart}, NULL) IS NULL OR (i.updatedAt IS NOT NULL AND i.updatedAt >= :#{#request.updatedAtStart})) " +
+            "AND (COALESCE(:#{#request.updatedAtEnd}, NULL) IS NULL OR (i.updatedAt IS NOT NULL AND i.updatedAt <= :#{#request.updatedAtEnd})) " +
             "AND (:#{#request.createdBy} IS NULL OR LOWER(i.createdBy) LIKE LOWER(CONCAT('%', :#{#request.createdBy}, '%'))) " +
             "AND (:#{#request.updatedBy} IS NULL OR LOWER(i.updatedBy) LIKE LOWER(CONCAT('%', :#{#request.updatedBy}, '%'))) " +
             "AND (:#{#request.industrySubName} IS NULL OR LOWER(is.name) LIKE LOWER(CONCAT('%', :#{#request.industrySubName}, '%'))) "

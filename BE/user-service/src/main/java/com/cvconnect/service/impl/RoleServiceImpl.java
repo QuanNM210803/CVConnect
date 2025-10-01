@@ -14,17 +14,17 @@ import com.cvconnect.repository.RoleRepository;
 import com.cvconnect.service.MenuService;
 import com.cvconnect.service.RoleMenuService;
 import com.cvconnect.service.RoleService;
-import nmquan.commonlib.dto.PageInfo;
+import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -118,10 +118,10 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public FilterResponse<RoleDto> filter(RoleFilterRequest request) {
         if (request.getCreatedAtEnd() != null) {
-            request.setCreatedAtEnd(request.getCreatedAtEnd().plus(1, ChronoUnit.DAYS));
+            request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
         }
         if (request.getUpdatedAtEnd() != null) {
-            request.setUpdatedAtEnd(request.getUpdatedAtEnd().plus(1, ChronoUnit.DAYS));
+            request.setUpdatedAtEnd(DateUtils.endOfDay(request.getUpdatedAtEnd(), CommonConstants.ZONE.UTC));
         }
         Page<RoleDto> page = roleRepository.filter(request, request.getPageable());
         List<String> roleCode = Constants.RoleCode.getAllRoleCodes();

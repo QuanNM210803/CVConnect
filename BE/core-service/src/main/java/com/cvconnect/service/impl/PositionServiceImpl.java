@@ -12,19 +12,20 @@ import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.enums.ProcessTypeEnum;
 import com.cvconnect.repository.PositionRepository;
 import com.cvconnect.service.*;
-import com.cvconnect.utils.CoreServiceUtils;
+import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
+import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
+import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -70,7 +71,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void changeStatusActive(ChangeStatusActiveRequest request) {
-        Long orgId = CoreServiceUtils.getCurrentOrgId();
+        Long orgId = WebUtils.checkCurrentOrgId();
         List<Position> positions = positionRepository.findByIdsAndOrgId(request.getIds(), orgId);
         if(positions.size() != request.getIds().size()){
             throw new AppException(CommonErrorCode.ACCESS_DENIED);
@@ -82,7 +83,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void deleteByIds(List<Long> ids) {
-        Long orgId = CoreServiceUtils.getCurrentOrgId();
+        Long orgId = WebUtils.checkCurrentOrgId();
         List<Position> positions = positionRepository.findByIdsAndOrgId(ids, orgId);
         if(positions.size() != ids.size()){
             throw new AppException(CommonErrorCode.ACCESS_DENIED);
@@ -92,7 +93,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public PositionDto detail(Long id) {
-        Long orgId = CoreServiceUtils.getCurrentOrgId();
+        Long orgId = WebUtils.checkCurrentOrgId();
         Position position = positionRepository.findByIdAndOrgId(id, orgId);
         if(Objects.isNull(position)){
             throw new AppException(CoreErrorCode.POSITION_NOT_FOUND);
@@ -108,13 +109,13 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public FilterResponse<PositionDto> filter(PositionFilterRequest request) {
-        Long orgId = CoreServiceUtils.getCurrentOrgId();
+        Long orgId = WebUtils.checkCurrentOrgId();
         request.setOrgId(orgId);
         if (request.getCreatedAtEnd() != null) {
-            request.setCreatedAtEnd(request.getCreatedAtEnd().plus(1, ChronoUnit.DAYS));
+            request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
         }
         if (request.getUpdatedAtEnd() != null) {
-            request.setUpdatedAtEnd(request.getUpdatedAtEnd().plus(1, ChronoUnit.DAYS));
+            request.setUpdatedAtEnd(DateUtils.endOfDay(request.getUpdatedAtEnd(), CommonConstants.ZONE.UTC));
         }
         Page<PositionDto> page = positionRepository.filter(request, request.getPageable());
 
@@ -133,7 +134,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public IDResponse<Long> update(PositionRequest request) {
-        Long orgId = CoreServiceUtils.getCurrentOrgId();
+        Long orgId = WebUtils.checkCurrentOrgId();
         DepartmentDto departmentDto = departmentService.detail(request.getDepartmentId());
         if(Objects.isNull(departmentDto)){
             throw new AppException(CommonErrorCode.ACCESS_DENIED);
@@ -154,13 +155,13 @@ public class PositionServiceImpl implements PositionService {
         // Xoá những position level không còn trong request
         List<PositionLevelRequest> plRequests = request.getPositionLevel();
         List<PositionLevelDto> plDtos = positionLevelService.getByPositionId(position.getId());
-        List<Long> deleteIdsPositionLevel = CoreServiceUtils.getDeleteIds(plRequests, plDtos);
+        List<Long> deleteIdsPositionLevel = WebUtils.getDeleteIds(plRequests, plDtos);
         positionLevelService.deleteByIds(deleteIdsPositionLevel);
 
         // Xoá những position process không còn trong request
         List<PositionProcessRequest> ppRequests = request.getPositionProcess();
         List<PositionProcessDto> ppDtos = positionProcessService.getByPositionId(position.getId());
-        List<Long> deleteIdsPositionProcess = CoreServiceUtils.getDeleteIds(ppRequests, ppDtos);
+        List<Long> deleteIdsPositionProcess = WebUtils.getDeleteIds(ppRequests, ppDtos);
         positionProcessService.deleteByIds(deleteIdsPositionProcess);
 
         this.savePositionLevels(plRequests, position.getId());

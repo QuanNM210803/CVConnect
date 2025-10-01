@@ -30,10 +30,10 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
             "WHERE (:#{#request.code} IS NULL OR LOWER(r.code) LIKE LOWER(CONCAT('%', :#{#request.code}, '%'))) " +
             "AND (:#{#request.name} IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :#{#request.name}, '%'))) " +
             "AND (:#{#request.memberType == null || #request.memberType.isEmpty()} = true OR r.memberType IN :#{#request.memberType}) " +
-            "AND (:#{#request.createdAtStart} IS NULL OR r.createdAt >= :#{#request.createdAtStart}) " +
-            "AND (:#{#request.createdAtEnd} IS NULL OR r.createdAt <= :#{#request.createdAtEnd}) " +
-            "AND (:#{#request.updatedAtStart} IS NULL OR r.updatedAt >= :#{#request.updatedAtStart}) " +
-            "AND (:#{#request.updatedAtEnd} IS NULL OR r.updatedAt <= :#{#request.updatedAtEnd}) " +
+            "AND (r.createdAt >= COALESCE(:#{#request.createdAtStart}, r.createdAt)) " +
+            "AND (r.createdAt <= COALESCE(:#{#request.createdAtEnd}, r.createdAt)) " +
+            "AND (COALESCE(:#{#request.updatedAtStart}, NULL) IS NULL OR (r.updatedAt IS NOT NULL AND r.updatedAt >= :#{#request.updatedAtStart})) " +
+            "AND (COALESCE(:#{#request.updatedAtEnd}, NULL) IS NULL OR (r.updatedAt IS NOT NULL AND r.updatedAt <= :#{#request.updatedAtEnd})) " +
             "AND (:#{#request.createdBy} IS NULL OR LOWER(r.createdBy) LIKE LOWER(CONCAT('%', :#{#request.createdBy}, '%'))) " +
             "AND (:#{#request.updatedBy} IS NULL OR LOWER(r.updatedBy) LIKE LOWER(CONCAT('%', :#{#request.updatedBy}, '%'))) "
     )

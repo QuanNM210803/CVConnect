@@ -13,14 +13,14 @@ import org.springframework.stereotype.Repository;
 public interface LevelRepository extends JpaRepository<Level, Long> {
 
     @Query("SELECT l FROM Level l WHERE " +
-            "(:#{#request.code} IS NULL OR LOWER(l.code) LIKE LOWER(CONCAT('%', :#{#request.code}, '%'))) AND " +
-            "(:#{#request.name} IS NULL OR LOWER(l.name) LIKE LOWER(CONCAT('%', :#{#request.name}, '%'))) AND " +
-            "(:#{#request.createdAtStart} IS NULL OR l.createdAt >= :#{#request.createdAtStart}) AND " +
-            "(:#{#request.createdAtEnd} IS NULL OR l.createdAt < :#{#request.createdAtEnd}) AND " +
-            "(:#{#request.updatedAtStart} IS NULL OR l.updatedAt >= :#{#request.updatedAtStart}) AND " +
-            "(:#{#request.updatedAtEnd} IS NULL OR l.updatedAt < :#{#request.updatedAtEnd}) AND " +
-            "(:#{#request.createdBy} IS NULL OR LOWER(l.createdBy) LIKE LOWER(CONCAT('%', :#{#request.createdBy}, '%'))) AND " +
-            "(:#{#request.updatedBy} IS NULL OR LOWER(l.updatedBy) LIKE LOWER(CONCAT('%', :#{#request.updatedBy}, '%')))"
+            "(:#{#request.code} IS NULL OR LOWER(l.code) LIKE LOWER(CONCAT('%', :#{#request.code}, '%'))) " +
+            "AND (:#{#request.name} IS NULL OR LOWER(l.name) LIKE LOWER(CONCAT('%', :#{#request.name}, '%'))) " +
+            "AND (l.createdAt >= COALESCE(:#{#request.createdAtStart}, l.createdAt)) " +
+            "AND (l.createdAt <= COALESCE(:#{#request.createdAtEnd}, l.createdAt)) " +
+            "AND (COALESCE(:#{#request.updatedAtStart}, NULL) IS NULL OR (l.updatedAt IS NOT NULL AND l.updatedAt >= :#{#request.updatedAtStart})) " +
+            "AND (COALESCE(:#{#request.updatedAtEnd}, NULL) IS NULL OR (l.updatedAt IS NOT NULL AND l.updatedAt <= :#{#request.updatedAtEnd})) " +
+            "AND (:#{#request.createdBy} IS NULL OR LOWER(l.createdBy) LIKE LOWER(CONCAT('%', :#{#request.createdBy}, '%'))) " +
+            "AND (:#{#request.updatedBy} IS NULL OR LOWER(l.updatedBy) LIKE LOWER(CONCAT('%', :#{#request.updatedBy}, '%')))"
     )
     Page<Level> filter(LevelFilterRequest request, Pageable pageable);
 

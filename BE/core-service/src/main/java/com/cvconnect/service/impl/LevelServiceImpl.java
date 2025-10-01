@@ -7,16 +7,17 @@ import com.cvconnect.entity.Level;
 import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.LevelRepository;
 import com.cvconnect.service.LevelService;
+import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,10 +36,10 @@ public class LevelServiceImpl implements LevelService {
     @Override
     public FilterResponse<LevelDto> filter(LevelFilterRequest request) {
         if (request.getCreatedAtEnd() != null) {
-            request.setCreatedAtEnd(request.getCreatedAtEnd().plus(1, ChronoUnit.DAYS));
+            request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
         }
         if (request.getUpdatedAtEnd() != null) {
-            request.setUpdatedAtEnd(request.getUpdatedAtEnd().plus(1, ChronoUnit.DAYS));
+            request.setUpdatedAtEnd(DateUtils.endOfDay(request.getUpdatedAtEnd(), CommonConstants.ZONE.UTC));
         }
         Page<Level> page = levelRepository.filter(request, request.getPageable());
         List<LevelDto> dtos = ObjectMapperUtils.convertToList(page.getContent(), LevelDto.class);

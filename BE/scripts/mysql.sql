@@ -260,6 +260,57 @@
 # set label = 'Ngành nghề doanh nghiệp'
 # where code = 'ORG_INDUSTRY';
 
+update `cvconnect-user-service`.menus
+set label = 'Thành viên'
+where code = 'ORG_MEMBER';
+
+update `cvconnect-user-service`.menus
+set label = 'Lĩnh vực'
+where code = 'INDUSTRY';
+
+update `cvconnect-user-service`.menus
+set parent_id = 11, sort_order = 3
+where code = 'PROCESS_TYPE';
+
+update `cvconnect-user-service`.menus
+set sort_order = 10 * sort_order
+where parent_id is null;
+
+update `cvconnect-user-service`.menus
+set code = 'REPORT_JOB_AD', url = '/system-admin/report/job-ad'
+where code = 'REPORT_JOB_POST';
+
+delete from `cvconnect-user-service`.menus
+where code = 'ORG_INDUSTRY';
+
+update `cvconnect-user-service`.menus
+set sort_order = 100
+where code = 'ORG_MEMBER';
+
+alter table `cvconnect-user-service`.menus drop index label;
+
+insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, for_member_type, is_show, created_by) values
+(19, 'ORG_INFO', 'Thông tin chung', 'ri:info-card-line', '/org-info', null, 5, 'ORGANIZATION', 1, 'admin'),
+(20, 'REPORT_ORG_CANDIDATE', 'Ứng viên', 'mdi:circle-medium', '/org/report/candidate', 10, 1, 'ORGANIZATION', 1, 'admin'),
+(21, 'REPORT_ORG_JOB_AD', 'Tin tuyển dụng', 'mdi:circle-medium', '/org/report/job-ad', 10, 2, 'ORGANIZATION', 1, 'admin'),
+(22, 'ORG_CANDIDATE', 'Ứng viên', 'material-symbols:person-pin-outline', '/org/candidate', null, 25, 'ORGANIZATION', 1, 'admin'),
+(23, 'ORG_JOB_AD', 'Tin tuyển dụng', 'hugeicons:job-search', '/org/job-ad', null, 33, 'ORGANIZATION', 1, 'admin'),
+(24, 'ORG_ONBOARD', 'Danh sách onboard', 'material-symbols:person-check-outline-rounded', '/org/onboard', null, 37, 'ORGANIZATION', 1, 'admin'),
+(25, 'EMAIL_TEMPLATE', 'Mẫu Email', 'material-symbols:mail-asterisk-outline-sharp', '/org-admin/email-template', 40, 2, 'ORGANIZATION', 1, 'admin'),
+(26, 'ORG_CALENDAR', 'Lịch', 'material-symbols:calendar-month-outline-rounded', '/org/calendar', null, 75, 'ORGANIZATION', 1, 'admin');
+
+update `cvconnect-user-service`.menus
+set parent_id = 1
+where code in ('REPORT_ORG_CANDIDATE', 'REPORT_ORG_JOB_AD');
+
+update `cvconnect-user-service`.menus
+set parent_id = 4
+where code in ('EMAIL_TEMPLATE');
+
+update `cvconnect-user-service`.menus
+set icon = 'mdi:circle-medium'
+where code in ('EMAIL_TEMPLATE');
+
 #----------------------------------------------------------------------------------------------------------------------#
 
 # create database if not exists `cvconnect-notify-service`;
@@ -389,7 +440,3 @@
 # insert into `cvconnect-notify-service`.job_config
 # (job_name, schedule_type, expression, description, created_by) values
 # ('email_resend', 'FIXED_RATE', '900', 'Gửi lại email thất bại', 'admin');
-
-update `cvconnect-user-service`.menus
-set label = 'Thành viên'
-where code = 'ORG_MEMBER';
