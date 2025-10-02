@@ -5,7 +5,10 @@ import nmquan.commonlib.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 
 public enum NotifyErrorCode implements ErrorCode {
-    EMAIL_CONFIG_NOT_FOUND(2001, Messages.EMAIL_CONFIG_NOT_FOUND, HttpStatus.NOT_FOUND)
+    EMAIL_CONFIG_NOT_FOUND(2001, Messages.EMAIL_CONFIG_NOT_FOUND, HttpStatus.NOT_FOUND),
+    PLACEHOLDER_NOT_FOUND(2002, Messages.PLACEHOLDER_NOT_FOUND, HttpStatus.NOT_FOUND),
+    EMAIL_TEMPLATE_CODE_EXISTED(2003, Messages.EMAIL_TEMPLATE_CODE_EXISTED, HttpStatus.BAD_REQUEST),
+    EMAIL_TEMPLATE_NOT_FOUND(2004, Messages.EMAIL_TEMPLATE_NOT_FOUND, HttpStatus.NOT_FOUND)
     ;
 
     private final Integer code;

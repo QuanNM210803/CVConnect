@@ -440,3 +440,28 @@ where code in ('EMAIL_TEMPLATE');
 # insert into `cvconnect-notify-service`.job_config
 # (job_name, schedule_type, expression, description, created_by) values
 # ('email_resend', 'FIXED_RATE', '900', 'Gửi lại email thất bại', 'admin');
+
+INSERT INTO `cvconnect-notify-service`.placeholders (code, label, description, member_type_used, created_by)
+VALUES
+('${jobPosition}', 'Vị trí tuyển dụng', NULL, NULL, 'admin'),
+('${postTitle}', 'Tiêu đề tin đăng', NULL, NULL, 'admin'),
+('${currentRound}', 'Tên vòng hiện tại', NULL, NULL, 'admin'),
+('${interviewLink}', 'Đường dẫn phỏng vấn trực tuyến', NULL, NULL, 'admin'),
+('${officeName}', 'Tên văn phòng', NULL, NULL, 'admin'),
+('${officeAddress}', 'Địa chỉ văn phòng', NULL, NULL, 'admin'),
+('${candidateName}', 'Tên ứng viên', NULL, NULL, 'admin'),
+('${salutation}', 'Anh/Chị', NULL, NULL, 'admin'),
+('${companyName}', 'Tên công ty', NULL, NULL, 'admin'),
+('${hrName}', 'Tên HR', NULL, NULL, 'admin'),
+('${hrPhone}', 'SĐT HR', NULL, NULL, 'admin'),
+('${hrEmail}', 'Email HR', NULL, NULL, 'admin'),
+('${examDate}', 'Ngày làm bài thi', NULL, NULL, 'admin'),
+('${startTime}', 'Từ giờ', NULL, NULL, 'admin'),
+('${endTime}', 'Đến giờ', NULL, NULL, 'admin'),
+('${examDuration}', 'Thời lượng của đề thi', NULL, NULL, 'admin');
+
+alter table `cvconnect-notify-service`.email_templates
+drop index code;
+
+alter table `cvconnect-notify-service`.email_templates
+add index (code, org_id);

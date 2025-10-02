@@ -8,7 +8,6 @@ import com.cvconnect.entity.Department;
 import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.DepartmentRepository;
 import com.cvconnect.service.DepartmentService;
-import com.cvconnect.utils.CoreServiceUtils;
 import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;

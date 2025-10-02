@@ -13,10 +13,10 @@ import nmquan.commonlib.model.BaseEntity;
 public class EmailTemplatePlaceholder extends BaseEntity {
     @NotNull
     @Column(name = "email_template_id", nullable = false)
-    private Long emailTemplate;
+    private Long emailTemplateId;
 
     @NotNull
     @Column(name = "placeholder_id", nullable = false)
-    private Long placeholder;
+    private Long placeholderId;
 
 }
