@@ -7,6 +7,7 @@ import com.cvconnect.dto.EmailTemplateRequest;
 import com.cvconnect.service.EmailTemplateService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import nmquan.commonlib.annotation.InternalRequest;
 import nmquan.commonlib.constant.MessageConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
@@ -75,4 +76,12 @@ public class EmailTemplateController {
         emailTemplateService.delete(ids);
         return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.DELETE_SUCCESSFULLY));
     }
+
+    @InternalRequest
+    @GetMapping("/internal/get-by-org-id/{orgId}")
+    @Operation(summary = "Get Email Templates By Org Id (Internal)")
+    public ResponseEntity<Response<List<EmailTemplateDto>>> getEmailTemplatesByOrgId(@PathVariable Long orgId) {
+        return ResponseUtils.success(emailTemplateService.getByOrgId(orgId));
+    }
+
 }

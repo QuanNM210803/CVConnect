@@ -7,7 +7,8 @@ public enum EmailTemplateEnum {
     VERIFY_EMAIL("verify_email", "Verify your email"),
     RESET_PASSWORD("reset_password", "Reset your password"),
     VERIFY_ORG_EMAIL("verify_org_email", "Verify your organization email"),
-    VERIFY_MEMBER_ORG_EMAIL("verify_member_org_email", "Verify your member organization email")
+    VERIFY_MEMBER_ORG_EMAIL("verify_member_org_email", "Verify your member organization email"),
+    INVITE_JOIN_ORG("invite_join_org", "Invitation to join organization")
     ;
 
     private final String templateName;

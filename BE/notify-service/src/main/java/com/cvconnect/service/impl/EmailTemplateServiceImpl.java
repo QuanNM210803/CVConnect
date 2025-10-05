@@ -165,4 +165,13 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         emailTemplates.forEach(emailTemplate -> emailTemplate.setIsActive(request.getActive()));
         emailTemplateRepository.saveAll(emailTemplates);
     }
+
+    @Override
+    public List<EmailTemplateDto> getByOrgId(Long orgId) {
+        List<EmailTemplate> emailTemplates = emailTemplateRepository.findByOrgIdAndIsActive(orgId, null);
+        if (ObjectUtils.isEmpty(emailTemplates)) {
+            return List.of();
+        }
+        return ObjectMapperUtils.convertToList(emailTemplates, EmailTemplateDto.class);
+    }
 }

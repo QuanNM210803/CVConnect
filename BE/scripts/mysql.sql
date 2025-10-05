@@ -311,6 +311,33 @@ update `cvconnect-user-service`.menus
 set icon = 'mdi:circle-medium'
 where code in ('EMAIL_TEMPLATE');
 
+
+update `cvconnect-user-service`.menus
+set label = 'Vị trí tuyển dụng'
+where code = 'POSITION';
+
+CREATE TABLE IF NOT EXISTS `cvconnect-user-service`.invite_join_org (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+
+    `user_id` BIGINT NOT NULL,
+    `role_id` BIGINT NOT NULL,
+    `org_id` BIGINT NOT NULL,
+    `status` VARCHAR(100) NOT NULL ,
+
+    `is_active` TINYINT(1) DEFAULT 1,
+    `is_deleted` TINYINT(1) DEFAULT 0,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME,
+    `created_by` VARCHAR(100),
+    `updated_by` VARCHAR(100),
+
+    FOREIGN KEY (role_id) REFERENCES `cvconnect-user-service`.roles(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES `cvconnect-user-service`.users(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+alter table `cvconnect-user-service`.invite_join_org
+add column `token` VARCHAR(255) NOT NULL UNIQUE after org_id;
+
 #----------------------------------------------------------------------------------------------------------------------#
 
 # create database if not exists `cvconnect-notify-service`;
@@ -465,3 +492,6 @@ drop index code;
 
 alter table `cvconnect-notify-service`.email_templates
 add index (code, org_id);
+
+alter table `cvconnect-notify-service`.email_logs
+modify column template TEXT;

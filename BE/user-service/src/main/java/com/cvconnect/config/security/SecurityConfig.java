@@ -1,4 +1,4 @@
-package com.cvconnect.config.security;
+ package com.cvconnect.config.security;
 
 import com.cvconnect.config.oauth2.OAuth2FailureHandler;
 import com.cvconnect.config.oauth2.OAuth2SuccessHandler;
@@ -35,7 +35,8 @@ public class SecurityConfig {
 
     public static final String[] PUBLIC_URLS = {
             "/v3/api-docs", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html",
-            "/auth/**", "/oauth2/authorization/google", "/login/oauth2/code/**"
+            "/auth/**", "/oauth2/authorization/google", "/login/oauth2/code/**",
+            "/user/internal/**", "/org-member/reply-invite-join-org"
     };
 
     @Bean

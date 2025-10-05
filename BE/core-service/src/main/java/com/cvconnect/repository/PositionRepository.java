@@ -30,7 +30,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
             "WHERE p.id = :id")
     Position findByIdAndOrgId(Long id, Long orgId);
 
-    @Query("SELECT DISTINCT new com.cvconnect.dto.position.PositionDto(p.id, p.name, p.code, p.isActive, p.createdBy, p.updatedBy, p.createdAt, p.updatedAt, " +
+    @Query("SELECT DISTINCT new com.cvconnect.dto.position.PositionDto(p.id, p.code, p.name, p.isActive, p.createdBy, p.updatedBy, p.createdAt, p.updatedAt, " +
             "d.id, d.name, d.code) FROM Position p " +
             "JOIN Department d ON d.id = p.departmentId " +
             "JOIN Organization o ON o.id = d.orgId AND o.id = :#{#request.orgId} " +

@@ -21,4 +21,7 @@ public class OrgAddressDto extends BaseDto<Instant> {
     private String district;
     private String ward;
     private String detailAddress;
+
+    // attribute expansion
+    private String displayAddress;
 }

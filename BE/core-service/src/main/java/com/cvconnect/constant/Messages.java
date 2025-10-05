@@ -24,6 +24,14 @@ public class Messages {
     public static final String INDUSTRY_CODE_ALREADY_EXISTS = "industry.code.already.exists";
     public static final String INDUSTRY_SUB_CODE_DUPLICATED = "industry.sub.code.duplicated";
     public static final String INDUSTRY_SUB_CODE_EXISTS = "industry.sub.code.exists";
+    public static final String DUE_DATE_MUST_BE_IN_FUTURE = "due.date.must.be.in.future";
+    public static final String ORG_POSITION_LEVEL_NOT_FOUND = "org.position.level.not.found";
+    public static final String WORK_LOCATION_NOT_FOUND = "work.location.not.found";
+    public static final String SALARY_FROM_TO_INVALID = "salary.from.to.invalid";
+    public static final String JOB_AD_STATUS_INVALID = "job.ad.status.invalid";
+    public static final String EMAIL_TEMPLATE_ID_REQUIRED = "email.template.id.required";
+    public static final String EMAIL_TEMPLATE_NOT_FOUND = "email.template.not.found";
+    public static final String HR_CONTACT_NOT_FOUND = "hr.contact.not.found";
 
 
     /*
@@ -56,6 +64,20 @@ public class Messages {
     public static final String INDUSTRY_NAME_REQUIRED = "industry.name.required";
     public static final String INDUSTRY_SUB_CODE_REQUIRED = "industry.sub.code.required";
     public static final String INDUSTRY_SUB_NAME_REQUIRED = "industry.sub.name.required";
+    public static final String JOB_AD_TITLE_REQUIRED = "job.ad.title.required";
+    public static final String POSITION_ID_REQUIRED = "job.ad.position.id.required";
+    public static final String POSITION_LEVEL_ID_REQUIRED = "job.ad.position.level.id.required";
+    public static final String WORK_LOCATION_ID_REQUIRED = "job.ad.work.location.id.required";
+    public static final String JOB_TYPE_REQUIRED = "job.ad.job.type.required";
+    public static final String DUE_DATE_REQUIRED = "job.ad.due.date.required";
+    public static final String QUANTITY_REQUIRED = "job.ad.quantity.required";
+    public static final String SALARY_TYPE_REQUIRED = "job.ad.salary.type.required";
+    public static final String CURRENCY_TYPE_REQUIRED = "job.ad.currency.type.required";
+    public static final String DESCRIPTION_REQUIRED = "job.ad.description.required";
+    public static final String HR_CONTACT_ID_REQUIRED = "job.ad.hr.contact.id.required";
+    public static final String JOB_AD_STATUS_REQUIRED = "job.ad.status.required";
+    public static final String QUANTITY_MIN_LENGTH = "job.ad.quantity.min.length";
+
 
     /*
     * Other Messages

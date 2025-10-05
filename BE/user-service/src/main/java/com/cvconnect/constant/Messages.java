@@ -18,6 +18,8 @@ public class Messages {
     public static final String CANNOT_DELETE_ROLE="cannot.delete.role";
     public static final String LOGO_REQUIRE="logo.require";
     public static final String ACCOUNT_REGISTERED_AS_ORG_MEMBER="account.registered.as.org.member";
+    public static final String USER_JOINED_ORG="user.joined.org";
+    public static final String USER_BELONG_TO_ANOTHER_ORG="user.belong.to.another.org";
 
     /*
      * Validation messages
@@ -39,6 +41,8 @@ public class Messages {
     public static final String ORG_NAME_REQUIRE = "org.name.require";
     public static final String PROVINCE_REQUIRE = "org.address.province.require";
     public static final String DETAIL_ADDRESS_REQUIRE = "org.address.detailAddress.require";
+    public static final String INVITE_NOT_FOUND = "invite.not.found";
+    public static final String STATUS_NOT_BLANK = "status.not.blank";
 
     /*
      * Other messages
@@ -50,5 +54,6 @@ public class Messages {
     public static final String REQUEST_RESET_PASSWORD_SUCCESS="request.reset.password.success";
     public static final String RESET_PASSWORD_SUCCESS="reset.password.success";
     public static final String REQUEST_RESEND_VERIFY_EMAIL_SUCCESS="request.resend.verify.email.success";
+    public static final String SEND_INVITE_SUCCESS="send.invite.success";
 }
 

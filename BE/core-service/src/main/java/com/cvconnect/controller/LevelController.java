@@ -36,7 +36,7 @@ public class LevelController {
 
     @GetMapping("/filter")
     @Operation(summary = "Filter levels")
-    @PreAuthorize("hasAnyAuthority('LEVEL:VIEW')")
+    @PreAuthorize("hasAnyAuthority('LEVEL:VIEW','ORG_ADMIN')")
     public ResponseEntity<Response<FilterResponse<LevelDto>>> filter(@Valid @ModelAttribute LevelFilterRequest request) {
         return ResponseUtils.success(levelService.filter(request));
     }

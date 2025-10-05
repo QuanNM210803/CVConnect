@@ -33,4 +33,9 @@ public interface EmailTemplateRepository extends JpaRepository<EmailTemplate, Lo
     )
     Page<EmailTemplate> filter(EmailTemplateFilterRequest request, Pageable pageable);
 
+    @Query("SELECT et FROM EmailTemplate et " +
+            "WHERE et.orgId = :orgId " +
+            "AND (:active IS NULL OR et.isActive = :active)")
+    List<EmailTemplate> findByOrgIdAndIsActive(Long orgId, Boolean active);
+
 }

@@ -1,5 +1,6 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.org.OrganizationRequest;
 import com.cvconnect.service.OrgService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,5 +28,12 @@ public class OrgController {
     public ResponseEntity<Response<IDResponse<Long>>> createOrg(@Valid @RequestPart("data") OrganizationRequest data,
                                                                     @RequestPart("files") MultipartFile[] files) {
         return ResponseUtils.success(orgService.createOrg(data, files));
+    }
+
+    @InternalRequest
+    @GetMapping("/internal/get-by-id/{orgId}")
+    @Operation(summary = "Get Organization by id")
+    public ResponseEntity<Response<OrgDto>> createOrg(@PathVariable Long orgId) {
+        return ResponseUtils.success(orgService.findById(orgId));
     }
 }

@@ -29,7 +29,7 @@ public class Filter implements GlobalFilter {
     private final String[] PUBLIC_ENDPOINTS = {
             "/v3/api-docs", "/swagger-ui/", "/swagger-ui.html", "/swagger-ui/index.html",
             // user service
-            "/user/auth/", "/user/oauth2/authorization/google", "/user/login/oauth2/code",
+            "/user/auth/", "/user/oauth2/authorization/google", "/user/login/oauth2/code", "/user/org-member/reply-invite-join-org",
 
             // notify service
 

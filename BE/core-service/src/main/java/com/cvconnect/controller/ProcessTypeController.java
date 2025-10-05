@@ -5,9 +5,7 @@ import com.cvconnect.dto.processType.ProcessTypeRequest;
 import com.cvconnect.service.ProcessTypeService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.constant.MessageConstants;
-import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ResponseUtils;
@@ -43,7 +41,7 @@ public class ProcessTypeController {
 
     @GetMapping("/get-all")
     @Operation(summary = "Get all process type")
-    @PreAuthorize("hasAnyAuthority('PROCESS_TYPE:VIEW')")
+    @PreAuthorize("hasAnyAuthority('PROCESS_TYPE:VIEW', 'ORG_ADMIN')")
     public ResponseEntity<Response<List<ProcessTypeDto>>> getAllProcessType() {
         return ResponseUtils.success(processTypeService.getAllProcessType());
     }

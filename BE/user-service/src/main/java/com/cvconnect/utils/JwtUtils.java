@@ -70,5 +70,9 @@ public class JwtUtils {
     public String generateTokenResetPassword(){
         return UUID.randomUUID().toString();
     }
+
+    public String generateTokenInviteJoinOrg(){
+        return UUID.randomUUID().toString();
+    }
 }
 

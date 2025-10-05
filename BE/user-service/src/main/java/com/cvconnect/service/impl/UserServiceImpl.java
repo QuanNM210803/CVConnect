@@ -21,13 +21,16 @@ import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Service
@@ -42,6 +45,7 @@ public class UserServiceImpl implements UserService {
     private CandidateService candidateService;
     @Autowired
     private ManagementMemberService managementMemberService;
+    @Lazy
     @Autowired
     private OrgMemberService orgMemberService;
     @Autowired
@@ -132,6 +136,24 @@ public class UserServiceImpl implements UserService {
         }
         user.setIsEmailVerified(emailVerified);
         userRepository.save(user);
+    }
+
+    @Override
+    public Boolean checkOrgUserRole(Long userId, String roleCode, Long orgId) {
+        return userRepository.checkOrgUserRole(userId, roleCode, orgId);
+    }
+
+    @Override
+    public List<UserDto> getUsersByRoleCodeOrg(String roleCode) {
+        Long orgId = WebUtils.checkCurrentOrgId();
+        List<User> users = userRepository.getUsersByRoleCodeOrg(roleCode, orgId, true);
+        if(ObjectUtils.isEmpty(users)){
+            return List.of();
+        }
+        List<UserDto> userDtos = ObjectMapperUtils.convertToList(users, UserDto.class);
+        return userDtos.stream()
+                .map(UserDto::configResponse)
+                .toList();
     }
 
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {

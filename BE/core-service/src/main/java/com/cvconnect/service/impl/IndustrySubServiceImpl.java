@@ -1,13 +1,19 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.dto.IndustrySubDto;
+import com.cvconnect.dto.IndustrySubFilterRequest;
 import com.cvconnect.entity.IndustrySub;
 import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.IndustrySubRepository;
 import com.cvconnect.service.IndustrySubService;
+import nmquan.commonlib.constant.CommonConstants;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
+import nmquan.commonlib.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +75,19 @@ public class IndustrySubServiceImpl implements IndustrySubService {
         if(Objects.nonNull(ids) && !ids.isEmpty()){
             industrySubRepository.deleteAllById(ids);
         }
+    }
+
+    @Override
+    public FilterResponse<IndustrySubDto> filter(IndustrySubFilterRequest request) {
+        if (request.getCreatedAtEnd() != null) {
+            request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
+        }
+        if (request.getUpdatedAtEnd() != null) {
+            request.setUpdatedAtEnd(DateUtils.endOfDay(request.getUpdatedAtEnd(), CommonConstants.ZONE.UTC));
+        }
+        Page<IndustrySub> page = industrySubRepository.filter(request, request.getPageable());
+        List<IndustrySubDto> dtos = ObjectMapperUtils.convertToList(page.getContent(), IndustrySubDto.class);
+        return PageUtils.toFilterResponse(page, dtos);
     }
 
 }

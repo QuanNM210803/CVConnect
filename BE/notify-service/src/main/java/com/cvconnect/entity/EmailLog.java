@@ -48,7 +48,7 @@ public class EmailLog extends BaseEntity {
     private Long emailTemplateId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "template", length = 100)
+    @Column(name = "template")
     private EmailTemplateEnum template;
 
     @Column(name = "template_variables")

@@ -16,4 +16,5 @@ public interface EmailTemplateService {
     EmailTemplateDto detail(Long id);
     void delete(List<Long> ids);
     void changeStatusActive(ChangeStatusActiveRequest request);
+    List<EmailTemplateDto> getByOrgId(Long orgId);
 }

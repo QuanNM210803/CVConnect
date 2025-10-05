@@ -3,6 +3,7 @@ package com.cvconnect.service.impl;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.industry.IndustryDto;
 import com.cvconnect.dto.org.OrgAddressDto;
+import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.org.OrgIndustryDto;
 import com.cvconnect.dto.org.OrganizationRequest;
 import com.cvconnect.entity.Organization;
@@ -12,10 +13,12 @@ import com.cvconnect.service.*;
 import nmquan.commonlib.dto.BaseDto;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.apache.tomcat.util.bcel.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -93,5 +96,14 @@ public class OrgServiceImpl implements OrgService {
         return IDResponse.<Long>builder()
                 .id(org.getId())
                 .build();
+    }
+
+    @Override
+    public OrgDto findById(Long orgId) {
+        Organization org = orgRepository.findById(orgId).orElse(null);
+        if(ObjectUtils.isEmpty(org)) {
+            return null;
+        }
+        return ObjectMapperUtils.convertToObject(org, OrgDto.class);
     }
 }

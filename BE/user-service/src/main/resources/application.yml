@@ -75,6 +75,7 @@ frontend:
   url-organization-member: http://localhost:3000
   url-verify-email: ${frontend.url-candidate}/account/verify-email
   url-reset-password: ${frontend.url-candidate}/account/recovery
+  url-invite-join-org: ${frontend.url-candidate}/invite-join-org
 
 open-api:
   url-gateway-localhost: http://localhost:8888/api/v1${server.servlet.context-path}
