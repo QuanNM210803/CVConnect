@@ -1,4 +1,4 @@
-package com.cvconnect.dto.jobAd;
+package com.cvconnect.dto.enums;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JobTypeDto {
+public class JobAdStatusDto {
     private String name;
     private String description;
+    private int level;
 }

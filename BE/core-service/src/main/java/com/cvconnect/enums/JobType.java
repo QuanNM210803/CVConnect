@@ -1,6 +1,6 @@
 package com.cvconnect.enums;
 
-import com.cvconnect.dto.jobAd.JobTypeDto;
+import com.cvconnect.dto.enums.JobTypeDto;
 import lombok.Getter;
 
 import java.util.Arrays;

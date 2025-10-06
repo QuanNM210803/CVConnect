@@ -1,9 +1,9 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.jobAd.CurrencyTypeDto;
-import com.cvconnect.dto.jobAd.JobAdStatusDto;
-import com.cvconnect.dto.jobAd.JobTypeDto;
-import com.cvconnect.dto.jobAd.SalaryTypeDto;
+import com.cvconnect.dto.enums.CurrencyTypeDto;
+import com.cvconnect.dto.enums.JobAdStatusDto;
+import com.cvconnect.dto.enums.JobTypeDto;
+import com.cvconnect.dto.enums.SalaryTypeDto;
 import com.cvconnect.enums.CurrencyType;
 import com.cvconnect.enums.JobAdStatus;
 import com.cvconnect.enums.JobType;

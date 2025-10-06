@@ -1,6 +1,6 @@
 package com.cvconnect.enums;
 
-import com.cvconnect.dto.jobAd.CurrencyTypeDto;
+import com.cvconnect.dto.enums.CurrencyTypeDto;
 import lombok.Getter;
 
 import java.util.Arrays;

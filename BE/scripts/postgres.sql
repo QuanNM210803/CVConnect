@@ -562,3 +562,68 @@ INSERT INTO industry_sub (code, name, industry_id, created_by) VALUES
 ('MIN_Safety', 'Chuyên viên an toàn mỏ', 26, 'admin'),
 ('MIN_Processing', 'Chế biến khoáng sản', 26, 'admin'),
 ('MIN_Survey', 'Khảo sát địa chất', 26, 'admin');
+
+CREATE TABLE IF NOT EXISTS candidate_info_apply (
+    id BIGSERIAL PRIMARY KEY,
+
+    candidate_id BIGINT NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(50),
+    cv_file_id BIGINT NOT NULL,
+    cover_letter TEXT,
+
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+
+    FOREIGN KEY (cv_file_id) REFERENCES attach_file (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS job_ad_candidate (
+    id BIGSERIAL PRIMARY KEY,
+
+    job_ad_id BIGINT NOT NULL,
+    candidate_info_id BIGINT NOT NULL,
+    apply_date TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    candidate_status VARCHAR(100) NOT NULL,
+    eliminate_reason_type TEXT,
+    eliminate_reason_detail TEXT,
+
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+
+    FOREIGN KEY (job_ad_id) REFERENCES job_ad (id) ON DELETE CASCADE,
+    FOREIGN KEY (candidate_info_id) REFERENCES candidate_info_apply (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS job_ad_process_candidate (
+    id BIGSERIAL PRIMARY KEY,
+
+    job_ad_process_id BIGINT NOT NULL,
+    job_ad_candidate_id BIGINT NOT NULL,
+    action_date TIMESTAMP WITHOUT TIME ZONE,
+    is_current_process BOOLEAN DEFAULT FALSE,
+    note TEXT,
+
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+
+    FOREIGN KEY (job_ad_process_id) REFERENCES job_ad_process (id) ON DELETE CASCADE,
+    FOREIGN KEY (job_ad_candidate_id) REFERENCES job_ad_candidate (id) ON DELETE CASCADE
+);
+
+alter table job_ad_candidate
+add column if not exists onboard_date TIMESTAMP WITHOUT TIME ZONE;

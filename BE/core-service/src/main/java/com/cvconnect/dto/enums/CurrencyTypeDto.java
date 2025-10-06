@@ -1,4 +1,4 @@
-package com.cvconnect.dto.jobAd;
+package com.cvconnect.dto.enums;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
