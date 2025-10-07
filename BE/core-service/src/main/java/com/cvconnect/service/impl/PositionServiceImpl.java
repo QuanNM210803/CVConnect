@@ -1,11 +1,14 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.*;
 import com.cvconnect.dto.common.ChangeStatusActiveRequest;
 import com.cvconnect.dto.department.DepartmentDto;
 import com.cvconnect.dto.position.PositionDto;
 import com.cvconnect.dto.position.PositionFilterRequest;
 import com.cvconnect.dto.position.PositionRequest;
+import com.cvconnect.dto.positionLevel.PositionLevelDto;
+import com.cvconnect.dto.positionLevel.PositionLevelRequest;
+import com.cvconnect.dto.positionProcess.PositionProcessDto;
+import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.cvconnect.entity.Position;
 import com.cvconnect.enums.CoreErrorCode;
@@ -29,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -198,13 +202,14 @@ public class PositionServiceImpl implements PositionService {
             if(!ProcessTypeEnum.ONBOARD.name().equals(endProcessType.getCode())){
                 throw new AppException(CoreErrorCode.LAST_PROCESS_MUST_BE_ONBOARD);
             }
+            AtomicInteger counter = new AtomicInteger(1);
             List<PositionProcessDto> positionProcessDtos = positionProcessRequests.stream()
                     .map(req -> PositionProcessDto.builder()
                             .id(req.getId())
                             .name(req.getName())
                             .processTypeId(req.getProcessTypeId())
                             .positionId(positionId)
-                            .sortOrder(req.getSortOrder())
+                            .sortOrder(counter.getAndIncrement())
                             .build()
                     ).collect(Collectors.toList());
             positionProcessService.create(positionProcessDtos);

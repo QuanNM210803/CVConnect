@@ -1,7 +1,7 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.IndustrySubDto;
-import com.cvconnect.dto.IndustrySubFilterRequest;
+import com.cvconnect.dto.industrySub.IndustrySubDto;
+import com.cvconnect.dto.industrySub.IndustrySubFilterRequest;
 import com.cvconnect.entity.IndustrySub;
 import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.IndustrySubRepository;

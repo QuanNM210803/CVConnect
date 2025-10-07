@@ -1,7 +1,7 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.IndustrySubDto;
-import com.cvconnect.dto.IndustrySubRequest;
+import com.cvconnect.dto.industrySub.IndustrySubDto;
+import com.cvconnect.dto.industrySub.IndustrySubRequest;
 import com.cvconnect.dto.industry.IndustryDto;
 import com.cvconnect.dto.industry.IndustryFilterRequest;
 import com.cvconnect.dto.industry.IndustryRequest;

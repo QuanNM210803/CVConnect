@@ -1,6 +1,6 @@
-package com.cvconnect.dto.jobAd;
+package com.cvconnect.dto.candidateInfoApply;
 
-import com.cvconnect.dto.processType.ProcessTypeDto;
+import com.cvconnect.dto.attachFile.AttachFileDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,12 +15,19 @@ import java.time.Instant;
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JobAdProcessDto extends BaseDto<Instant> {
-    private String name;
-    private Integer sortOrder;
-    private Long jobAdId;
-    private Long processTypeId;
+public class CandidateInfoApplyDto extends BaseDto<Instant> {
+    private Long candidateId;
+
+    private String fullName;
+
+    private String email;
+
+    private String phone;
+
+    private Long cvFileId;
+
+    private String coverLetter;
 
     // attribute expansion
-    private ProcessTypeDto processType;
+    private AttachFileDto attachFile;
 }

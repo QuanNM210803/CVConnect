@@ -174,4 +174,18 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         }
         return ObjectMapperUtils.convertToList(emailTemplates, EmailTemplateDto.class);
     }
+
+    @Override
+    public EmailTemplateDto getById(Long id) {
+        EmailTemplate emailTemplate = emailTemplateRepository.findById(id)
+                .orElseThrow(() -> new AppException(NotifyErrorCode.EMAIL_TEMPLATE_NOT_FOUND));
+        EmailTemplateDto emailTemplateDto = ObjectMapperUtils.convertToObject(emailTemplate, EmailTemplateDto.class);
+
+        List<PlaceholderDto> placeholders = placeholderService.getByEmailTemplateId(id);
+        List<String> placeholderCodes = placeholders.stream()
+                .map(PlaceholderDto::getCode)
+                .toList();
+        emailTemplateDto.setPlaceholderCodes(placeholderCodes);
+        return emailTemplateDto;
+    }
 }

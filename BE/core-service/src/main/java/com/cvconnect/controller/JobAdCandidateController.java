@@ -1,13 +1,33 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.constant.Messages;
+import com.cvconnect.dto.jobAdCandidate.ApplyRequest;
 import com.cvconnect.service.JobAdCandidateService;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+import nmquan.commonlib.dto.response.IDResponse;
+import nmquan.commonlib.dto.response.Response;
+import nmquan.commonlib.utils.LocalizationUtils;
+import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/job-ad-candidate")
 public class JobAdCandidateController {
     @Autowired
     private JobAdCandidateService jobAdCandidateService;
+    @Autowired
+    private LocalizationUtils localizationUtils;
+
+    @PostMapping("/apply")
+    @Operation(summary = "Apply for a job ad")
+    @PreAuthorize("hasAnyAuthority('CANDIDATE')")
+    public ResponseEntity<Response<IDResponse<Long>>> apply(@Valid @RequestPart ApplyRequest request,
+                                                            @RequestPart(required = false) MultipartFile cvFile) {
+        return ResponseUtils.success(jobAdCandidateService.apply(request, cvFile), localizationUtils.getLocalizedMessage(Messages.APPLY_SUCCESS));
+    }
 }

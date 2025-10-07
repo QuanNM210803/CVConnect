@@ -156,6 +156,16 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+    @Override
+    public UserDto getUserById(Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return null;
+        }
+        UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
+        return userDto.configResponse();
+    }
+
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {
         RoleUserDto roleUserDto = roleUserService.findByUserIdAndRoleId(userId, roleId);
         if(roleUserDto == null) {

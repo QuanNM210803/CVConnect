@@ -1,7 +1,7 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.PositionLevelDto;
-import com.cvconnect.dto.PositionLevelProjection;
+import com.cvconnect.dto.positionLevel.PositionLevelDto;
+import com.cvconnect.dto.positionLevel.PositionLevelProjection;
 import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.entity.PositionLevel;
 import com.cvconnect.repository.PositionLevelRepository;

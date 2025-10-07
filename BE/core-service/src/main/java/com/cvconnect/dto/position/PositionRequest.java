@@ -1,8 +1,8 @@
 package com.cvconnect.dto.position;
 
 import com.cvconnect.constant.Messages;
-import com.cvconnect.dto.PositionLevelRequest;
-import com.cvconnect.dto.PositionProcessRequest;
+import com.cvconnect.dto.positionLevel.PositionLevelRequest;
+import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

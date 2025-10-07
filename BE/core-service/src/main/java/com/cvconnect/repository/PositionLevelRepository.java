@@ -1,8 +1,7 @@
 package com.cvconnect.repository;
 
-import com.cvconnect.dto.PositionLevelProjection;
+import com.cvconnect.dto.positionLevel.PositionLevelProjection;
 import com.cvconnect.entity.PositionLevel;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

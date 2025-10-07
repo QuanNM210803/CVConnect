@@ -1,7 +1,7 @@
 package com.cvconnect.service;
 
-import com.cvconnect.dto.IndustrySubDto;
-import com.cvconnect.dto.IndustrySubFilterRequest;
+import com.cvconnect.dto.industrySub.IndustrySubDto;
+import com.cvconnect.dto.industrySub.IndustrySubFilterRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 
 import java.util.List;

@@ -43,4 +43,11 @@ public class UserController {
     public ResponseEntity<Response<List<UserDto>>> getUsersByRoleCodeOrg(@PathVariable String roleCode) {
         return ResponseUtils.success(userService.getUsersByRoleCodeOrg(roleCode));
     }
+
+    @InternalRequest
+    @GetMapping("/internal/get-by-id/{userId}")
+    @Operation(summary = "Get user by ID")
+    public ResponseEntity<Response<UserDto>> getUserById(@PathVariable Long userId) {
+        return ResponseUtils.success(userService.getUserById(userId));
+    }
 }

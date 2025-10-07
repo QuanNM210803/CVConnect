@@ -1,7 +1,7 @@
 package com.cvconnect.dto.position;
 
-import com.cvconnect.dto.PositionLevelDto;
-import com.cvconnect.dto.PositionProcessDto;
+import com.cvconnect.dto.positionLevel.PositionLevelDto;
+import com.cvconnect.dto.positionProcess.PositionProcessDto;
 import com.cvconnect.dto.department.DepartmentDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

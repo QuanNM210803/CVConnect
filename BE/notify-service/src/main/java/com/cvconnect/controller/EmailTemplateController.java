@@ -84,4 +84,11 @@ public class EmailTemplateController {
         return ResponseUtils.success(emailTemplateService.getByOrgId(orgId));
     }
 
+    @InternalRequest
+    @GetMapping("/internal/get-by-id/{id}")
+    @Operation(summary = "Get Email Template By Id (Internal)")
+    public ResponseEntity<Response<EmailTemplateDto>> getEmailTemplateById(@PathVariable Long id) {
+        return ResponseUtils.success(emailTemplateService.getById(id));
+    }
+
 }

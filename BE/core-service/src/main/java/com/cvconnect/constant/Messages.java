@@ -32,6 +32,16 @@ public class Messages {
     public static final String EMAIL_TEMPLATE_ID_REQUIRED = "email.template.id.required";
     public static final String EMAIL_TEMPLATE_NOT_FOUND = "email.template.not.found";
     public static final String HR_CONTACT_NOT_FOUND = "hr.contact.not.found";
+    public static final String FILE_TOO_LARGE = "file.too.large";
+    public static final String CV_FILE_NOT_FOUND = "cv.file.not.found";
+    public static final String FULL_NAME_REQUIRED = "full.name.required";
+    public static final String EMAIL_REQUIRED = "email.required";
+    public static final String PHONE_REQUIRED = "phone.required";
+    public static final String CANDIDATE_NOT_FOUND = "candidate.not.found";
+    public static final String CANDIDATE_INFO_APPLY_NOT_FOUND = "candidate.info.apply.not.found";
+    public static final String JOB_AD_NOT_FOUND = "job.ad.not.found";
+    public static final String JOB_AD_EXPIRED = "job.ad.expired";
+    public static final String JOB_AD_STOP_RECRUITMENT = "job.ad.stop.recruitment";
 
 
     /*
@@ -77,10 +87,12 @@ public class Messages {
     public static final String HR_CONTACT_ID_REQUIRED = "job.ad.hr.contact.id.required";
     public static final String JOB_AD_STATUS_REQUIRED = "job.ad.status.required";
     public static final String QUANTITY_MIN_LENGTH = "job.ad.quantity.min.length";
+    public static final String JOB_AD_REQUIRED = "job.ad.required";
 
 
     /*
     * Other Messages
     * */
     public static final String UPLOAD_FILE_SUCCESS = "upload.file.success";
+    public static final String APPLY_SUCCESS = "apply.success";
 }

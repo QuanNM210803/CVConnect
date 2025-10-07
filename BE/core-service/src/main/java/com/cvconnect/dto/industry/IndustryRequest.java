@@ -1,7 +1,7 @@
 package com.cvconnect.dto.industry;
 
 import com.cvconnect.constant.Messages;
-import com.cvconnect.dto.IndustrySubRequest;
+import com.cvconnect.dto.industrySub.IndustrySubRequest;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

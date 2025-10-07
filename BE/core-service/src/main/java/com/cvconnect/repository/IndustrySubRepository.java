@@ -1,6 +1,6 @@
 package com.cvconnect.repository;
 
-import com.cvconnect.dto.IndustrySubFilterRequest;
+import com.cvconnect.dto.industrySub.IndustrySubFilterRequest;
 import com.cvconnect.entity.IndustrySub;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

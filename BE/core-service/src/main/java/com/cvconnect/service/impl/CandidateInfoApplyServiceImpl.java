@@ -1,0 +1,71 @@
+package com.cvconnect.service.impl;
+
+import com.cvconnect.dto.attachFile.AttachFileDto;
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyFilterRequest;
+import com.cvconnect.entity.CandidateInfoApply;
+import com.cvconnect.repository.CandidateInfoApplyRepository;
+import com.cvconnect.service.AttachFileService;
+import com.cvconnect.service.CandidateInfoApplyService;
+import nmquan.commonlib.dto.response.FilterResponse;
+import nmquan.commonlib.utils.ObjectMapperUtils;
+import nmquan.commonlib.utils.PageUtils;
+import nmquan.commonlib.utils.WebUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@Service
+public class CandidateInfoApplyServiceImpl implements CandidateInfoApplyService {
+    @Autowired
+    private CandidateInfoApplyRepository candidateInfoApplyRepository;
+    @Autowired
+    private AttachFileService attachFileService;
+
+    @Override
+    public FilterResponse<CandidateInfoApplyDto> filter(CandidateInfoApplyFilterRequest request) {
+        Long candidateId = WebUtils.getCurrentUserId();
+        request.setCandidateId(candidateId);
+        Page<CandidateInfoApply> page = candidateInfoApplyRepository.filter(request, request.getPageable());
+        List<CandidateInfoApplyDto> dtos = ObjectMapperUtils.convertToList(page.getContent(), CandidateInfoApplyDto.class);
+
+        // get attach file CV
+        List<Long> attachFileIds = dtos.stream()
+                .map(CandidateInfoApplyDto::getCvFileId)
+                .toList();
+        List<AttachFileDto> attachFileDtos = attachFileService.getAttachFiles(attachFileIds);
+        Map<Long, AttachFileDto> attachFileMap = attachFileDtos.stream()
+                .collect(Collectors.toMap(AttachFileDto::getId, Function.identity()));
+        dtos.forEach(dto -> dto.setAttachFile(attachFileMap.get(dto.getCvFileId())));
+        return PageUtils.toFilterResponse(page, dtos);
+    }
+
+    @Override
+    public CandidateInfoApplyDto getById(Long candidateInfoApplyId) {
+        CandidateInfoApply candidateInfoApply = candidateInfoApplyRepository.findById(candidateInfoApplyId).orElse(null);
+        if(ObjectUtils.isEmpty(candidateInfoApply)) {
+            return null;
+        }
+        CandidateInfoApplyDto dto = ObjectMapperUtils.convertToObject(candidateInfoApply, CandidateInfoApplyDto.class);
+        List<AttachFileDto> attachFileDtos = attachFileService.getAttachFiles(List.of(dto.getCvFileId()));
+        if(!attachFileDtos.isEmpty()) {
+            dto.setAttachFile(attachFileDtos.get(0));
+        }
+        return dto;
+    }
+
+    @Override
+    public List<Long> create(List<CandidateInfoApplyDto> dtos) {
+        List<CandidateInfoApply> entities = ObjectMapperUtils.convertToList(dtos, CandidateInfoApply.class);
+        candidateInfoApplyRepository.saveAll(entities);
+        return entities.stream()
+                .map(CandidateInfoApply::getId)
+                .toList();
+    }
+}

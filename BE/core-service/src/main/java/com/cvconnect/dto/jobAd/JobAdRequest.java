@@ -1,7 +1,7 @@
 package com.cvconnect.dto.jobAd;
 
 import com.cvconnect.constant.Messages;
-import com.cvconnect.dto.PositionProcessRequest;
+import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.cvconnect.enums.CurrencyType;
 import com.cvconnect.enums.JobAdStatus;
 import com.cvconnect.enums.JobType;
@@ -11,7 +11,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.PositionProcessDto;
-import com.cvconnect.dto.PositionProcessProjection;
+import com.cvconnect.dto.positionProcess.PositionProcessDto;
+import com.cvconnect.dto.positionProcess.PositionProcessProjection;
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.cvconnect.entity.PositionProcess;
 import com.cvconnect.repository.PositionProcessRepository;

@@ -1,4 +1,4 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.positionLevel;
 
 import nmquan.commonlib.dto.BaseRepositoryDto;
 

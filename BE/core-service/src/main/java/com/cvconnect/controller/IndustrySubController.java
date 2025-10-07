@@ -1,7 +1,7 @@
 package com.cvconnect.controller;
 
-import com.cvconnect.dto.IndustrySubDto;
-import com.cvconnect.dto.IndustrySubFilterRequest;
+import com.cvconnect.dto.industrySub.IndustrySubDto;
+import com.cvconnect.dto.industrySub.IndustrySubFilterRequest;
 import com.cvconnect.service.IndustrySubService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;

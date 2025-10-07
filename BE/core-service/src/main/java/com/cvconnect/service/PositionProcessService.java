@@ -1,6 +1,6 @@
 package com.cvconnect.service;
 
-import com.cvconnect.dto.PositionProcessDto;
+import com.cvconnect.dto.positionProcess.PositionProcessDto;
 
 import java.util.List;
 

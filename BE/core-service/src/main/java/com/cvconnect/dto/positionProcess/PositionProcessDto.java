@@ -1,4 +1,4 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.positionProcess;
 
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.fasterxml.jackson.annotation.JsonInclude;

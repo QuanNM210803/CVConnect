@@ -21,19 +21,23 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     @Autowired
     private Cloudinary cloudinary;
 
-    private static final int MAX_FILE_SIZE_MB = 5;
+    private static final int MAX_FILE_QUANTITY = 5;
     private static final String FOLDER_BASE = "cv-connect/";
     private static final String SUPPORTED_FILE_TYPES = "jpg, png, pdf, doc, docx";
+    private static final int MAX_FILE_SIZE_MB = 5;
 
     @Override
     public List<AttachFileDto> uploadFile(MultipartFile[] files, String folder) {
         try {
-            if(files.length > MAX_FILE_SIZE_MB){
-                throw new AppException(CoreErrorCode.UPLOAD_FILE_QUANTITY_EXCEED_LIMIT, MAX_FILE_SIZE_MB);
+            if(files.length > MAX_FILE_QUANTITY){
+                throw new AppException(CoreErrorCode.UPLOAD_FILE_QUANTITY_EXCEED_LIMIT, MAX_FILE_QUANTITY);
             }
             for(MultipartFile file : files){
                 if(!isAllowedFile(file.getContentType())){
                     throw new AppException(CoreErrorCode.FILE_FORMAT_NOT_SUPPORTED, SUPPORTED_FILE_TYPES);
+                }
+                if(file.getSize() > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                    throw new AppException(CoreErrorCode.FILE_TOO_LARGE, MAX_FILE_SIZE_MB);
                 }
             }
             if(folder == null || folder.isEmpty()){

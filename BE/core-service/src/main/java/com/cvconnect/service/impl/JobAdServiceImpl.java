@@ -1,12 +1,9 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.constant.Constants;
-import com.cvconnect.dto.PositionProcessRequest;
+import com.cvconnect.dto.jobAd.*;
+import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
-import com.cvconnect.dto.jobAd.JobAdIndustrySubDto;
-import com.cvconnect.dto.jobAd.JobAdProcessDto;
-import com.cvconnect.dto.jobAd.JobAdRequest;
-import com.cvconnect.dto.jobAd.JobAdWorkLocationDto;
 import com.cvconnect.dto.org.OrgAddressDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.cvconnect.entity.JobAd;
@@ -20,6 +17,7 @@ import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.service.RestTemplateService;
+import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +28,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -110,10 +109,11 @@ public class JobAdServiceImpl implements JobAdService {
         }
 
         if(!ObjectUtils.isEmpty(request.getPositionProcess())){
+            AtomicInteger sortOrder = new AtomicInteger(1);
             List<JobAdProcessDto> jobAdProcessDtos = request.getPositionProcess().stream()
                     .map(process -> JobAdProcessDto.builder()
                                 .name(process.getName())
-                                .sortOrder(process.getSortOrder())
+                                .sortOrder(sortOrder.getAndIncrement())
                                 .jobAdId(jobAd.getId())
                                 .processTypeId(process.getProcessTypeId())
                                 .build()
@@ -125,6 +125,15 @@ public class JobAdServiceImpl implements JobAdService {
         return IDResponse.<Long>builder()
                 .id(jobAd.getId())
                 .build();
+    }
+
+    @Override
+    public JobAdDto findById(Long id) {
+        JobAd jobAd = jobAdRepository.findById(id);
+        if(ObjectUtils.isEmpty(jobAd)){
+            return null;
+        }
+        return ObjectMapperUtils.convertToObject(jobAd, JobAdDto.class);
     }
 
     private void validateCreate(JobAdRequest request) {

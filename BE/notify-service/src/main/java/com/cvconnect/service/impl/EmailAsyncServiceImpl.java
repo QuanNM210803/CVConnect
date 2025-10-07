@@ -112,13 +112,23 @@ public class EmailAsyncServiceImpl {
             helper.setText(htmlContent, true);
             Transport.send(message);
         } else {
-            Message message = new MimeMessage(session);
+//            Message message = new MimeMessage(session);
+//            message.setHeader(EMAIL_LOG_ID_HEADER, emailLogId.toString());
+//            message.setFrom(new InternetAddress(sendEmailDto.getSender()));
+//            message.setRecipients(Message.RecipientType.BCC, addresses);
+//            message.setRecipients(Message.RecipientType.CC, ccAddresses);
+//            message.setSubject(sendEmailDto.getSubject());
+//            message.setText(sendEmailDto.getBody());
+//            Transport.send(message);
+
+            MimeMessage message = new MimeMessage(session);
             message.setHeader(EMAIL_LOG_ID_HEADER, emailLogId.toString());
-            message.setFrom(new InternetAddress(sendEmailDto.getSender()));
-            message.setRecipients(Message.RecipientType.BCC, addresses);
-            message.setRecipients(Message.RecipientType.CC, ccAddresses);
-            message.setSubject(sendEmailDto.getSubject());
-            message.setText(sendEmailDto.getBody());
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(sendEmailDto.getSender());
+            helper.setBcc(addresses);
+            helper.setCc(ccAddresses);
+            helper.setSubject(sendEmailDto.getSubject());
+            helper.setText(sendEmailDto.getBody(), true);
             Transport.send(message);
         }
     }

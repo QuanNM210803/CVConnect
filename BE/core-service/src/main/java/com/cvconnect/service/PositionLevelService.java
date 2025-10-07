@@ -1,6 +1,6 @@
 package com.cvconnect.service;
 
-import com.cvconnect.dto.PositionLevelDto;
+import com.cvconnect.dto.positionLevel.PositionLevelDto;
 
 import java.util.List;
 import java.util.Map;

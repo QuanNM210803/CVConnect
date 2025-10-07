@@ -20,4 +20,7 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
             "JOIN PositionLevel pl ON pl.positionId = p.id " +
             "WHERE d.isActive = true AND d.orgId = :orgId AND p.id = :positionId AND pl.id = :positionLevelId")
     boolean existsByOrgIdAndPositionIdAndPositionLevelId(Long orgId, Long positionId, Long positionLevelId);
+
+    @Query("SELECT ja FROM JobAd ja WHERE ja.id = :id")
+    JobAd findById(Long id);
 }

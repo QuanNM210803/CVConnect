@@ -24,4 +24,5 @@ public class EmailTemplateDto extends BaseDto<Instant> {
 
     // expansion fields
 //    private List<PlaceholderDto> placeholders;
+    private List<String> placeholderCodes;
 }

@@ -1,7 +1,7 @@
 package com.cvconnect.dto.industry;
 
 
-import com.cvconnect.dto.IndustrySubDto;
+import com.cvconnect.dto.industrySub.IndustrySubDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;

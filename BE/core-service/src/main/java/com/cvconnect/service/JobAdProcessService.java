@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface JobAdProcessService {
     void create(List<JobAdProcessDto> dtos);
+    List<JobAdProcessDto> getByJobAdId(Long jobAdId);
 }
