@@ -1,0 +1,53 @@
+package com.cvconnect.common;
+
+import com.cvconnect.dto.AttachFileDto;
+import com.cvconnect.dto.auth.OrganizationRequest;
+import com.cvconnect.dto.internal.response.OrgDto;
+import nmquan.commonlib.dto.request.ObjectAndFileRequest;
+import nmquan.commonlib.dto.response.IDResponse;
+import nmquan.commonlib.dto.response.Response;
+import nmquan.commonlib.service.RestTemplateService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.stereotype.Component;
+
+@Component
+public class RestTemplateClient {
+    @Autowired
+    private RestTemplateService restTemplateService;
+
+    @Value("${server.core_service}")
+    private String SERVER_CORE_SERVICE;
+    @Value("${server.notify_service}")
+    private String SERVER_NOTIFY_SERVICE;
+
+
+    public OrgDto getOrgById(Long orgId) {
+        Response<OrgDto> orgDtoResponse = restTemplateService.getMethodRestTemplate(
+                SERVER_CORE_SERVICE + "/org/internal/get-by-id/{orgId}",
+                new ParameterizedTypeReference<Response<OrgDto>>() {},
+                orgId
+        );
+        return orgDtoResponse.getData();
+    }
+
+    public AttachFileDto getAttachFileById(Long attachFileId) {
+        Response<AttachFileDto> response = restTemplateService.getMethodRestTemplate(
+                SERVER_CORE_SERVICE + "/attach-file/internal/get-by-id/{avatarId}",
+                new ParameterizedTypeReference<Response<AttachFileDto>>() {},
+                attachFileId
+        );
+        return response.getData();
+    }
+
+    public IDResponse<Long> createOrg(ObjectAndFileRequest<OrganizationRequest> request){
+        Response<IDResponse<Long>> response = restTemplateService.uploadFilesWithObject(
+                SERVER_CORE_SERVICE + "/org/internal/create",
+                new ParameterizedTypeReference<Response<IDResponse<Long>>>() {},
+                request
+        );
+        return response.getData();
+    }
+
+}

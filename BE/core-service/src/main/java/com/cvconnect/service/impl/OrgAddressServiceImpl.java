@@ -5,8 +5,6 @@ import com.cvconnect.dto.org.OrgAddressDto;
 import com.cvconnect.entity.OrganizationAddress;
 import com.cvconnect.repository.OrgAddressRepository;
 import com.cvconnect.service.OrgAddressService;
-import nmquan.commonlib.constant.CommonConstants;
-import nmquan.commonlib.constant.MessageConstants;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,19 +43,33 @@ public class OrgAddressServiceImpl implements OrgAddressService {
         }
         List<OrgAddressDto> dtos = ObjectMapperUtils.convertToList(entities, OrgAddressDto.class);
         for (OrgAddressDto dto : dtos) {
-            if (Constants.REMOTE.equals(dto.getDetailAddress())) {
-                dto.setDisplayAddress(Constants.REMOTE);
-                continue;
-            }
-
-            StringJoiner addressJoiner = new StringJoiner(", ");
-            if (dto.getDetailAddress() != null) addressJoiner.add(dto.getDetailAddress());
-            if (dto.getWard() != null) addressJoiner.add(dto.getWard());
-            if (dto.getDistrict() != null) addressJoiner.add(dto.getDistrict());
-            if (dto.getProvince() != null) addressJoiner.add(dto.getProvince());
-
-            dto.setDisplayAddress(addressJoiner.toString());
+            dto.setDisplayAddress(this.buildDisplayAddress(dto));
         }
         return dtos;
+    }
+
+    @Override
+    public OrgAddressDto getById(Long id) {
+        OrganizationAddress entity = orgAddressRepository.findById(id).orElse(null);
+        if(entity == null){
+            return null;
+        }
+        OrgAddressDto dto = ObjectMapperUtils.convertToObject(entity, OrgAddressDto.class);
+        dto.setDisplayAddress(this.buildDisplayAddress(dto));
+        return dto;
+    }
+
+    private String buildDisplayAddress(OrgAddressDto dto) {
+        if (Constants.REMOTE.equals(dto.getDetailAddress())) {
+            return Constants.REMOTE;
+        }
+
+        StringJoiner addressJoiner = new StringJoiner(", ");
+        if (dto.getDetailAddress() != null) addressJoiner.add(dto.getDetailAddress());
+        if (dto.getWard() != null) addressJoiner.add(dto.getWard());
+        if (dto.getDistrict() != null) addressJoiner.add(dto.getDistrict());
+        if (dto.getProvince() != null) addressJoiner.add(dto.getProvince());
+
+        return addressJoiner.toString();
     }
 }

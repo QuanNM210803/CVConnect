@@ -2,10 +2,8 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.EmailLogDto;
-import com.cvconnect.dto.SendEmailDto;
 import com.cvconnect.enums.SendEmailStatus;
 import com.cvconnect.service.EmailLogService;
-import jakarta.mail.Message;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.AddressException;
@@ -13,6 +11,7 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import nmquan.commonlib.dto.SendEmailDto;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;

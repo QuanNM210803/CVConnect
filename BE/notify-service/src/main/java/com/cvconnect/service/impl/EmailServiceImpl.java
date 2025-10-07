@@ -2,13 +2,13 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.dto.EmailConfigDto;
 import com.cvconnect.dto.EmailLogDto;
-import com.cvconnect.dto.SendEmailDto;
 import com.cvconnect.enums.NotifyErrorCode;
 import com.cvconnect.enums.SendEmailStatus;
 import com.cvconnect.service.EmailConfigService;
 import com.cvconnect.service.EmailLogService;
 import com.cvconnect.service.EmailService;
 import jakarta.mail.*;
+import nmquan.commonlib.dto.SendEmailDto;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;

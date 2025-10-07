@@ -9,6 +9,7 @@ import com.cvconnect.service.ProcessTypeService;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -42,5 +43,14 @@ public class JobAdProcessServiceImpl implements JobAdProcessService {
                 .collect(Collectors.toMap(ProcessTypeDto::getId, Function.identity()));
         dtos.forEach(dto -> dto.setProcessType(processTypeMap.get(dto.getProcessTypeId())));
         return dtos;
+    }
+
+    @Override
+    public JobAdProcessDto getById(Long id) {
+        JobAdProcess entity = jobAdProcessRepository.findById(id).orElse(null);
+        if(ObjectUtils.isEmpty(entity)){
+            return null;
+        }
+        return ObjectMapperUtils.convertToObject(entity, JobAdProcessDto.class);
     }
 }

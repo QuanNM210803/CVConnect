@@ -1,11 +1,11 @@
 package com.cvconnect.entity;
 
-import com.cvconnect.enums.EmailTemplateEnum;
 import com.cvconnect.enums.SendEmailStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import nmquan.commonlib.enums.EmailTemplateEnum;
 import nmquan.commonlib.model.BaseEntity;
 
 import java.time.Instant;

@@ -1,6 +1,6 @@
 package com.cvconnect.service;
 
-import com.cvconnect.dto.SendEmailDto;
+import nmquan.commonlib.dto.SendEmailDto;
 
 public interface EmailService {
     void sendEmail(SendEmailDto sendEmailDto);

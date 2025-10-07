@@ -8,4 +8,5 @@ public interface OrgAddressService {
     void createAddresses(List<OrgAddressDto> addresses);
     List<OrgAddressDto> getByOrgIdAndIds(Long orgId, List<Long> ids);
     List<OrgAddressDto> getAll();
+    OrgAddressDto getById(Long id);
 }

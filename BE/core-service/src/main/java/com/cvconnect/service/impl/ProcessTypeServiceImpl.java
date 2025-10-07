@@ -27,7 +27,6 @@ public class ProcessTypeServiceImpl implements ProcessTypeService {
         if (processType == null) {
             return null;
         }
-        // TODO: check đã dùng thì chuyển isDefault về true, tức là không cho xoá
         return ProcessTypeDto.builder()
                 .id(processType.getId())
                 .name(processType.getName())
@@ -63,7 +62,6 @@ public class ProcessTypeServiceImpl implements ProcessTypeService {
                 throw new AppException(CoreErrorCode.PROCESS_TYPE_CANNOT_DELETE_DEFAULT);
             }
         }
-        // TODO: check thêm ĐK đã dùng thì không cho xoá
         processTypeRepository.deleteAllById(idsToDelete);
         processTypes.removeIf(pt -> idsToDelete.contains(pt.getId()));
         idsInDb.removeIf(idsToDelete::contains);

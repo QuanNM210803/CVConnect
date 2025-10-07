@@ -1,4 +1,5 @@
 package com.cvconnect.service.impl;
+import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.InviteUserRequest;
 import com.cvconnect.dto.internal.response.OrgDto;
 import com.cvconnect.dto.inviteJoinOrg.InviteJoinOrgDto;
@@ -8,7 +9,6 @@ import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.roleUser.RoleUserDto;
 import com.cvconnect.dto.user.UserDto;
 import com.cvconnect.entity.OrgMember;
-import com.cvconnect.enums.EmailTemplateEnum;
 import com.cvconnect.enums.InviteJoinStatus;
 import com.cvconnect.enums.MemberType;
 import com.cvconnect.enums.UserErrorCode;
@@ -16,8 +16,9 @@ import com.cvconnect.repository.OrgMemberRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.JwtUtils;
 import nmquan.commonlib.dto.response.Response;
+import nmquan.commonlib.enums.EmailTemplateEnum;
 import nmquan.commonlib.exception.AppException;
-import nmquan.commonlib.service.RestTemplateService;
+import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,12 +50,10 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     @Autowired
     private UserService userService;
     @Autowired
-    private RestTemplateService restTemplateService;
+    private RestTemplateClient restTemplateClient;
 
     @Value("${frontend.url-invite-join-org}")
     private String URL_INVITE_JOIN_ORG;
-    @Value("${server.core_service}")
-    private String SERVER_CORE_URL;
 
     @Override
     public OrgMemberDto getOrgMember(Long userId) {
@@ -113,16 +112,11 @@ public class OrgMemberServiceImpl implements OrgMemberService {
                 .build();
         inviteJoinOrgService.create(List.of(inviteJoinOrgDto));
 
-        Response<OrgDto> orgDtoResponse = restTemplateService.getMethodRestTemplate(
-                SERVER_CORE_URL + "/org/internal/get-by-id/{orgId}",
-                new ParameterizedTypeReference<Response<OrgDto>>() {},
-                orgId
-        );
-
+        OrgDto orgDto = restTemplateClient.getOrgById(orgId);
         // send email to user
         Map<String, String> templateVariables = Map.of(
                 "fullName", userDto.getFullName(),
-                "orgName", orgDtoResponse.getData().getName(),
+                "orgName", orgDto.getName(),
                 "roleName", roleDto.getName(),
                 "acceptUrl", URL_INVITE_JOIN_ORG + "?token=" + inviteJoinOrgDto.getToken() + "&action=a",
                 "rejectUrl", URL_INVITE_JOIN_ORG + "?token=" + inviteJoinOrgDto.getToken() + "&action=r",

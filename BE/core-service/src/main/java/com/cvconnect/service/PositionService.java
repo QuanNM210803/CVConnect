@@ -16,4 +16,5 @@ public interface PositionService {
     PositionDto detail(Long id);
     FilterResponse<PositionDto> filter(PositionFilterRequest request);
     IDResponse<Long> update(PositionRequest request);
+    PositionDto findById(Long id);
 }

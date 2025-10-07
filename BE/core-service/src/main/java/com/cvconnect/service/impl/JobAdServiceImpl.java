@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.jobAd.*;
 import com.cvconnect.dto.positionProcess.PositionProcessRequest;
@@ -16,11 +17,9 @@ import com.cvconnect.service.*;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.exception.AppException;
-import nmquan.commonlib.service.RestTemplateService;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,13 +45,9 @@ public class JobAdServiceImpl implements JobAdService {
     @Autowired
     private OrgAddressService orgAddressService;
     @Autowired
-    private RestTemplateService restTemplateService;
+    private RestTemplateClient restTemplateClient;
 
     private static final String JOB_AD_CODE_PREFIX = "JD-";
-    @Value("${server.notify_service}")
-    private String SERVER_NOTIFY_SERVICE;
-    @Value("${server.user_service}")
-    private String SERVER_USER_SERVICE;
 
     @Override
     @Transactional
@@ -172,14 +167,8 @@ public class JobAdServiceImpl implements JobAdService {
         }
 
         // validate hrContactId
-        Response<Boolean> hrContactExistsResponse = restTemplateService.getMethodRestTemplate(
-                SERVER_USER_SERVICE + "/user/internal/check-org-user-role/{userId}/{roleCode}/{orgId}",
-                new ParameterizedTypeReference<Response<Boolean>>() {},
-                request.getHrContactId(),
-                Constants.RoleCode.HR,
-                request.getOrgId()
-        );
-        if(!hrContactExistsResponse.getData()){
+        Boolean hrContactExists = restTemplateClient.checkOrgUserRole(request.getHrContactId(), Constants.RoleCode.HR, request.getOrgId());
+        if(!hrContactExists){
             throw new AppException(CoreErrorCode.HR_CONTACT_NOT_FOUND);
         }
 
@@ -194,12 +183,8 @@ public class JobAdServiceImpl implements JobAdService {
                 throw new AppException(CoreErrorCode.EMAIL_TEMPLATE_ID_REQUIRED);
             }
 
-            Response<List<EmailTemplateDto>> response = restTemplateService.getMethodRestTemplate(
-                    SERVER_NOTIFY_SERVICE + "/email-template/internal/get-by-org-id/{orgId}",
-                    new ParameterizedTypeReference<Response<List<EmailTemplateDto>>>() {},
-                    request.getOrgId()
-            );
-            boolean existsEmailTemplate = response.getData().stream()
+            List<EmailTemplateDto> response = restTemplateClient.getEmailTemplateByOrgId(request.getOrgId());
+            boolean existsEmailTemplate = response.stream()
                     .anyMatch(dto ->
                             dto.getId().equals(request.getEmailTemplateId()) && dto.getIsActive()
                     );

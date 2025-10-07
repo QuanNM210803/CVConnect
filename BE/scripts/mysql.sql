@@ -495,3 +495,23 @@ add index (code, org_id);
 
 alter table `cvconnect-notify-service`.email_logs
 modify column template TEXT;
+
+update `cvconnect-notify-service`.placeholders
+set code = '${orgName}', label = 'Tên công ty'
+where code = '${companyName}';
+
+update `cvconnect-notify-service`.placeholders
+set code = '${orgAddress}', label = 'Địa chỉ công ty'
+where code = '${officeAddress}';
+
+delete from `cvconnect-notify-service`.placeholders where code = '${officeName}';
+
+INSERT INTO `cvconnect-notify-service`.placeholders (code, label, description, member_type_used, created_by)
+VALUES ('${interview-examLocation}', 'Địa điểm phỏng vấn/thi tuyển', NULL, NULL, 'admin');
+
+update `cvconnect-notify-service`.placeholders
+set label = 'Ngày làm bài thi/phỏng vấn'
+where code = '${examDate}';
+
+INSERT INTO `cvconnect-notify-service`.email_config (id, host, port, email, password, is_ssl, protocol, org_id, is_active, is_deleted, created_at, updated_at, created_by, updated_by)
+VALUES (2, 'smtp-relay.brevo.com', 587, '784652002@smtp-brevo.com', '', 0, 'smtp', 4, 1, 0, '2025-08-31 15:04:40', null, 'admin', null);

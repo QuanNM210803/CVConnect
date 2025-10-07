@@ -10,7 +10,7 @@ import java.util.Objects;
 @Getter
 public enum SalaryType {
     NEGOTIABLE("Thoả thuận"),
-    RANGE(null);
+    RANGE("Theo khoảng");
 
     private final String description;
     SalaryType(String description) {

@@ -2,11 +2,11 @@ package com.cvconnect.job;
 
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.EmailLogDto;
-import com.cvconnect.dto.SendEmailDto;
 import com.cvconnect.service.EmailLogService;
 import com.cvconnect.service.EmailService;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import nmquan.commonlib.dto.SendEmailDto;
 import nmquan.commonlib.job.RunningJob;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;

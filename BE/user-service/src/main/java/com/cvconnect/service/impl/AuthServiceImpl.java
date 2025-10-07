@@ -1,7 +1,7 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.orgMember.OrgMemberDto;
-import com.cvconnect.enums.EmailTemplateEnum;
 import com.cvconnect.utils.JwtUtils;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.*;
@@ -21,15 +21,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import nmquan.commonlib.dto.request.ObjectAndFileRequest;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
+import nmquan.commonlib.enums.EmailTemplateEnum;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.exception.ErrorCode;
 import nmquan.commonlib.model.JwtUser;
-import nmquan.commonlib.service.RestTemplateService;
+import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.LocalizationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -68,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
-    private RestTemplateService restTemplateService;
+    private RestTemplateClient restTemplateClient;
     @Autowired
     private OrgMemberService orgMemberService;
 
@@ -84,8 +84,6 @@ public class AuthServiceImpl implements AuthService {
     private int JWT_VERIFY_EMAIL_DURATION;
     @Value("${jwt.reset-password-expiration}")
     private int JWT_RESET_PASSWORD_DURATION;
-    @Value("${server.core_service}")
-    private String SERVER_CORE_SERVICE;
 
     @Transactional
     @Override
@@ -278,10 +276,10 @@ public class AuthServiceImpl implements AuthService {
             OrgMemberDto saved = this.createOrgMemberForUser(userDto.getId(), roleOrgAdmin.getId());
 
             // create organization
-            Response<IDResponse<Long>> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
+            IDResponse<Long> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
 
             // update orgId for org-admin
-            saved.setOrgId(orgResponse.getData().getId());
+            saved.setOrgId(orgResponse.getId());
             orgMemberService.createOrgMember(saved);
 
             // send email require verification
@@ -331,10 +329,10 @@ public class AuthServiceImpl implements AuthService {
             OrgMemberDto saved = this.createOrgMemberForUser(existsByEmail.getId(), roleOrgAdmin.getId());
 
             // create organization
-            Response<IDResponse<Long>> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
+            IDResponse<Long> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
 
             // update orgId for org-admin
-            saved.setOrgId(orgResponse.getData().getId());
+            saved.setOrgId(orgResponse.getId());
             orgMemberService.createOrgMember(saved);
 
             return RegisterOrgAdminResponse.builder()
@@ -503,7 +501,7 @@ public class AuthServiceImpl implements AuthService {
     /**
      * InternalRequest: core-service to create organization
      * */
-    private Response<IDResponse<Long>> createOrg(OrganizationRequest orgRequest, MultipartFile logo, MultipartFile coverPhoto){
+    private IDResponse<Long> createOrg(OrganizationRequest orgRequest, MultipartFile logo, MultipartFile coverPhoto){
         MultipartFile[] files = new MultipartFile[]{logo};
         if(coverPhoto != null) {
             files = new MultipartFile[]{logo, coverPhoto};
@@ -512,11 +510,7 @@ public class AuthServiceImpl implements AuthService {
                 .data(orgRequest)
                 .files(files)
                 .build();
-        return restTemplateService.uploadFilesWithObject(
-                SERVER_CORE_SERVICE + "/org/internal/create",
-                new ParameterizedTypeReference<Response<IDResponse<Long>>>() {},
-                request
-        );
+        return restTemplateClient.createOrg(request);
     }
 
     private OrgMemberDto createOrgMemberForUser(Long userId, Long roleSystemAdminId){

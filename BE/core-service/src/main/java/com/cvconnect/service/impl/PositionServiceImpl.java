@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -174,6 +175,15 @@ public class PositionServiceImpl implements PositionService {
         return IDResponse.<Long>builder()
                 .id(position.getId())
                 .build();
+    }
+
+    @Override
+    public PositionDto findById(Long id) {
+        Position position = positionRepository.findById(id).orElse(null);
+        if(ObjectUtils.isEmpty(position)){
+            return null;
+        }
+        return ObjectMapperUtils.convertToObject(position, PositionDto.class);
     }
 
     private void savePositionLevels(List<PositionLevelRequest> positionLevelRequests, Long positionId){

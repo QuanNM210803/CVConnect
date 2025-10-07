@@ -1,5 +1,8 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.common.ReplacePlaceholder;
+import com.cvconnect.common.RestTemplateClient;
+import com.cvconnect.dto.DataReplacePlaceholder;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;
@@ -15,15 +18,13 @@ import com.cvconnect.enums.ProcessTypeEnum;
 import com.cvconnect.repository.JobAdCandidateRepository;
 import com.cvconnect.service.*;
 import nmquan.commonlib.constant.CommonConstants;
+import nmquan.commonlib.dto.SendEmailDto;
 import nmquan.commonlib.dto.response.IDResponse;
-import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
-import nmquan.commonlib.service.RestTemplateService;
+import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -50,11 +51,9 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
     @Autowired
     private SendEmailService sendEmailService;
     @Autowired
-    private RestTemplateService restTemplateService;
-    @Value("${server.notify_service}")
-    private String SERVER_NOTIFY_SERVICE;
-    @Value("${server.user_service}")
-    private String SERVER_USER_SERVICE;
+    private RestTemplateClient restTemplateClient;
+    @Autowired
+    private ReplacePlaceholder replacePlaceholder;
 
     @Override
     @Transactional
@@ -111,46 +110,40 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
 
         // send email to candidate
         if(jobAdDto.getIsAutoSendEmail()){
-            Response<EmailTemplateDto> emailTemplate = restTemplateService.getMethodRestTemplate(
-                SERVER_NOTIFY_SERVICE + "/email-template/internal/get-by-id/{id}",
-                    new ParameterizedTypeReference<Response<EmailTemplateDto>>() {},
-                    jobAdDto.getEmailTemplateId()
-            );
-            Response<UserDto> hrContact = restTemplateService.getMethodRestTemplate(
-                    SERVER_USER_SERVICE + "/user/internal/get-by-id/{id}",
-                    new ParameterizedTypeReference<Response<UserDto>>() {},
-                    jobAdDto.getHrContactId()
-            );
+            EmailTemplateDto emailTemplateDto = restTemplateClient.getEmailTemplateById(jobAdDto.getEmailTemplateId());
+            UserDto userDto = restTemplateClient.getUser(jobAdDto.getHrContactId());
             CandidateInfoApplyDto candidateInfoApplyDto = candidateInfoApplyService.getById(candidateInfoApplyId);
-            if(ObjectUtils.isEmpty(emailTemplate.getData()) ||
-                    ObjectUtils.isEmpty(hrContact.getData()) ||
+            if(ObjectUtils.isEmpty(emailTemplateDto) ||
+                    ObjectUtils.isEmpty(userDto) ||
                     ObjectUtils.isEmpty(candidateInfoApplyDto)){
                 throw new AppException(CommonErrorCode.ERROR);
             }
+            String emailHr = userDto.getEmail();
             String emailCandidate = candidateInfoApplyDto.getEmail();
-            String emailHr = hrContact.getData().getEmail();
-            String subject = emailTemplate.getData().getSubject();
+            String subject = emailTemplateDto.getSubject();
 
             // replace placeholders
-            String body = emailTemplate.getData().getBody();
-            List<String> placeholders = emailTemplate.getData().getPlaceholderCodes();
-            for(String placeholder : placeholders){
-//                if(placeholder.equals("{{candidate_name}}")){
-//                    body = body.replace(placeholder, candidateInfoApplyDto.getFullName());
-//                } else if(placeholder.equals("{{job_title}}")){
-//                    body = body.replace(placeholder, jobAdDto.getTitle());
-//                } else if(placeholder.equals("{{company_name}}")){
-//                    body = body.replace(placeholder, jobAdDto.getCompanyName());
-//                } else if(placeholder.equals("{{hr_contact_name}}")){
-//                    body = body.replace(placeholder, hrContact.getData().getFullName());
-//                } else if(placeholder.equals("{{hr_contact_email}}")){
-//                    body = body.replace(placeholder, hrContact.getData().getEmail());
-//                } else if(placeholder.equals("{{hr_contact_phone}}")){
-//                    body = body.replace(placeholder, hrContact.getData().getPhone());
-//                }
-            }
-
-            sendEmailService.sendEmailWithBody(emailHr, List.of(emailCandidate), null, subject, body, jobAdDto.getOrgId());
+            String template = emailTemplateDto.getBody();
+            List<String> placeholders = emailTemplateDto.getPlaceholderCodes();
+            DataReplacePlaceholder dataReplacePlaceholder = DataReplacePlaceholder.builder()
+                    .positionId(jobAdDto.getPositionId())
+                    .jobAdName(jobAdDto.getTitle())
+                    .jobAdProcessName(ProcessTypeEnum.APPLY.name())
+                    .orgId(jobAdDto.getOrgId())
+                    .candidateName(candidateInfoApplyDto.getFullName())
+                    .hrName(userDto.getFullName())
+                    .hrEmail(emailHr)
+                    .hrPhone(userDto.getPhoneNumber())
+                    .build();
+            String body = replacePlaceholder.replacePlaceholder(template, placeholders, dataReplacePlaceholder);
+            SendEmailDto sendEmailDto = SendEmailDto.builder()
+                    .sender(emailHr)
+                    .recipients(List.of(emailCandidate))
+                    .subject(subject)
+                    .body(body)
+                    .orgId(jobAdDto.getOrgId())
+                    .build();
+            sendEmailService.sendEmailWithBody(sendEmailDto);
         }
 
         return IDResponse.<Long>builder()
@@ -182,6 +175,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 throw new AppException(CoreErrorCode.CANDIDATE_INFO_APPLY_NOT_FOUND);
             }
         }
+        // TODO: validate candidate duplicate apply for the same job ad
     }
 
     private JobAdDto validateJobAd(Long jobAdId) {

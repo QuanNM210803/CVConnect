@@ -1,7 +1,7 @@
 package com.cvconnect.controller;
 
-import com.cvconnect.dto.SendEmailDto;
 import com.cvconnect.service.EmailService;
+import nmquan.commonlib.dto.SendEmailDto;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;

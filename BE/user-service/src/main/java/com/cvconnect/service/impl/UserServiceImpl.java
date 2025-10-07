@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.AttachFileDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.roleUser.RoleUserDto;
@@ -16,7 +17,6 @@ import jakarta.annotation.PostConstruct;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
-import nmquan.commonlib.service.RestTemplateService;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,6 @@ import org.springframework.util.ObjectUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 
 @Service
@@ -51,10 +50,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RoleService roleService;
     @Autowired
-    private RestTemplateService restTemplateService;
-
-    @Value("${server.core_service}")
-    private String SERVER_CORE_SERVICE;
+    private RestTemplateClient restTemplateClient;
 
     private final Map<Class<?>, Function<Long, ?>> fetcherMap = new HashMap<>();
 
@@ -108,12 +104,8 @@ public class UserServiceImpl implements UserService {
         UserDetailDto<?> userDetailDto = this.getUserDetail(userId, roleId);
         userDto.setUserDetails(userDetailDto != null ? List.of(userDetailDto) : null);
         if(userDto.getAvatarId() != null){
-            Response<AttachFileDto> response = restTemplateService.getMethodRestTemplate(
-                    SERVER_CORE_SERVICE + "/attach-file/internal/get-by-id/{avatarId}",
-                    new ParameterizedTypeReference<Response<AttachFileDto>>() {},
-                    userDto.getAvatarId()
-            );
-            userDto.setAvatarUrl(response.getData().getSecureUrl());
+            AttachFileDto attachFileDto = restTemplateClient.getAttachFileById(userDto.getAvatarId());
+            userDto.setAvatarUrl(attachFileDto.getSecureUrl());
         }
         return userDto.configResponse();
     }
