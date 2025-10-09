@@ -4,6 +4,7 @@ import com.cvconnect.dto.EmailConfigDto;
 import com.cvconnect.entity.EmailConfig;
 import com.cvconnect.repository.EmailConfigRepository;
 import com.cvconnect.service.EmailConfigService;
+import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,9 @@ public class EmailConfigServiceImpl implements EmailConfigService {
 
     @Override
     public EmailConfigDto getByOrgId(Long orgId) {
+        if(orgId == null) {
+            orgId = WebUtils.checkCurrentOrgId();
+        }
         EmailConfig emailConfig = emailConfigRepository.findByOrgId(orgId);
         if (emailConfig == null) {
             return null;

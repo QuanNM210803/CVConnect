@@ -43,8 +43,8 @@ public class JobAdRequest {
     @NotNull(message = Messages.QUANTITY_REQUIRED)
     @Min(value = 1, message = Messages.QUANTITY_MIN_LENGTH)
     private Integer quantity;
-    @NotNull(message = Messages.SALARY_TYPE_REQUIRED)
 
+    @NotNull(message = Messages.SALARY_TYPE_REQUIRED)
     private SalaryType salaryType;
     private Integer salaryFrom;
     private Integer salaryTo;

@@ -91,4 +91,9 @@ public class EmailTemplateController {
         return ResponseUtils.success(emailTemplateService.getById(id));
     }
 
+    @GetMapping("/preview-email-default/{id}")
+    @Operation(summary = "Preview Email Template")
+    public ResponseEntity<Response<EmailTemplateDto>> previewEmailDefault(@PathVariable Long id) {
+        return ResponseUtils.success(emailTemplateService.previewEmailDefault(id));
+    }
 }

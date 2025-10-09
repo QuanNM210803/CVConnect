@@ -42,6 +42,8 @@ public class Messages {
     public static final String JOB_AD_NOT_FOUND = "job.ad.not.found";
     public static final String JOB_AD_EXPIRED = "job.ad.expired";
     public static final String JOB_AD_STOP_RECRUITMENT = "job.ad.stop.recruitment";
+    public static final String CANDIDATE_DUPLICATE_APPLY = "candidate.duplicate.apply";
+    public static final String EMAIL_CONFIG_NOT_FOUND = "email.config.not.found";
 
 
     /*

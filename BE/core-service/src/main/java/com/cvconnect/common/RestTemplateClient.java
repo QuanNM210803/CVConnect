@@ -1,5 +1,6 @@
 package com.cvconnect.common;
 
+import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import nmquan.commonlib.dto.response.Response;
@@ -57,6 +58,14 @@ public class RestTemplateClient {
                 SERVER_NOTIFY_SERVICE + "/email-template/internal/get-by-org-id/{orgId}",
                 new ParameterizedTypeReference<Response<List<EmailTemplateDto>>>() {},
                 orgId
+        );
+        return response.getData();
+    }
+
+    public EmailConfigDto getEmailConfigByOrg(){
+        Response<EmailConfigDto> response = restTemplateService.getMethodRestTemplate(
+                SERVER_NOTIFY_SERVICE + "/email-config/internal/get-by-org",
+                new ParameterizedTypeReference<Response<EmailConfigDto>>() {}
         );
         return response.getData();
     }

@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.*;
 import com.cvconnect.entity.EmailTemplate;
 import com.cvconnect.enums.NotifyErrorCode;
@@ -32,6 +33,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     private EmailTemplatePlaceholderService emailTemplatePlaceholderService;
     @Autowired
     private PlaceholderService placeholderService;
+    @Autowired
+    private RestTemplateClient restTemplateClient;
 
     @Override
     @Transactional
@@ -186,6 +189,18 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
                 .map(PlaceholderDto::getCode)
                 .toList();
         emailTemplateDto.setPlaceholderCodes(placeholderCodes);
+        return emailTemplateDto;
+    }
+
+    @Override
+    public EmailTemplateDto previewEmailDefault(Long id) {
+        Long orgId = WebUtils.checkCurrentOrgId();
+        EmailTemplateDto emailTemplateDto = getById(id);
+        if (!emailTemplateDto.getOrgId().equals(orgId)) {
+            throw new AppException(NotifyErrorCode.EMAIL_TEMPLATE_NOT_FOUND);
+        }
+        String bodyPreview = restTemplateClient.previewEmailDefault(emailTemplateDto.getBody(), emailTemplateDto.getPlaceholderCodes());
+        emailTemplateDto.setBodyPreview(bodyPreview);
         return emailTemplateDto;
     }
 }

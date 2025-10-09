@@ -514,4 +514,7 @@ set label = 'Ngày làm bài thi/phỏng vấn'
 where code = '${examDate}';
 
 INSERT INTO `cvconnect-notify-service`.email_config (id, host, port, email, password, is_ssl, protocol, org_id, is_active, is_deleted, created_at, updated_at, created_by, updated_by)
-VALUES (2, 'smtp-relay.brevo.com', 587, '784652002@smtp-brevo.com', '', 0, 'smtp', 4, 1, 0, '2025-08-31 15:04:40', null, 'admin', null);
+VALUES (2, 'smtp-relay.brevo.com', 587, '784652002@smtp-brevo.com', '', 0, 'smtp', 4, 1, 0, '2025-08-31 15:04:40', null, 'admin', null);\
+
+alter table `cvconnect-notify-service`.email_templates
+modify column body TEXT NOT NULL;

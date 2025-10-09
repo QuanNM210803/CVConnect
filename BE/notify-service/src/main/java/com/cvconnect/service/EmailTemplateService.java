@@ -18,4 +18,5 @@ public interface EmailTemplateService {
     void changeStatusActive(ChangeStatusActiveRequest request);
     List<EmailTemplateDto> getByOrgId(Long orgId);
     EmailTemplateDto getById(Long id);
+    EmailTemplateDto previewEmailDefault(Long id);
 }

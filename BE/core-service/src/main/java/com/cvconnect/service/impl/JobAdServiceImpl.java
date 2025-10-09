@@ -2,6 +2,7 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
+import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.jobAd.*;
 import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
@@ -15,12 +16,10 @@ import com.cvconnect.enums.SalaryType;
 import com.cvconnect.repository.JobAdRepository;
 import com.cvconnect.service.*;
 import nmquan.commonlib.dto.response.IDResponse;
-import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -181,6 +180,11 @@ public class JobAdServiceImpl implements JobAdService {
         if(request.isAutoSendEmail()){
             if(request.getEmailTemplateId() == null){
                 throw new AppException(CoreErrorCode.EMAIL_TEMPLATE_ID_REQUIRED);
+            }
+
+            EmailConfigDto emailConfigDto = restTemplateClient.getEmailConfigByOrg();
+            if(ObjectUtils.isEmpty(emailConfigDto)){
+                throw new AppException(CoreErrorCode.EMAIL_CONFIG_NOT_FOUND);
             }
 
             List<EmailTemplateDto> response = restTemplateClient.getEmailTemplateByOrgId(request.getOrgId());

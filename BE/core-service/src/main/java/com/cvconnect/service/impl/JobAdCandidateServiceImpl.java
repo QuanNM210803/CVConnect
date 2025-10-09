@@ -175,7 +175,11 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 throw new AppException(CoreErrorCode.CANDIDATE_INFO_APPLY_NOT_FOUND);
             }
         }
-        // TODO: validate candidate duplicate apply for the same job ad
+
+        boolean appliedJobAd = jobAdCandidateRepository.existsByJobAdIdAndCandidateId(request.getJobAdId(), request.getCandidateId());
+        if(appliedJobAd){
+            throw new AppException(CoreErrorCode.CANDIDATE_DUPLICATE_APPLY);
+        }
     }
 
     private JobAdDto validateJobAd(Long jobAdId) {
