@@ -51,7 +51,7 @@ public class JobAdServiceImpl implements JobAdService {
     @Override
     @Transactional
     public IDResponse<Long> create(JobAdRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         request.setOrgId(orgId);
         this.validateCreate(request);
 
@@ -80,6 +80,7 @@ public class JobAdServiceImpl implements JobAdService {
         jobAd.setIsPublic(request.isPublic());
         jobAd.setIsAutoSendEmail(request.isAutoSendEmail());
         jobAd.setEmailTemplateId(request.getEmailTemplateId());
+        jobAd.setIsRemote(request.isRemote());
         jobAdRepository.save(jobAd);
 
         if(!ObjectUtils.isEmpty(request.getIndustrySubIds())){

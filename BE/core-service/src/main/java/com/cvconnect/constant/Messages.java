@@ -62,8 +62,6 @@ public class Messages {
     public static final String LEVEL_CODE_DUPLICATED = "level.code.duplicated";
     public static final String DEPARTMENT_CODE_REQUIRE = "department.code.require";
     public static final String DEPARTMENT_NAME_REQUIRE = "department.name.require";
-    public static final String IDS_REQUIRE = "ids.require";
-    public static final String STATUS_ACTIVE_REQUIRE = "status.active.require";
     public static final String POSITION_NAME_REQUIRED = "position.name.required";
     public static final String POSITION_CODE_REQUIRED = "position.code.required";
     public static final String DEPARTMENT_REQUIRED = "position.department.required";

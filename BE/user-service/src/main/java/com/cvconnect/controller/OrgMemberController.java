@@ -1,21 +1,25 @@
 package com.cvconnect.controller;
 
 import com.cvconnect.constant.Messages;
-import com.cvconnect.dto.InviteUserRequest;
-import com.cvconnect.dto.inviteJoinOrg.ReplyInviteUserRequest;
+import com.cvconnect.dto.common.AssignRoleRequest;
+import com.cvconnect.dto.common.InviteUserRequest;
+import com.cvconnect.dto.common.ReplyInviteUserRequest;
+import com.cvconnect.dto.orgMember.OrgMemberDto;
+import com.cvconnect.dto.orgMember.OrgMemberFilter;
 import com.cvconnect.service.OrgMemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import nmquan.commonlib.annotation.InternalRequest;
+import nmquan.commonlib.constant.MessageConstants;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/org-member")
@@ -38,5 +42,35 @@ public class OrgMemberController {
     public ResponseEntity<Response<Void>> replyInviteJoinOrg(@Valid @RequestBody ReplyInviteUserRequest request) {
         orgMemberService.replyInviteJoinOrg(request);
         return ResponseUtils.success(null);
+    }
+
+    @GetMapping("/filter")
+    @Operation(summary = "Filter organization members")
+    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW')")
+    public ResponseEntity<Response<FilterResponse<OrgMemberDto>>> filterOrgMembers(@Valid @ModelAttribute OrgMemberFilter request) {
+        return ResponseUtils.success(orgMemberService.filter(request));
+    }
+
+    @InternalRequest
+    @GetMapping("/internal/valid-org-member")
+    @Operation(summary = "Check if the current user is a valid organization member")
+    public ResponseEntity<Response<Long>> isValidOrgMember() {
+        return ResponseUtils.success(orgMemberService.validOrgMember());
+    }
+
+    @PutMapping("/assign-role")
+    @Operation(summary = "Assign role to organization member")
+    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:ADD', 'ORG_MEMBER:UPDATE')")
+    public ResponseEntity<Response<Void>> assignRoleOrgMember(@Valid @RequestBody AssignRoleRequest request) {
+        orgMemberService.assignRoleOrgMember(request);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @PutMapping("change-status-active")
+    @Operation(summary = "Change Status Active Org Member")
+    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:ADD', 'ORG_MEMBER:UPDATE')")
+    public ResponseEntity<Response<Void>> changeStatusActive(@Valid @RequestBody ChangeStatusActiveRequest request) {
+        orgMemberService.changeStatusActive(request);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
     }
 }

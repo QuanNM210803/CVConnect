@@ -21,4 +21,7 @@ public class OrgMember extends BaseEntity {
     @Column(name = "org_id", nullable = false)
     private Long orgId;
 
+    @Column(name = "inviter")
+    private String inviter;
+
 }

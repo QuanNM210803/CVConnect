@@ -338,6 +338,11 @@ CREATE TABLE IF NOT EXISTS `cvconnect-user-service`.invite_join_org (
 alter table `cvconnect-user-service`.invite_join_org
 add column `token` VARCHAR(255) NOT NULL UNIQUE after org_id;
 
+alter table `cvconnect-user-service`.role_user
+add column `is_default` TINYINT(1) DEFAULT 0 after role_id;
+
+alter table `cvconnect-user-service`.org_members
+add column `inviter` varchar(255) after org_id;
 #----------------------------------------------------------------------------------------------------------------------#
 
 # create database if not exists `cvconnect-notify-service`;

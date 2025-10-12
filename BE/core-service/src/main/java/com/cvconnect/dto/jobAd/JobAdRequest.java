@@ -66,6 +66,7 @@ public class JobAdRequest {
     @Valid
     @NotNull
     private List<PositionProcessRequest> positionProcess;
+    private boolean isRemote = false;
 
     private Long orgId;
 

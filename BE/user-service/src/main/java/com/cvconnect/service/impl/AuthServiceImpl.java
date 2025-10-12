@@ -1,10 +1,10 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
+import com.cvconnect.dto.common.TokenInfo;
 import com.cvconnect.dto.orgMember.OrgMemberDto;
 import com.cvconnect.utils.JwtUtils;
 import com.cvconnect.constant.Constants;
-import com.cvconnect.dto.*;
 import com.cvconnect.dto.auth.*;
 import com.cvconnect.dto.candidate.CandidateDto;
 import com.cvconnect.dto.role.RoleDto;
@@ -20,7 +20,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nmquan.commonlib.dto.request.ObjectAndFileRequest;
 import nmquan.commonlib.dto.response.IDResponse;
-import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.enums.EmailTemplateEnum;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
@@ -102,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(UserErrorCode.LOGIN_FAIL);
         }
 
-        List<RoleUserDto> roleUserDtos = roleUserService.findByUserId(user.getId());
+        List<RoleUserDto> roleUserDtos = roleUserService.findRoleUseByUserId(user.getId());
         OrgMemberDto orgMemberDto = orgMemberService.getOrgMember(user.getId());
         if(Objects.nonNull(orgMemberDto)){
             user.setOrgId(orgMemberDto.getOrgId());
@@ -150,7 +149,7 @@ public class AuthServiceImpl implements AuthService {
         redisUtils.saveObject(redisUtils.getTokenKey(newRefreshToken), tokenInfo, JWT_REFRESHABLE_DURATION);
         CookieUtils.setRefreshTokenCookie(newRefreshToken, JWT_REFRESHABLE_DURATION, httpServletResponse);
 
-        List<RoleUserDto> roleUserDtos = roleUserService.findByUserId(user.getId());
+        List<RoleUserDto> roleUserDtos = roleUserService.findRoleUseByUserId(user.getId());
 
         OrgMemberDto orgMemberDto = orgMemberService.getOrgMember(user.getId());
         if(Objects.nonNull(orgMemberDto)){

@@ -70,4 +70,12 @@ public class RestTemplateClient {
         return response.getData();
     }
 
+    public Long validOrgMember() {
+        Response<Long> response = restTemplateService.getMethodRestTemplate(
+                SERVER_USER_SERVICE + "/org-member/internal/valid-org-member",
+                new ParameterizedTypeReference<Response<Long>>() {}
+        );
+        return response.getData();
+    }
+
 }

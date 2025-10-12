@@ -9,6 +9,7 @@ import com.cvconnect.repository.RoleMenuRepository;
 import com.cvconnect.service.RoleMenuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,8 +21,11 @@ public class RoleMenuServiceImpl implements RoleMenuService {
     private RoleMenuRepository roleMenuRepository;
 
     @Override
-    public Map<String, List<String>> getAuthorities(Long userId) {
-        List<RoleMenuProjection> roleMenuProjections = roleMenuRepository.findAuthoritiesByUserId(userId);
+    public Map<String, List<String>> getAuthorities(Long userId, List<String> roles) {
+        if(ObjectUtils.isEmpty(roles)){
+            roles = new ArrayList<>();
+        }
+        List<RoleMenuProjection> roleMenuProjections = roleMenuRepository.findAuthoritiesByUserId(userId, roles);
         return roleMenuProjections.stream()
                 .flatMap(object -> {
                     String menuCode = object.getMenuCode();

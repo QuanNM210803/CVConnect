@@ -1,4 +1,4 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.internal.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

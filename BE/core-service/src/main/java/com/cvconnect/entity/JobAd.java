@@ -99,4 +99,7 @@ public class JobAd extends BaseEntity {
     @Column(name = "email_template_id")
     private Long emailTemplateId;
 
+    @Column(name = "is_remote")
+    private Boolean isRemote;
+
 }

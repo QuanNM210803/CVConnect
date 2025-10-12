@@ -1,6 +1,5 @@
 package com.cvconnect.controller;
 
-import com.cvconnect.dto.common.ChangeStatusActiveRequest;
 import com.cvconnect.dto.position.PositionDto;
 import com.cvconnect.dto.position.PositionFilterRequest;
 import com.cvconnect.dto.position.PositionRequest;
@@ -8,6 +7,7 @@ import com.cvconnect.service.PositionService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import nmquan.commonlib.constant.MessageConstants;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;

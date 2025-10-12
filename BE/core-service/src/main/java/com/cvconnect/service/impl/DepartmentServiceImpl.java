@@ -1,6 +1,6 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.common.ChangeStatusActiveRequest;
+import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.department.DepartmentDto;
 import com.cvconnect.dto.department.DepartmentFilterRequest;
 import com.cvconnect.dto.department.DepartmentRequest;
@@ -9,13 +9,13 @@ import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.DepartmentRepository;
 import com.cvconnect.service.DepartmentService;
 import nmquan.commonlib.constant.CommonConstants;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
-import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -28,11 +28,13 @@ import java.util.Optional;
 public class DepartmentServiceImpl implements DepartmentService {
     @Autowired
     private DepartmentRepository departmentRepository;
+    @Autowired
+    private RestTemplateClient restTemplateClient;
 
     @Override
     @Transactional
     public IDResponse<Long> create(DepartmentRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         boolean exists = departmentRepository.existsByCodeAndOrgId(request.getCode(), orgId);
         if (exists) {
             throw new AppException(CoreErrorCode.DEPARTMENT_CODE_DUPLICATED, request.getCode());
@@ -49,7 +51,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public DepartmentDto detail(Long id) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         Optional<Department> department = departmentRepository.findByIdAndOrgId(id, orgId);
         return department.map(value -> ObjectMapperUtils.convertToObject(value, DepartmentDto.class)).orElse(null);
     }
@@ -57,7 +59,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional
     public void changeStatusActive(ChangeStatusActiveRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         List<Department> departments = departmentRepository.findByIdsAndOrgId(request.getIds(), orgId);
         if (departments.size() != request.getIds().size()) {
             throw new AppException(CoreErrorCode.DEPARTMENT_NOT_FOUND);
@@ -69,7 +71,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional
     public void deleteByIds(List<Long> ids) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         List<Department> departments = departmentRepository.findByIdsAndOrgId(ids, orgId);
         if (departments.size() != ids.size()) {
             throw new AppException(CoreErrorCode.DEPARTMENT_NOT_FOUND);
@@ -80,7 +82,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional
     public IDResponse<Long> update(DepartmentRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         Optional<Department> optionalDepartment = departmentRepository.findByIdAndOrgId(request.getId(), orgId);
         if (optionalDepartment.isEmpty()) {
             throw new AppException(CoreErrorCode.DEPARTMENT_NOT_FOUND);
@@ -101,7 +103,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public FilterResponse<DepartmentDto> filter(DepartmentFilterRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         request.setOrgId(orgId);
         if (request.getCreatedAtEnd() != null) {
             request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));

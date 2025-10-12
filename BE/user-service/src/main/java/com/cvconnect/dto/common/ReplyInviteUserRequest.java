@@ -1,23 +1,23 @@
 package com.cvconnect.dto.common;
 
 import com.cvconnect.constant.Messages;
+import com.cvconnect.enums.InviteJoinStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ChangeStatusActiveRequest {
-    @NotNull(message = Messages.IDS_REQUIRE)
-    private List<Long> ids;
-    @NotNull(message = Messages.STATUS_ACTIVE_REQUIRE)
-    private Boolean active;
+public class ReplyInviteUserRequest {
+    @NotBlank(message = Messages.INVITE_NOT_FOUND)
+    private String token;
+    @NotNull(message = Messages.STATUS_NOT_BLANK)
+    private InviteJoinStatus status;
 }

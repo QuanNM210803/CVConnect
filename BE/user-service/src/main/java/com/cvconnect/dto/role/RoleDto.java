@@ -26,7 +26,8 @@ public class RoleDto extends BaseDto<Instant> {
     private Boolean canDelete;
 
     private MemberTypeDto memberTypeDto;
-    List<RoleMenuDto> roleMenus;
+    private List<RoleMenuDto> roleMenus;
+    private Boolean isDefault;
 
     public RoleDto(Long id, String code, String name, MemberType memberType, Instant createdAt, Instant updatedAt, String createdBy, String updatedBy) {
         this.id = id;

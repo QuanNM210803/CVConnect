@@ -7,6 +7,7 @@ import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.role.RoleFilterRequest;
 import com.cvconnect.dto.role.RoleRequest;
 import com.cvconnect.dto.roleMenu.RoleMenuDto;
+import com.cvconnect.dto.roleUser.RoleUserDto;
 import com.cvconnect.entity.Role;
 import com.cvconnect.enums.MemberType;
 import com.cvconnect.enums.UserErrorCode;
@@ -14,20 +15,25 @@ import com.cvconnect.repository.RoleRepository;
 import com.cvconnect.service.MenuService;
 import com.cvconnect.service.RoleMenuService;
 import com.cvconnect.service.RoleService;
+import com.cvconnect.service.RoleUserService;
 import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.DateUtils;
+import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class RoleServiceImpl implements RoleService {
@@ -37,6 +43,8 @@ public class RoleServiceImpl implements RoleService {
     private MenuService menuService;
     @Autowired
     private RoleMenuService roleMenuService;
+    @Autowired
+    private RoleUserService roleUserService;
 
     @Override
     public RoleDto getRoleByCode(String code) {
@@ -181,6 +189,32 @@ public class RoleServiceImpl implements RoleService {
                 .roleMenus(roleMenuService.findByRoleId(id))
                 .build();
     }
+
+    @Override
+    public Map<Long, List<RoleDto>> getRolesByUserIds(List<Long> userIds) {
+        List<RoleUserDto> roleUsers = roleUserService.getRolesByUserIds(userIds);
+        if (ObjectUtils.isEmpty(roleUsers)) {
+            return Map.of();
+        }
+        return roleUsers.stream()
+                .collect(Collectors.groupingBy(
+                        RoleUserDto::getUserId,
+                        Collectors.mapping(RoleUserDto::getRole, Collectors.toList())
+                ));
+    }
+
+    @Override
+    public List<RoleDto> getRoleByIds(List<Long> ids) {
+        if(ObjectUtils.isEmpty(ids)) {
+            return List.of();
+        }
+        List<Role> roles = roleRepository.findAllById(ids);
+        if(ObjectUtils.isEmpty(roles)) {
+            return List.of();
+        }
+        return ObjectMapperUtils.convertToList(roles, RoleDto.class);
+    }
+
 
     void saveRoleMenus(Role role, List<RoleMenuDto> roleMenus) {
         if(roleMenus != null && !roleMenus.isEmpty()) {

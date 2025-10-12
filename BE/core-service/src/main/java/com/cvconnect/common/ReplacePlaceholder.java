@@ -1,6 +1,6 @@
 package com.cvconnect.common;
 
-import com.cvconnect.dto.DataReplacePlaceholder;
+import com.cvconnect.dto.common.DataReplacePlaceholder;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
@@ -43,7 +43,7 @@ public class ReplacePlaceholder {
         }
         String body = template;
         for (String placeholder : placeholders) {
-            String value = getValueForPlaceholder(placeholder, baseData);
+            String value = getValueForPlaceholder(placeholder, baseData, false);
             if (value != null) {
                 body = body.replace(placeholder, value);
             }
@@ -51,13 +51,13 @@ public class ReplacePlaceholder {
         return body;
     }
 
-    public String previewEmailDefault(String template, List<String> placeholders){
+    public String previewEmail(String template, List<String> placeholders, DataReplacePlaceholder baseData, Boolean isDefault) {
         if (template == null || placeholders == null) {
             return template;
         }
         String body = template;
         for (String placeholder : placeholders) {
-            String value = getValueForPlaceholder(placeholder, null);
+            String value = getValueForPlaceholder(placeholder, baseData, isDefault);
             if (value != null) {
                 body = body.replace(placeholder, value);
             }
@@ -65,11 +65,14 @@ public class ReplacePlaceholder {
         return body;
     }
 
-    private String getValueForPlaceholder(String placeholder, DataReplacePlaceholder baseData) {
+    private String getValueForPlaceholder(String placeholder, DataReplacePlaceholder baseData, Boolean isDefault) {
         switch (placeholder) {
             case "${jobPosition}":
-                if(baseData == null) {
+                if(isDefault){
                     return "Kỹ sư phát triển phần mềm";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 if(baseData.getPositionName() != null){
                     return baseData.getPositionName();
@@ -82,8 +85,11 @@ public class ReplacePlaceholder {
                         ? positionDto.getName()
                         : DOT_DOT_DOT;
             case "${postTitle}":
-                if(baseData == null) {
+                if(isDefault){
                     return "Lập trình viên Java";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 if(baseData.getJobAdName() != null){
                     return baseData.getJobAdName();
@@ -96,8 +102,11 @@ public class ReplacePlaceholder {
                         ? jobAdDto.getTitle()
                         : DOT_DOT_DOT;
             case "${currentRound}":
-                if(baseData == null) {
+                if (isDefault){
                     return "Ứng tuyển";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 if(baseData.getJobAdProcessName() != null){
                     return baseData.getJobAdProcessName();
@@ -110,14 +119,20 @@ public class ReplacePlaceholder {
                         ? jobAdProcessDto.getName()
                         : DOT_DOT_DOT;
             case "${interviewLink}":
-                if(baseData == null) {
+                if(isDefault){
                     return "https://meet.google.com/";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 String link = baseData.getInterviewLink();
                 return link != null ? link : DOT_DOT_DOT;
             case "${orgAddress}":
-                if(baseData == null) {
+                if(isDefault){
                     return "36A, Dich Vong Hau, Ha Noi";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 if(baseData.getOrgAddress() != null){
                     return baseData.getOrgAddress();
@@ -130,8 +145,11 @@ public class ReplacePlaceholder {
                         ? orgAddressDtoForAddress.getDisplayAddress()
                         : DOT_DOT_DOT;
             case "${candidateName}":
-                if(baseData == null) {
+                if(isDefault){
                     return "Nguyễn Minh Quân";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 if(baseData.getCandidateName() != null){
                     return baseData.getCandidateName();
@@ -146,8 +164,11 @@ public class ReplacePlaceholder {
             case "${salutation}":
                 return "Anh/Chị";
             case "${orgName}":
-                if(baseData == null) {
+                if(isDefault){
                     return "Công ty Cổ phần ABC";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 if(baseData.getOrgName() != null){
                     return baseData.getOrgName();
@@ -160,8 +181,11 @@ public class ReplacePlaceholder {
                         ? orgDto.getName()
                         : DOT_DOT_DOT;
             case "${hrName}":
-                if(baseData == null) {
+                if(isDefault){
                     return "Nguyễn Văn A";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 if(baseData.getHrName() != null){
                     return baseData.getHrName();
@@ -174,8 +198,11 @@ public class ReplacePlaceholder {
                         ? hrContactForName.getFullName()
                         : DOT_DOT_DOT;
             case "${hrPhone}":
-                if(baseData == null) {
+                if(isDefault){
                     return "0901234567";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 if(baseData.getHrPhone() != null){
                     return baseData.getHrPhone();
@@ -188,8 +215,11 @@ public class ReplacePlaceholder {
                         ? hrContactForPhone.getPhoneNumber()
                         : DOT_DOT_DOT;
             case "${hrEmail}":
+                if(isDefault){
+                    return "test@gmail.com";
+                }
                 if(baseData == null) {
-                    return "test1@gmail.com";
+                    return DOT_DOT_DOT;
                 }
                 if(baseData.getHrEmail() != null){
                     return baseData.getHrEmail();
@@ -202,8 +232,11 @@ public class ReplacePlaceholder {
                         ? hrContactForEmail.getEmail()
                         : DOT_DOT_DOT;
             case "${examDate}":
-                if(baseData == null) {
+                if(isDefault){
                     return "01/12/2025";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 Instant date = baseData.getExamStartTime();
                 if(date != null){
@@ -214,8 +247,11 @@ public class ReplacePlaceholder {
                     return DOT_DOT_DOT;
                 }
             case "${startTime}":
-                if(baseData == null) {
+                if(isDefault){
                     return "08:00";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 Instant startTime = baseData.getExamStartTime();
                 if(startTime != null){
@@ -226,8 +262,11 @@ public class ReplacePlaceholder {
                     return DOT_DOT_DOT;
                 }
             case "${endTime}":
-                if(baseData == null) {
+                if(isDefault){
                     return "10:00";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 Instant endTime = baseData.getExamEndTime();
                 if(endTime != null){
@@ -238,14 +277,20 @@ public class ReplacePlaceholder {
                     return DOT_DOT_DOT;
                 }
             case "${examDuration}":
-                if(baseData == null) {
+                if(isDefault){
                     return "120";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 Integer examDuration = baseData.getExamDuration();
                 return examDuration != null ? examDuration.toString() : DOT_DOT_DOT;
             case "${interview-examLocation}":
-                if(baseData == null) {
+                if(isDefault){
                     return "36A, Dich Vong Hau, Ha Noi";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
                 }
                 if (baseData.getLocationName() != null) {
                     return baseData.getLocationName();

@@ -1,4 +1,4 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.common;
 
 import com.cvconnect.constant.Messages;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -8,14 +8,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class InviteUserRequest {
+public class AssignRoleRequest {
     @NotNull(message = Messages.USER_NOT_FOUND)
     private Long userId;
     @NotNull(message = Messages.ROLE_NOT_FOUND)
-    private Long roleId;
+    private List<Long> roleIds;
 }

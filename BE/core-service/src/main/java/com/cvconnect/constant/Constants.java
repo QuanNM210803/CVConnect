@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Constants {
-    public static final String REMOTE = "REMOTE";
     public static final int MAX_INDUSTRY_PER_ORG = 5;
 
     public static class RoleCode {

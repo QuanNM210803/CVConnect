@@ -2,7 +2,7 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.common.ReplacePlaceholder;
 import com.cvconnect.common.RestTemplateClient;
-import com.cvconnect.dto.DataReplacePlaceholder;
+import com.cvconnect.dto.common.DataReplacePlaceholder;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;

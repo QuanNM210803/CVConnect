@@ -627,3 +627,6 @@ CREATE TABLE IF NOT EXISTS job_ad_process_candidate (
 
 alter table job_ad_candidate
 add column if not exists onboard_date TIMESTAMP WITHOUT TIME ZONE;
+
+alter table job_ad
+add column if not exists is_remote BOOLEAN DEFAULT FALSE;

@@ -21,4 +21,6 @@ public class RoleUser extends BaseEntity {
     @Column(name = "role_id", nullable = false)
     private Long roleId;
 
+    @Column(name = "is_default", nullable = false)
+    private Boolean isDefault = false;
 }

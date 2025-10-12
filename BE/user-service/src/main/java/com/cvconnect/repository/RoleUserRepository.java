@@ -3,6 +3,7 @@ package com.cvconnect.repository;
 import com.cvconnect.dto.roleUser.RoleUserProjection;
 import com.cvconnect.entity.RoleUser;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -13,9 +14,16 @@ public interface RoleUserRepository extends JpaRepository<RoleUser, Long> {
     @Query("SELECT ru FROM RoleUser ru WHERE ru.userId = :userId AND ru.roleId = :roleId")
     RoleUser findByUserIdAndRoleId(Long userId, Long roleId);
 
-    @Query("SELECT ru.id AS id, r.id AS roleId, r.name AS roleName, r.code AS roleCode " +
+    @Query("SELECT ru.id AS id, ru.userId AS userId, r.id AS roleId, r.name AS roleName, r.code AS roleCode, r.memberType AS memberType, ru.isDefault AS isDefault " +
             "FROM RoleUser ru " +
             "JOIN Role r ON r.id = ru.roleId " +
-            "WHERE ru.userId = :userId")
-    List<RoleUserProjection> findByUserId(Long userId);
+            "WHERE ru.userId IN :userIds")
+    List<RoleUserProjection> findRoleUseByUserId(List<Long> userIds);
+
+    @Query("SELECT ru FROM RoleUser ru WHERE ru.userId = :userId")
+    List<RoleUser> findByUserId(Long userId);
+
+    @Modifying
+    @Query("DELETE FROM RoleUser ru WHERE ru.userId = :userId AND ru.roleId IN :roleIds")
+    void deleteByUserIdAndRoleIds(Long userId, List<Long> roleIds);
 }

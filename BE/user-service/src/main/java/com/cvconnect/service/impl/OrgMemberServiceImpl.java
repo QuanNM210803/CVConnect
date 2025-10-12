@@ -1,10 +1,13 @@
 package com.cvconnect.service.impl;
 import com.cvconnect.common.RestTemplateClient;
-import com.cvconnect.dto.InviteUserRequest;
+import com.cvconnect.dto.common.AssignRoleRequest;
+import com.cvconnect.dto.common.InviteUserRequest;
 import com.cvconnect.dto.internal.response.OrgDto;
 import com.cvconnect.dto.inviteJoinOrg.InviteJoinOrgDto;
-import com.cvconnect.dto.inviteJoinOrg.ReplyInviteUserRequest;
+import com.cvconnect.dto.common.ReplyInviteUserRequest;
 import com.cvconnect.dto.orgMember.OrgMemberDto;
+import com.cvconnect.dto.orgMember.OrgMemberFilter;
+import com.cvconnect.dto.orgMember.OrgMemberProjection;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.roleUser.RoleUserDto;
 import com.cvconnect.dto.user.UserDto;
@@ -14,16 +17,21 @@ import com.cvconnect.enums.MemberType;
 import com.cvconnect.enums.UserErrorCode;
 import com.cvconnect.repository.OrgMemberRepository;
 import com.cvconnect.service.*;
+import com.cvconnect.utils.ServiceUtils;
 import com.cvconnect.utils.JwtUtils;
-import nmquan.commonlib.dto.response.Response;
+import nmquan.commonlib.constant.CommonConstants;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.enums.EmailTemplateEnum;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.service.SendEmailService;
+import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
-import nmquan.commonlib.utils.WebUtils;
+import nmquan.commonlib.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -32,6 +40,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class OrgMemberServiceImpl implements OrgMemberService {
@@ -43,6 +52,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     private RoleUserService roleUserService;
     @Autowired
     private InviteJoinOrgService inviteJoinOrgService;
+    @Lazy
     @Autowired
     private JwtUtils jwtUtils;
     @Autowired
@@ -51,6 +61,8 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     private UserService userService;
     @Autowired
     private RestTemplateClient restTemplateClient;
+    @Autowired
+    private ServiceUtils serviceUtils;
 
     @Value("${frontend.url-invite-join-org}")
     private String URL_INVITE_JOIN_ORG;
@@ -59,14 +71,13 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     public OrgMemberDto getOrgMember(Long userId) {
         Optional<OrgMember> orgMember = orgMemberRepository.findByUserId(userId);
         OrgMember entity = orgMember.orElse(null);
-        if(entity == null) {
+        if(entity == null || !entity.getIsActive()) {
             return null;
         }
-        return OrgMemberDto.builder()
-                .id(entity.getId())
-                .userId(entity.getUserId())
-                .orgId(entity.getOrgId())
-                .build();
+        OrgDto orgDto = restTemplateClient.getOrgById(entity.getOrgId());
+        OrgMemberDto orgMemberDto = ObjectMapperUtils.convertToObject(entity, OrgMemberDto.class);
+        orgMemberDto.setOrg(orgDto);
+        return orgMemberDto;
     }
 
     @Override
@@ -84,7 +95,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     @Override
     @Transactional
     public void inviteUserToJoinOrg(InviteUserRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = serviceUtils.validOrgMember();
         Optional<OrgMember> orgMember = orgMemberRepository.findByUserId(request.getUserId());
         if(orgMember.isPresent()) {
             if(orgMember.get().getOrgId().equals(orgId)) {
@@ -96,6 +107,9 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         UserDto userDto = userService.findById(request.getUserId());
         if(userDto == null) {
             throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        if(!userDto.getIsEmailVerified()){
+            throw new AppException(UserErrorCode.EMAIL_NOT_VERIFIED);
         }
 
         RoleDto roleDto = roleService.getRoleById(request.getRoleId());
@@ -157,6 +171,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         OrgMember newOrgMember = new OrgMember();
         newOrgMember.setOrgId(inviteJoinOrgDto.getOrgId());
         newOrgMember.setUserId(inviteJoinOrgDto.getUserId());
+        newOrgMember.setInviter(inviteJoinOrgDto.getCreatedBy());
         orgMemberRepository.save(newOrgMember);
 
         RoleUserDto roleUserDto = RoleUserDto.builder()
@@ -166,5 +181,99 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         roleUserService.createRoleUser(roleUserDto);
 
         // TODO: send notification to org-admin
+    }
+
+    @Override
+    public FilterResponse<OrgMemberDto> filter(OrgMemberFilter request) {
+        Long orgId = serviceUtils.validOrgMember();
+        request.setOrgId(orgId);
+        if (request.getCreatedAtEnd() != null) {
+            request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
+        }
+        if (request.getUpdatedAtEnd() != null) {
+            request.setUpdatedAtEnd(DateUtils.endOfDay(request.getUpdatedAtEnd(), CommonConstants.ZONE.UTC));
+        }
+        Page<OrgMemberProjection> page = orgMemberRepository.filter(request, request.getPageable());
+        Page<OrgMemberDto> orgMemberDtoPage = page.map(projection -> OrgMemberDto.builder()
+                .userId(projection.getUserId())
+                .username(projection.getUsername())
+                .email(projection.getEmail())
+                .fullName(projection.getFullName())
+                .phoneNumber(projection.getPhoneNumber())
+                .dateOfBirth(projection.getDateOfBirth())
+                .isEmailVerified(projection.getIsEmailVerified())
+                .isActive(projection.getIsActive())
+                .createdAt(projection.getCreatedAt())
+                .updatedAt(projection.getUpdatedAt())
+                .inviter(projection.getInviter())
+                .updatedBy(projection.getUpdatedBy())
+                .build());
+        List<OrgMemberDto> orgMemberDtos = orgMemberDtoPage.getContent();
+        List<Long> userIds = orgMemberDtos.stream()
+                .map(OrgMemberDto::getUserId)
+                .toList();
+        Map<Long, List<RoleDto>> userRoles = roleService.getRolesByUserIds(userIds);
+        orgMemberDtos.forEach(orgMemberDto -> {
+            List<RoleDto> roles = userRoles.get(orgMemberDto.getUserId()).stream()
+                    .filter(role -> MemberType.ORGANIZATION.equals(role.getMemberType()))
+                    .toList();
+            orgMemberDto.setRoles(roles);
+        });
+
+        return PageUtils.toFilterResponse(orgMemberDtoPage, orgMemberDtos);
+    }
+
+    @Override
+    public Long validOrgMember() {
+        return serviceUtils.validOrgMember();
+    }
+
+    @Override
+    public void assignRoleOrgMember(AssignRoleRequest request) {
+        Long orgId = serviceUtils.validOrgMember();
+        Optional<OrgMember> orgMember = orgMemberRepository.findByUserId(request.getUserId());
+        OrgMember entity = orgMember.orElse(null);
+        if(entity == null || !entity.getOrgId().equals(orgId)) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        List<Long> roleIdsInReq = request.getRoleIds();
+        List<RoleDto> roleDtos = roleService.getRoleByIds(roleIdsInReq);
+        boolean isValid = roleDtos.stream()
+                .allMatch(roleDto -> MemberType.ORGANIZATION.equals(roleDto.getMemberType()));
+        if(!isValid || roleDtos.size() != roleIdsInReq.size()) {
+            throw new AppException(UserErrorCode.ROLE_NOT_FOUND);
+        }
+
+        // add new role
+        List<RoleUserDto> currentRoleUsers = roleUserService.findByUserId(request.getUserId());
+        List<RoleUserDto> newRoleUsers = roleIdsInReq.stream()
+                .filter(roleId -> currentRoleUsers.stream().noneMatch(r -> r.getRoleId().equals(roleId)))
+                .map(roleId -> RoleUserDto.builder()
+                        .userId(request.getUserId())
+                        .roleId(roleId)
+                        .build())
+                .collect(Collectors.toList());
+        roleUserService.saveList(newRoleUsers);
+
+        // delete role
+        List<Long> deleteRoleIds = currentRoleUsers.stream()
+                .map(RoleUserDto::getRoleId)
+                .filter(roleId -> !roleIdsInReq.contains(roleId))
+                .toList();
+        if(!ObjectUtils.isEmpty(deleteRoleIds)) {
+            roleUserService.deleteByUserIdAndRoleIds(request.getUserId(), deleteRoleIds);
+        }
+    }
+
+    @Override
+    public void changeStatusActive(ChangeStatusActiveRequest request) {
+        Long orgId = serviceUtils.validOrgMember();
+        List<OrgMember> orgMembers = orgMemberRepository.findByIdsAndOrgId(request.getIds(), orgId);
+        if (orgMembers.size() != request.getIds().size()) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        orgMembers.forEach(orgMember -> orgMember.setIsActive(request.getActive()));
+        orgMemberRepository.saveAll(orgMembers);
     }
 }

@@ -2,6 +2,7 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.*;
+import com.cvconnect.dto.internal.request.DataReplacePlaceholder;
 import com.cvconnect.entity.EmailTemplate;
 import com.cvconnect.enums.NotifyErrorCode;
 import com.cvconnect.repository.EmailTemplateRepository;
@@ -9,13 +10,13 @@ import com.cvconnect.service.EmailTemplatePlaceholderService;
 import com.cvconnect.service.EmailTemplateService;
 import com.cvconnect.service.PlaceholderService;
 import nmquan.commonlib.constant.CommonConstants;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
-import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     @Override
     @Transactional
     public IDResponse<Long> create(EmailTemplateRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         boolean exists = emailTemplateRepository.existsByCodeAndOrgId(request.getCode(), orgId);
         if (exists) {
             throw new AppException(NotifyErrorCode.EMAIL_TEMPLATE_CODE_EXISTED);
@@ -69,7 +70,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
     @Override
     public FilterResponse<EmailTemplateDto> filter(EmailTemplateFilterRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         request.setOrgId(orgId);
         if (request.getCreatedAtEnd() != null) {
             request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
@@ -85,7 +86,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     @Override
     @Transactional
     public IDResponse<Long> update(EmailTemplateRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         EmailTemplate emailTemplate = emailTemplateRepository.findById(request.getId()).orElse(null);
         if (ObjectUtils.isEmpty(emailTemplate) || !emailTemplate.getOrgId().equals(orgId)) {
             throw new AppException(NotifyErrorCode.EMAIL_TEMPLATE_NOT_FOUND);
@@ -149,7 +150,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     @Override
     @Transactional
     public void delete(List<Long> ids) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         List<EmailTemplate> emailTemplates = emailTemplateRepository.findByIdsAndOrgId(ids, orgId);
         if (emailTemplates.size() != ids.size()) {
             throw new AppException(NotifyErrorCode.EMAIL_TEMPLATE_NOT_FOUND);
@@ -160,7 +161,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     @Override
     @Transactional
     public void changeStatusActive(ChangeStatusActiveRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         List<EmailTemplate> emailTemplates = emailTemplateRepository.findByIdsAndOrgId(request.getIds(), orgId);
         if (emailTemplates.size() != request.getIds().size()) {
             throw new AppException(NotifyErrorCode.EMAIL_TEMPLATE_NOT_FOUND);
@@ -193,14 +194,19 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     }
 
     @Override
-    public EmailTemplateDto previewEmailDefault(Long id) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+    public EmailTemplateDto previewEmail(Long id, DataReplacePlaceholder dataReplacePlaceholder) {
+        Long orgId = restTemplateClient.validOrgMember();
         EmailTemplateDto emailTemplateDto = getById(id);
         if (!emailTemplateDto.getOrgId().equals(orgId)) {
             throw new AppException(NotifyErrorCode.EMAIL_TEMPLATE_NOT_FOUND);
         }
-        String bodyPreview = restTemplateClient.previewEmailDefault(emailTemplateDto.getBody(), emailTemplateDto.getPlaceholderCodes());
+        String bodyPreview = restTemplateClient.previewEmail(emailTemplateDto.getBody(), emailTemplateDto.getPlaceholderCodes(), dataReplacePlaceholder, false);
         emailTemplateDto.setBodyPreview(bodyPreview);
         return emailTemplateDto;
+    }
+
+    @Override
+    public String previewEmailDefault(PreviewEmailDefaultRequest request) {
+        return restTemplateClient.previewEmail(request.getBody(), request.getPlaceholders(), null, true);
     }
 }

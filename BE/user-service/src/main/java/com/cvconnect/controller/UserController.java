@@ -4,15 +4,14 @@ import com.cvconnect.dto.user.UserDto;
 import com.cvconnect.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import nmquan.commonlib.annotation.InternalRequest;
+import nmquan.commonlib.constant.MessageConstants;
 import nmquan.commonlib.dto.response.Response;
+import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,6 +20,8 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private LocalizationUtils localizationUtils;
 
     @GetMapping("/my-info/{roleId}")
     @Operation(summary = "Get my info by role ID")
@@ -49,5 +50,12 @@ public class UserController {
     @Operation(summary = "Get user by ID")
     public ResponseEntity<Response<UserDto>> getUserById(@PathVariable Long userId) {
         return ResponseUtils.success(userService.getUserById(userId));
+    }
+
+    @PutMapping("/role-default/{roleId}")
+    @Operation(summary = "Set default role for users")
+    public ResponseEntity<Response<Void>> setDefaultRole(@PathVariable Long roleId) {
+        userService.setDefaultRole(roleId);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
     }
 }

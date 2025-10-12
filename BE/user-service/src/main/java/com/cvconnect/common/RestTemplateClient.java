@@ -1,6 +1,6 @@
 package com.cvconnect.common;
 
-import com.cvconnect.dto.AttachFileDto;
+import com.cvconnect.dto.internal.response.AttachFileDto;
 import com.cvconnect.dto.auth.OrganizationRequest;
 import com.cvconnect.dto.internal.response.OrgDto;
 import nmquan.commonlib.dto.request.ObjectAndFileRequest;

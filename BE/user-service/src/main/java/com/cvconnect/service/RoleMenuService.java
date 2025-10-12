@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface RoleMenuService {
-    Map<String, List<String>> getAuthorities(Long userId);
+    Map<String, List<String>> getAuthorities(Long userId, List<String> roles);
     List<PermissionTypeDto> getAllPermissionTypes();
     void saveAll(List<RoleMenuDto> roleMenuDtos);
     void deleteByRoleId(Long roleId);

@@ -12,10 +12,10 @@ import java.util.List;
 @Repository
 public interface RoleMenuRepository extends JpaRepository<RoleMenu, Long> {
     @Query("SELECT DISTINCT rm.id AS roleMenuId, rm.permission AS permission, m.code AS menuCode FROM RoleMenu rm " +
-            "JOIN Role r ON rm.roleId = r.id " +
+            "JOIN Role r ON rm.roleId = r.id AND r.code IN :roles " +
             "JOIN RoleUser ur ON ur.roleId = r.id AND ur.userId = :userId " +
             "JOIN Menu m ON m.id = rm.menuId")
-    List<RoleMenuProjection> findAuthoritiesByUserId(Long userId);
+    List<RoleMenuProjection> findAuthoritiesByUserId(Long userId, List<String> roles);
 
     @Modifying
     @Query("DELETE FROM RoleMenu rm WHERE rm.roleId = :roleId")

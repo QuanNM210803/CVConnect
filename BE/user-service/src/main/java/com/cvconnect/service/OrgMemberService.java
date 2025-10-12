@@ -1,8 +1,12 @@
 package com.cvconnect.service;
 
-import com.cvconnect.dto.InviteUserRequest;
-import com.cvconnect.dto.inviteJoinOrg.ReplyInviteUserRequest;
+import com.cvconnect.dto.common.AssignRoleRequest;
+import com.cvconnect.dto.common.InviteUserRequest;
+import com.cvconnect.dto.common.ReplyInviteUserRequest;
 import com.cvconnect.dto.orgMember.OrgMemberDto;
+import com.cvconnect.dto.orgMember.OrgMemberFilter;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
+import nmquan.commonlib.dto.response.FilterResponse;
 
 public interface OrgMemberService {
     OrgMemberDto getOrgMember(Long userId);
@@ -10,4 +14,8 @@ public interface OrgMemberService {
     boolean existsByUserId(Long userId);
     void inviteUserToJoinOrg(InviteUserRequest request);
     void replyInviteJoinOrg(ReplyInviteUserRequest request);
+    FilterResponse<OrgMemberDto> filter(OrgMemberFilter request);
+    Long validOrgMember();
+    void assignRoleOrgMember(AssignRoleRequest request);
+    void changeStatusActive(ChangeStatusActiveRequest request);
 }

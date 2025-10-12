@@ -1,14 +1,13 @@
 package com.cvconnect.controller;
 
-import com.cvconnect.dto.ChangeStatusActiveRequest;
-import com.cvconnect.dto.EmailTemplateDto;
-import com.cvconnect.dto.EmailTemplateFilterRequest;
-import com.cvconnect.dto.EmailTemplateRequest;
+import com.cvconnect.dto.*;
+import com.cvconnect.dto.internal.request.DataReplacePlaceholder;
 import com.cvconnect.service.EmailTemplateService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import nmquan.commonlib.annotation.InternalRequest;
 import nmquan.commonlib.constant.MessageConstants;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
@@ -91,9 +90,16 @@ public class EmailTemplateController {
         return ResponseUtils.success(emailTemplateService.getById(id));
     }
 
-    @GetMapping("/preview-email-default/{id}")
+    @PostMapping("/preview-email/{id}")
     @Operation(summary = "Preview Email Template")
-    public ResponseEntity<Response<EmailTemplateDto>> previewEmailDefault(@PathVariable Long id) {
-        return ResponseUtils.success(emailTemplateService.previewEmailDefault(id));
+    public ResponseEntity<Response<EmailTemplateDto>> previewEmail(@PathVariable Long id,
+                                                                          @RequestBody DataReplacePlaceholder dataReplacePlaceholder) {
+        return ResponseUtils.success(emailTemplateService.previewEmail(id, dataReplacePlaceholder));
+    }
+
+    @PostMapping("/preview-email-default")
+    @Operation(summary = "Preview Email Default Template")
+    public ResponseEntity<Response<String>> previewEmailDefault(@RequestBody PreviewEmailDefaultRequest request) {
+        return ResponseUtils.success(emailTemplateService.previewEmailDefault(request));
     }
 }

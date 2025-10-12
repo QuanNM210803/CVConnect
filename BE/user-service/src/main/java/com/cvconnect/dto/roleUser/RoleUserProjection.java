@@ -6,4 +6,6 @@ public interface RoleUserProjection {
     Long getRoleId();
     String getRoleName();
     String getRoleCode();
+    String getMemberType();
+    Boolean getIsDefault();
 }

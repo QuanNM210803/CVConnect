@@ -1,6 +1,6 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.common.ChangeStatusActiveRequest;
+import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.department.DepartmentDto;
 import com.cvconnect.dto.position.PositionDto;
 import com.cvconnect.dto.position.PositionFilterRequest;
@@ -16,6 +16,7 @@ import com.cvconnect.enums.ProcessTypeEnum;
 import com.cvconnect.repository.PositionRepository;
 import com.cvconnect.service.*;
 import nmquan.commonlib.constant.CommonConstants;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
@@ -48,6 +49,8 @@ public class PositionServiceImpl implements PositionService {
     private PositionProcessService positionProcessService;
     @Autowired
     private ProcessTypeService processTypeService;
+    @Autowired
+    private RestTemplateClient restTemplateClient;
 
     @Override
     @Transactional
@@ -76,7 +79,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void changeStatusActive(ChangeStatusActiveRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         List<Position> positions = positionRepository.findByIdsAndOrgId(request.getIds(), orgId);
         if(positions.size() != request.getIds().size()){
             throw new AppException(CommonErrorCode.ACCESS_DENIED);
@@ -88,7 +91,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public void deleteByIds(List<Long> ids) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         List<Position> positions = positionRepository.findByIdsAndOrgId(ids, orgId);
         if(positions.size() != ids.size()){
             throw new AppException(CommonErrorCode.ACCESS_DENIED);
@@ -98,7 +101,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public PositionDto detail(Long id) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         Position position = positionRepository.findByIdAndOrgId(id, orgId);
         if(Objects.isNull(position)){
             throw new AppException(CoreErrorCode.POSITION_NOT_FOUND);
@@ -114,7 +117,7 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public FilterResponse<PositionDto> filter(PositionFilterRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         request.setOrgId(orgId);
         if (request.getCreatedAtEnd() != null) {
             request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
@@ -139,7 +142,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     @Transactional
     public IDResponse<Long> update(PositionRequest request) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = restTemplateClient.validOrgMember();
         DepartmentDto departmentDto = departmentService.detail(request.getDepartmentId());
         if(Objects.isNull(departmentDto)){
             throw new AppException(CommonErrorCode.ACCESS_DENIED);

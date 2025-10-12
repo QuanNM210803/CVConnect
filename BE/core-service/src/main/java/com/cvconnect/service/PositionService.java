@@ -1,9 +1,9 @@
 package com.cvconnect.service;
 
-import com.cvconnect.dto.common.ChangeStatusActiveRequest;
 import com.cvconnect.dto.position.PositionDto;
 import com.cvconnect.dto.position.PositionFilterRequest;
 import com.cvconnect.dto.position.PositionRequest;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 

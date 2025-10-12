@@ -1,9 +1,8 @@
 package com.cvconnect.service;
 
-import com.cvconnect.dto.ChangeStatusActiveRequest;
-import com.cvconnect.dto.EmailTemplateDto;
-import com.cvconnect.dto.EmailTemplateFilterRequest;
-import com.cvconnect.dto.EmailTemplateRequest;
+import com.cvconnect.dto.*;
+import com.cvconnect.dto.internal.request.DataReplacePlaceholder;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 
@@ -18,5 +17,6 @@ public interface EmailTemplateService {
     void changeStatusActive(ChangeStatusActiveRequest request);
     List<EmailTemplateDto> getByOrgId(Long orgId);
     EmailTemplateDto getById(Long id);
-    EmailTemplateDto previewEmailDefault(Long id);
+    EmailTemplateDto previewEmail(Long id, DataReplacePlaceholder dataReplacePlaceholder);
+    String previewEmailDefault(PreviewEmailDefaultRequest request);
 }

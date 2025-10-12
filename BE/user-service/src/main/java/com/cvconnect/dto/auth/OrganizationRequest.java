@@ -23,7 +23,6 @@ public class OrganizationRequest {
     private String website;
     private Integer staffCountFrom;
     private Integer staffCountTo;
-    private boolean hasRemote;
 
     private List<Long> industryIds;
     @Valid

@@ -15,4 +15,5 @@ public interface UserService {
     Boolean checkOrgUserRole(Long userId, String roleCode, Long orgId);
     List<UserDto> getUsersByRoleCodeOrg(String roleCode);
     UserDto getUserById(Long userId);
+    void setDefaultRole(Long roleId);
 }

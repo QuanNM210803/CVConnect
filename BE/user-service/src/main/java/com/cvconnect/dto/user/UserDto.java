@@ -33,6 +33,7 @@ public class UserDto extends BaseDto<Instant> {
     private List<UserDetailDto> userDetails;
     private String avatarUrl;
     private Long orgId;
+    private String inviter;
 
     public UserDto configResponse() {
         this.setIsDeleted(null);

@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrgAddressRequest {
+    private Long id;
     private boolean isHeadquarter;
 
     @NotBlank(message = Messages.PROVINCE_REQUIRE)

@@ -2,6 +2,7 @@ package com.cvconnect.repository;
 
 import com.cvconnect.entity.OrganizationAddress;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +16,8 @@ public interface OrgAddressRepository extends JpaRepository<OrganizationAddress,
     @Query("SELECT oa FROM OrganizationAddress oa WHERE oa.orgId = :orgId " +
             "ORDER BY oa.isHeadquarter DESC, oa.createdAt DESC")
     List<OrganizationAddress> findByOrgId(Long orgId);
+
+    @Modifying
+    @Query("DELETE FROM OrganizationAddress oa WHERE oa.id IN :ids")
+    void deleteByIds(List<Long> ids);
 }

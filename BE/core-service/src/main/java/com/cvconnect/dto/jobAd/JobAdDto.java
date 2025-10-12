@@ -56,4 +56,6 @@ public class JobAdDto extends BaseDto<Instant> {
     private Boolean isAutoSendEmail;
 
     private Long emailTemplateId;
+
+    private Boolean isRemote;
 }

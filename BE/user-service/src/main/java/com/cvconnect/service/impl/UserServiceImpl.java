@@ -1,7 +1,7 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
-import com.cvconnect.dto.AttachFileDto;
+import com.cvconnect.dto.internal.response.AttachFileDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.roleUser.RoleUserDto;
 import com.cvconnect.dto.user.UserDetailDto;
@@ -13,6 +13,7 @@ import com.cvconnect.entity.User;
 import com.cvconnect.enums.UserErrorCode;
 import com.cvconnect.repository.UserRepository;
 import com.cvconnect.service.*;
+import com.cvconnect.utils.ServiceUtils;
 import jakarta.annotation.PostConstruct;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -48,6 +50,8 @@ public class UserServiceImpl implements UserService {
     private RoleService roleService;
     @Autowired
     private RestTemplateClient restTemplateClient;
+    @Autowired
+    private ServiceUtils serviceUtils;
 
     private final Map<Class<?>, Function<Long, ?>> fetcherMap = new HashMap<>();
 
@@ -104,6 +108,8 @@ public class UserServiceImpl implements UserService {
             AttachFileDto attachFileDto = restTemplateClient.getAttachFileById(userDto.getAvatarId());
             userDto.setAvatarUrl(attachFileDto.getSecureUrl());
         }
+        List<RoleUserDto> roleUserDtos = roleUserService.findRoleUseByUserId(userId);
+        userDto.setRoles(roleUserDtos.stream().map(RoleUserDto::getRole).collect(Collectors.toList()));
         return userDto.configResponse();
     }
 
@@ -134,7 +140,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getUsersByRoleCodeOrg(String roleCode) {
-        Long orgId = WebUtils.checkCurrentOrgId();
+        Long orgId = serviceUtils.validOrgMember();
         List<User> users = userRepository.getUsersByRoleCodeOrg(roleCode, orgId, true);
         if(ObjectUtils.isEmpty(users)){
             return List.of();
@@ -153,6 +159,19 @@ public class UserServiceImpl implements UserService {
         }
         UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
         return userDto.configResponse();
+    }
+
+    @Override
+    public void setDefaultRole(Long roleId) {
+        Long userId = WebUtils.getCurrentUserId();
+        List<RoleUserDto> roleUserDtos = roleUserService.findByUserId(userId);
+        if(roleUserDtos.stream().noneMatch(r -> r.getRoleId().equals(roleId))) {
+            throw new AppException(UserErrorCode.ROLE_NOT_FOUND);
+        }
+        for (RoleUserDto roleUserDto : roleUserDtos) {
+            roleUserDto.setIsDefault(roleUserDto.getRoleId().equals(roleId));
+        }
+        roleUserService.saveList(roleUserDtos);
     }
 
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {
