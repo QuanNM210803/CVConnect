@@ -9,5 +9,5 @@ public interface EmailConfigService {
     EmailConfigDto detail();
     IDResponse<Long> create(EmailConfigRequest request);
     IDResponse<Long> update(EmailConfigRequest request);
-    void delete(Long id);
+    void delete();
 }

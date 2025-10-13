@@ -144,6 +144,12 @@ public class IndustryServiceImpl implements IndustryService {
                 .build();
     }
 
+    @Override
+    public List<IndustryDto> getIndustriesByOrgId(Long orgId) {
+        List<Industry> entities = industryRepository.getIndustriesByOrgId(orgId);
+        return ObjectMapperUtils.convertToList(entities, IndustryDto.class);
+    }
+
     void createIndustrySubs(List<IndustrySubRequest> listSub, Long industryId) {
         if (Objects.nonNull(listSub) && !listSub.isEmpty()) {
             List<IndustrySubDto> industrySubDtos = ObjectMapperUtils.convertToList(listSub, IndustrySubDto.class);

@@ -76,7 +76,7 @@ public class EmailConfigServiceImpl implements EmailConfigService {
     @Override
     public IDResponse<Long> update(EmailConfigRequest request) {
         Long orgId = restTemplateClient.validOrgMember();
-        EmailConfig emailConfig = emailConfigRepository.findByIdAndOrgId(request.getId(), orgId);
+        EmailConfig emailConfig = emailConfigRepository.findByOrgId(orgId);
         if (emailConfig == null) {
             throw new AppException(NotifyErrorCode.EMAIL_CONFIG_NOT_FOUND);
         }
@@ -93,9 +93,9 @@ public class EmailConfigServiceImpl implements EmailConfigService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete() {
         Long orgId = restTemplateClient.validOrgMember();
-        EmailConfig emailConfig = emailConfigRepository.findByIdAndOrgId(id, orgId);
+        EmailConfig emailConfig = emailConfigRepository.findByOrgId(orgId);
         if (emailConfig == null) {
             throw new AppException(NotifyErrorCode.EMAIL_CONFIG_NOT_FOUND);
         }

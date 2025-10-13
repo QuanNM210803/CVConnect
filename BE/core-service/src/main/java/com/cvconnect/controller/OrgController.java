@@ -36,4 +36,32 @@ public class OrgController {
     public ResponseEntity<Response<OrgDto>> createOrg(@PathVariable Long orgId) {
         return ResponseUtils.success(orgService.findById(orgId));
     }
+
+    @GetMapping("/org-info")
+    @PreAuthorize("hasAnyAuthority('ORG_INFO:VIEW')")
+    @Operation(summary = "Get Organization info")
+    public ResponseEntity<Response<OrgDto>> getOrgInfo() {
+        return ResponseUtils.success(orgService.getOrgInfo());
+    }
+
+    @PutMapping("/update-info")
+    @PreAuthorize("hasAnyAuthority('ORG_INFO:UPDATE')")
+    @Operation(summary = "Update Organization info")
+        public ResponseEntity<Response<IDResponse<Long>>> updateOrgInfo(@Valid @RequestBody OrganizationRequest data){
+        return ResponseUtils.success(orgService.updateOrgInfo(data));
+    }
+
+    @PutMapping("/update-logo")
+    @PreAuthorize("hasAnyAuthority('ORG_INFO:UPDATE')")
+    @Operation(summary = "Update Organization logo")
+    public ResponseEntity<Response<IDResponse<Long>>> updateOrgLogo(@RequestPart("file") MultipartFile file) {
+        return ResponseUtils.success(orgService.updateOrgLogo(file));
+    }
+
+    @PutMapping("/update-cover-photo")
+    @PreAuthorize("hasAnyAuthority('ORG_INFO:UPDATE')")
+    @Operation(summary = "Update Organization cover photo")
+    public ResponseEntity<Response<IDResponse<Long>>> updateOrgCoverPhoto(@RequestPart("file") MultipartFile file) {
+        return ResponseUtils.success(orgService.updateOrgCoverPhoto(file));
+    }
 }

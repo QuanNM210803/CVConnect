@@ -16,4 +16,5 @@ public interface IndustryService {
     void deleteByIds(List<Long> ids);
     IDResponse<Long> create(IndustryRequest request);
     IDResponse<Long> update(IndustryRequest request);
+    List<IndustryDto> getIndustriesByOrgId(Long orgId);
 }

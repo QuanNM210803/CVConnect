@@ -20,6 +20,7 @@ public class Messages {
     public static final String ACCOUNT_REGISTERED_AS_ORG_MEMBER="account.registered.as.org.member";
     public static final String USER_JOINED_ORG="user.joined.org";
     public static final String USER_BELONG_TO_ANOTHER_ORG="user.belong.to.another.org";
+    public static final String ORG_MUST_HAVE_AT_LEAST_ONE_ADMIN="org.must.have.at.least.one.admin";
 
     /*
      * Validation messages

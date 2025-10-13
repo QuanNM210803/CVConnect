@@ -44,6 +44,9 @@ public class Messages {
     public static final String JOB_AD_STOP_RECRUITMENT = "job.ad.stop.recruitment";
     public static final String CANDIDATE_DUPLICATE_APPLY = "candidate.duplicate.apply";
     public static final String EMAIL_CONFIG_NOT_FOUND = "email.config.not.found";
+    public static final String ORG_NOT_FOUND = "org.not.found";
+    public static final String IMAGE_FILE_INVALID = "image.file.invalid";
+    public static final String DOCUMENT_FILE_INVALID = "document.file.invalid";
 
 
     /*

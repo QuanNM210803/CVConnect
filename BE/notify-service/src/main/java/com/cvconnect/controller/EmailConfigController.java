@@ -45,20 +45,18 @@ public class EmailConfigController {
         return ResponseUtils.success(emailConfigService.create(request), localizationUtils.getLocalizedMessage(MessageConstants.CREATE_SUCCESSFULLY));
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/update")
     @Operation(summary = "Update email config for organization")
     @PreAuthorize("hasAnyAuthority('ORG_ADMIN')")
-    public ResponseEntity<Response<IDResponse<Long>>> updateEmailConfig(@PathVariable Long id,
-                                                                        @RequestBody EmailConfigRequest request) {
-        request.setId(id);
+    public ResponseEntity<Response<IDResponse<Long>>> updateEmailConfig(@RequestBody EmailConfigRequest request) {
         return ResponseUtils.success(emailConfigService.update(request), localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/delete")
     @Operation(summary = "Delete email config for organization")
     @PreAuthorize("hasAnyAuthority('ORG_ADMIN')")
-    public ResponseEntity<Response<Void>> deleteEmailConfig(@PathVariable Long id) {
-        emailConfigService.delete(id);
+    public ResponseEntity<Response<Void>> deleteEmailConfig() {
+        emailConfigService.delete();
         return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.DELETE_SUCCESSFULLY));
     }
 }

@@ -1,5 +1,6 @@
 package com.cvconnect.dto.org;
 
+import com.cvconnect.dto.industry.IndustryDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 import nmquan.commonlib.dto.BaseDto;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -22,4 +24,9 @@ public class OrgDto extends BaseDto<Instant> {
     private String website;
     private Integer staffCountFrom;
     private Integer staffCountTo;
+
+    // attribute expansion
+    private String logoUrl;
+    private String coverPhotoUrl;
+    private List<IndustryDto> industryList;
 }

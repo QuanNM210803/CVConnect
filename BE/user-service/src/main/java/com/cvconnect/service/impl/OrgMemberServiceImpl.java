@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 import com.cvconnect.common.RestTemplateClient;
+import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.common.AssignRoleRequest;
 import com.cvconnect.dto.common.InviteUserRequest;
 import com.cvconnect.dto.internal.response.OrgDto;
@@ -229,6 +230,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     }
 
     @Override
+    @Transactional
     public void assignRoleOrgMember(AssignRoleRequest request) {
         Long orgId = serviceUtils.validOrgMember();
         Optional<OrgMember> orgMember = orgMemberRepository.findByUserId(request.getUserId());
@@ -263,6 +265,11 @@ public class OrgMemberServiceImpl implements OrgMemberService {
                 .toList();
         if(!ObjectUtils.isEmpty(deleteRoleIds)) {
             roleUserService.deleteByUserIdAndRoleIds(request.getUserId(), deleteRoleIds);
+        }
+
+        boolean existsOrgAdmin = orgMemberRepository.checkExistsOrgAdmin(orgId, Constants.RoleCode.ORG_ADMIN);
+        if(!existsOrgAdmin) {
+            throw new AppException(UserErrorCode.ORG_MUST_HAVE_AT_LEAST_ONE_ADMIN);
         }
     }
 

@@ -22,4 +22,14 @@ public class OrgIndustryServiceImpl implements OrgIndustryService {
                 .toList();
         orgIndustryRepository.saveAll(entities);
     }
+
+    @Override
+    public void deleteByOrgId(Long orgId) {
+        orgIndustryRepository.deleteByOrgId(orgId);
+    }
+
+    @Override
+    public void deleteByIndustryIdsAndOrgId(List<Long> industryIds, Long orgId) {
+        orgIndustryRepository.deleteByIndustryIdsAndOrgId(industryIds, orgId);
+    }
 }

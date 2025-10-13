@@ -17,6 +17,7 @@ import com.cvconnect.enums.JobAdStatus;
 import com.cvconnect.enums.ProcessTypeEnum;
 import com.cvconnect.repository.JobAdCandidateRepository;
 import com.cvconnect.service.*;
+import com.cvconnect.utils.CoreServiceUtils;
 import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.SendEmailDto;
 import nmquan.commonlib.dto.response.IDResponse;
@@ -66,6 +67,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         // save candidate info apply if not exist
         Long candidateInfoApplyId = request.getCandidateInfoApplyId();
         if(candidateInfoApplyId == null){
+            CoreServiceUtils.validateDocumentFileInput(cvFile);
             MultipartFile[] files = new MultipartFile[]{cvFile};
             List<Long> cvFileIds = attachFileService.uploadFile(files);
             CandidateInfoApplyDto candidateInfoApplyDto = CandidateInfoApplyDto.builder()

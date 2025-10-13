@@ -67,4 +67,11 @@ public interface OrgMemberRepository extends JpaRepository<OrgMember, Long> {
 
     @Query("select om from OrgMember om where om.userId in :userIds and om.orgId = :orgId")
     List<OrgMember> findByIdsAndOrgId(List<Long> userIds, Long orgId);
+
+    @Query("select case when count(om) > 0 then true else false end " +
+            "from OrgMember om " +
+            "join RoleUser ru on ru.userId = om.userId " +
+            "join Role r on r.id = ru.roleId " +
+            "where om.isActive = true and om.orgId = :orgId and r.code = :roleCode")
+    boolean checkExistsOrgAdmin(Long orgId, String roleCode);
 }

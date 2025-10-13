@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface IndustryRepository extends JpaRepository<Industry, Long> {
 
@@ -29,4 +31,9 @@ public interface IndustryRepository extends JpaRepository<Industry, Long> {
     boolean existsByCode(@Size(max = 50) String code);
 
     Industry findByCode(@Size(max = 50) String code);
+
+    @Query("SELECT DISTINCT i FROM Industry i " +
+            "JOIN OrganizationIndustry oi ON oi.industryId = i.id " +
+            "WHERE oi.orgId = :orgId")
+    List<Industry> getIndustriesByOrgId(Long orgId);
 }
