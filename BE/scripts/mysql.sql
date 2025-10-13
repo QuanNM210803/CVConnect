@@ -260,89 +260,90 @@
 # set label = 'Ngành nghề doanh nghiệp'
 # where code = 'ORG_INDUSTRY';
 
-update `cvconnect-user-service`.menus
-set label = 'Thành viên'
-where code = 'ORG_MEMBER';
+# update `cvconnect-user-service`.menus
+# set label = 'Thành viên'
+# where code = 'ORG_MEMBER';
+#
+# update `cvconnect-user-service`.menus
+# set label = 'Lĩnh vực'
+# where code = 'INDUSTRY';
+#
+# update `cvconnect-user-service`.menus
+# set parent_id = 11, sort_order = 3
+# where code = 'PROCESS_TYPE';
+#
+# update `cvconnect-user-service`.menus
+# set sort_order = 10 * sort_order
+# where parent_id is null;
+#
+# update `cvconnect-user-service`.menus
+# set code = 'REPORT_JOB_AD', url = '/system-admin/report/job-ad'
+# where code = 'REPORT_JOB_POST';
+#
+# delete from `cvconnect-user-service`.menus
+# where code = 'ORG_INDUSTRY';
+#
+# update `cvconnect-user-service`.menus
+# set sort_order = 100
+# where code = 'ORG_MEMBER';
+#
+# alter table `cvconnect-user-service`.menus drop index label;
+#
+# insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, for_member_type, is_show, created_by) values
+# (19, 'ORG_INFO', 'Thông tin chung', 'ri:info-card-line', '/org-info', null, 5, 'ORGANIZATION', 1, 'admin'),
+# (20, 'REPORT_ORG_CANDIDATE', 'Ứng viên', 'mdi:circle-medium', '/org/report/candidate', 10, 1, 'ORGANIZATION', 1, 'admin'),
+# (21, 'REPORT_ORG_JOB_AD', 'Tin tuyển dụng', 'mdi:circle-medium', '/org/report/job-ad', 10, 2, 'ORGANIZATION', 1, 'admin'),
+# (22, 'ORG_CANDIDATE', 'Ứng viên', 'material-symbols:person-pin-outline', '/org/candidate', null, 25, 'ORGANIZATION', 1, 'admin'),
+# (23, 'ORG_JOB_AD', 'Tin tuyển dụng', 'hugeicons:job-search', '/org/job-ad', null, 33, 'ORGANIZATION', 1, 'admin'),
+# (24, 'ORG_ONBOARD', 'Danh sách onboard', 'material-symbols:person-check-outline-rounded', '/org/onboard', null, 37, 'ORGANIZATION', 1, 'admin'),
+# (25, 'EMAIL_TEMPLATE', 'Mẫu Email', 'material-symbols:mail-asterisk-outline-sharp', '/org-admin/email-template', 40, 2, 'ORGANIZATION', 1, 'admin'),
+# (26, 'ORG_CALENDAR', 'Lịch', 'material-symbols:calendar-month-outline-rounded', '/org/calendar', null, 75, 'ORGANIZATION', 1, 'admin');
+#
+# update `cvconnect-user-service`.menus
+# set parent_id = 1
+# where code in ('REPORT_ORG_CANDIDATE', 'REPORT_ORG_JOB_AD');
+#
+# update `cvconnect-user-service`.menus
+# set parent_id = 4
+# where code in ('EMAIL_TEMPLATE');
+#
+# update `cvconnect-user-service`.menus
+# set icon = 'mdi:circle-medium'
+# where code in ('EMAIL_TEMPLATE');
+#
+#
+# update `cvconnect-user-service`.menus
+# set label = 'Vị trí tuyển dụng'
+# where code = 'POSITION';
+#
+# CREATE TABLE IF NOT EXISTS `cvconnect-user-service`.invite_join_org (
+#     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+#
+#     `user_id` BIGINT NOT NULL,
+#     `role_id` BIGINT NOT NULL,
+#     `org_id` BIGINT NOT NULL,
+#     `status` VARCHAR(100) NOT NULL ,
+#
+#     `is_active` TINYINT(1) DEFAULT 1,
+#     `is_deleted` TINYINT(1) DEFAULT 0,
+#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     `updated_at` DATETIME,
+#     `created_by` VARCHAR(100),
+#     `updated_by` VARCHAR(100),
+#
+#     FOREIGN KEY (role_id) REFERENCES `cvconnect-user-service`.roles(id) ON DELETE CASCADE ON UPDATE CASCADE,
+#     FOREIGN KEY (user_id) REFERENCES `cvconnect-user-service`.users(id) ON DELETE CASCADE ON UPDATE CASCADE
+# );
+#
+# alter table `cvconnect-user-service`.invite_join_org
+# add column `token` VARCHAR(255) NOT NULL UNIQUE after org_id;
+#
+# alter table `cvconnect-user-service`.role_user
+# add column `is_default` TINYINT(1) DEFAULT 0 after role_id;
+#
+# alter table `cvconnect-user-service`.org_members
+# add column `inviter` varchar(255) after org_id;
 
-update `cvconnect-user-service`.menus
-set label = 'Lĩnh vực'
-where code = 'INDUSTRY';
-
-update `cvconnect-user-service`.menus
-set parent_id = 11, sort_order = 3
-where code = 'PROCESS_TYPE';
-
-update `cvconnect-user-service`.menus
-set sort_order = 10 * sort_order
-where parent_id is null;
-
-update `cvconnect-user-service`.menus
-set code = 'REPORT_JOB_AD', url = '/system-admin/report/job-ad'
-where code = 'REPORT_JOB_POST';
-
-delete from `cvconnect-user-service`.menus
-where code = 'ORG_INDUSTRY';
-
-update `cvconnect-user-service`.menus
-set sort_order = 100
-where code = 'ORG_MEMBER';
-
-alter table `cvconnect-user-service`.menus drop index label;
-
-insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, for_member_type, is_show, created_by) values
-(19, 'ORG_INFO', 'Thông tin chung', 'ri:info-card-line', '/org-info', null, 5, 'ORGANIZATION', 1, 'admin'),
-(20, 'REPORT_ORG_CANDIDATE', 'Ứng viên', 'mdi:circle-medium', '/org/report/candidate', 10, 1, 'ORGANIZATION', 1, 'admin'),
-(21, 'REPORT_ORG_JOB_AD', 'Tin tuyển dụng', 'mdi:circle-medium', '/org/report/job-ad', 10, 2, 'ORGANIZATION', 1, 'admin'),
-(22, 'ORG_CANDIDATE', 'Ứng viên', 'material-symbols:person-pin-outline', '/org/candidate', null, 25, 'ORGANIZATION', 1, 'admin'),
-(23, 'ORG_JOB_AD', 'Tin tuyển dụng', 'hugeicons:job-search', '/org/job-ad', null, 33, 'ORGANIZATION', 1, 'admin'),
-(24, 'ORG_ONBOARD', 'Danh sách onboard', 'material-symbols:person-check-outline-rounded', '/org/onboard', null, 37, 'ORGANIZATION', 1, 'admin'),
-(25, 'EMAIL_TEMPLATE', 'Mẫu Email', 'material-symbols:mail-asterisk-outline-sharp', '/org-admin/email-template', 40, 2, 'ORGANIZATION', 1, 'admin'),
-(26, 'ORG_CALENDAR', 'Lịch', 'material-symbols:calendar-month-outline-rounded', '/org/calendar', null, 75, 'ORGANIZATION', 1, 'admin');
-
-update `cvconnect-user-service`.menus
-set parent_id = 1
-where code in ('REPORT_ORG_CANDIDATE', 'REPORT_ORG_JOB_AD');
-
-update `cvconnect-user-service`.menus
-set parent_id = 4
-where code in ('EMAIL_TEMPLATE');
-
-update `cvconnect-user-service`.menus
-set icon = 'mdi:circle-medium'
-where code in ('EMAIL_TEMPLATE');
-
-
-update `cvconnect-user-service`.menus
-set label = 'Vị trí tuyển dụng'
-where code = 'POSITION';
-
-CREATE TABLE IF NOT EXISTS `cvconnect-user-service`.invite_join_org (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-
-    `user_id` BIGINT NOT NULL,
-    `role_id` BIGINT NOT NULL,
-    `org_id` BIGINT NOT NULL,
-    `status` VARCHAR(100) NOT NULL ,
-
-    `is_active` TINYINT(1) DEFAULT 1,
-    `is_deleted` TINYINT(1) DEFAULT 0,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME,
-    `created_by` VARCHAR(100),
-    `updated_by` VARCHAR(100),
-
-    FOREIGN KEY (role_id) REFERENCES `cvconnect-user-service`.roles(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES `cvconnect-user-service`.users(id) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-alter table `cvconnect-user-service`.invite_join_org
-add column `token` VARCHAR(255) NOT NULL UNIQUE after org_id;
-
-alter table `cvconnect-user-service`.role_user
-add column `is_default` TINYINT(1) DEFAULT 0 after role_id;
-
-alter table `cvconnect-user-service`.org_members
-add column `inviter` varchar(255) after org_id;
 #----------------------------------------------------------------------------------------------------------------------#
 
 # create database if not exists `cvconnect-notify-service`;
@@ -473,53 +474,53 @@ add column `inviter` varchar(255) after org_id;
 # (job_name, schedule_type, expression, description, created_by) values
 # ('email_resend', 'FIXED_RATE', '900', 'Gửi lại email thất bại', 'admin');
 
-INSERT INTO `cvconnect-notify-service`.placeholders (code, label, description, member_type_used, created_by)
-VALUES
-('${jobPosition}', 'Vị trí tuyển dụng', NULL, NULL, 'admin'),
-('${postTitle}', 'Tiêu đề tin đăng', NULL, NULL, 'admin'),
-('${currentRound}', 'Tên vòng hiện tại', NULL, NULL, 'admin'),
-('${interviewLink}', 'Đường dẫn phỏng vấn trực tuyến', NULL, NULL, 'admin'),
-('${officeName}', 'Tên văn phòng', NULL, NULL, 'admin'),
-('${officeAddress}', 'Địa chỉ văn phòng', NULL, NULL, 'admin'),
-('${candidateName}', 'Tên ứng viên', NULL, NULL, 'admin'),
-('${salutation}', 'Anh/Chị', NULL, NULL, 'admin'),
-('${companyName}', 'Tên công ty', NULL, NULL, 'admin'),
-('${hrName}', 'Tên HR', NULL, NULL, 'admin'),
-('${hrPhone}', 'SĐT HR', NULL, NULL, 'admin'),
-('${hrEmail}', 'Email HR', NULL, NULL, 'admin'),
-('${examDate}', 'Ngày làm bài thi', NULL, NULL, 'admin'),
-('${startTime}', 'Từ giờ', NULL, NULL, 'admin'),
-('${endTime}', 'Đến giờ', NULL, NULL, 'admin'),
-('${examDuration}', 'Thời lượng của đề thi', NULL, NULL, 'admin');
-
-alter table `cvconnect-notify-service`.email_templates
-drop index code;
-
-alter table `cvconnect-notify-service`.email_templates
-add index (code, org_id);
-
-alter table `cvconnect-notify-service`.email_logs
-modify column template TEXT;
-
-update `cvconnect-notify-service`.placeholders
-set code = '${orgName}', label = 'Tên công ty'
-where code = '${companyName}';
-
-update `cvconnect-notify-service`.placeholders
-set code = '${orgAddress}', label = 'Địa chỉ công ty'
-where code = '${officeAddress}';
-
-delete from `cvconnect-notify-service`.placeholders where code = '${officeName}';
-
-INSERT INTO `cvconnect-notify-service`.placeholders (code, label, description, member_type_used, created_by)
-VALUES ('${interview-examLocation}', 'Địa điểm phỏng vấn/thi tuyển', NULL, NULL, 'admin');
-
-update `cvconnect-notify-service`.placeholders
-set label = 'Ngày làm bài thi/phỏng vấn'
-where code = '${examDate}';
-
-INSERT INTO `cvconnect-notify-service`.email_config (id, host, port, email, password, is_ssl, protocol, org_id, is_active, is_deleted, created_at, updated_at, created_by, updated_by)
-VALUES (2, 'smtp-relay.brevo.com', 587, '784652002@smtp-brevo.com', '', 0, 'smtp', 4, 1, 0, '2025-08-31 15:04:40', null, 'admin', null);\
-
-alter table `cvconnect-notify-service`.email_templates
-modify column body TEXT NOT NULL;
+# INSERT INTO `cvconnect-notify-service`.placeholders (code, label, description, member_type_used, created_by)
+# VALUES
+# ('${jobPosition}', 'Vị trí tuyển dụng', NULL, NULL, 'admin'),
+# ('${postTitle}', 'Tiêu đề tin đăng', NULL, NULL, 'admin'),
+# ('${currentRound}', 'Tên vòng hiện tại', NULL, NULL, 'admin'),
+# ('${interviewLink}', 'Đường dẫn phỏng vấn trực tuyến', NULL, NULL, 'admin'),
+# ('${officeName}', 'Tên văn phòng', NULL, NULL, 'admin'),
+# ('${officeAddress}', 'Địa chỉ văn phòng', NULL, NULL, 'admin'),
+# ('${candidateName}', 'Tên ứng viên', NULL, NULL, 'admin'),
+# ('${salutation}', 'Anh/Chị', NULL, NULL, 'admin'),
+# ('${companyName}', 'Tên công ty', NULL, NULL, 'admin'),
+# ('${hrName}', 'Tên HR', NULL, NULL, 'admin'),
+# ('${hrPhone}', 'SĐT HR', NULL, NULL, 'admin'),
+# ('${hrEmail}', 'Email HR', NULL, NULL, 'admin'),
+# ('${examDate}', 'Ngày làm bài thi', NULL, NULL, 'admin'),
+# ('${startTime}', 'Từ giờ', NULL, NULL, 'admin'),
+# ('${endTime}', 'Đến giờ', NULL, NULL, 'admin'),
+# ('${examDuration}', 'Thời lượng của đề thi', NULL, NULL, 'admin');
+#
+# alter table `cvconnect-notify-service`.email_templates
+# drop index code;
+#
+# alter table `cvconnect-notify-service`.email_templates
+# add index (code, org_id);
+#
+# alter table `cvconnect-notify-service`.email_logs
+# modify column template TEXT;
+#
+# update `cvconnect-notify-service`.placeholders
+# set code = '${orgName}', label = 'Tên công ty'
+# where code = '${companyName}';
+#
+# update `cvconnect-notify-service`.placeholders
+# set code = '${orgAddress}', label = 'Địa chỉ công ty'
+# where code = '${officeAddress}';
+#
+# delete from `cvconnect-notify-service`.placeholders where code = '${officeName}';
+#
+# INSERT INTO `cvconnect-notify-service`.placeholders (code, label, description, member_type_used, created_by)
+# VALUES ('${interview-examLocation}', 'Địa điểm phỏng vấn/thi tuyển', NULL, NULL, 'admin');
+#
+# update `cvconnect-notify-service`.placeholders
+# set label = 'Ngày làm bài thi/phỏng vấn'
+# where code = '${examDate}';
+#
+# INSERT INTO `cvconnect-notify-service`.email_config (id, host, port, email, password, is_ssl, protocol, org_id, is_active, is_deleted, created_at, updated_at, created_by, updated_by)
+# VALUES (2, 'smtp-relay.brevo.com', 587, '784652002@smtp-brevo.com', '', 0, 'smtp', 4, 1, 0, '2025-08-31 15:04:40', null, 'admin', null);
+#
+# alter table `cvconnect-notify-service`.email_templates
+# modify column body TEXT NOT NULL;
