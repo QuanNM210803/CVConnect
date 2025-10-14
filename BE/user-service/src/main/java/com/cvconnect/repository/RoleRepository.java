@@ -39,7 +39,7 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
     )
     Page<RoleDto> filter(@Param("request") RoleFilterRequest request, Pageable pageable);
 
-    @Query("SELECT new com.cvconnect.dto.role.RoleDto(r.id, r.code, r.name, r.memberType, r.createdAt, r.updatedAt, r.createdBy, r.updatedBy) " +
+    @Query("SELECT new com.cvconnect.dto.role.RoleDto(r.id, r.code, r.name, r.memberType, ru.isDefault, r.createdAt, r.updatedAt, r.createdBy, r.updatedBy) " +
             "FROM Role r " +
             "JOIN RoleUser ru ON ru.roleId = r.id " +
             "WHERE ru.userId = :userId")

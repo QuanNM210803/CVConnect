@@ -85,3 +85,4 @@ redis:
 kafka:
   topic:
     send-email: send-email-topic
+    notification: notification-topic

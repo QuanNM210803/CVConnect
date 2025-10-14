@@ -19,6 +19,7 @@ public interface RoleService {
     FilterResponse<RoleDto> filter(RoleFilterRequest request);
     void deleteByIds(List<Long> ids);
     List<RoleDto> getRoleByUserId(Long userId);
+    List<RoleDto> getRoleUseByUserId(Long userId);
     RoleDto getDetail(Long id);
     Map<Long, List<RoleDto>> getRolesByUserIds(List<Long> userIds);
     List<RoleDto> getRoleByIds(List<Long> ids);

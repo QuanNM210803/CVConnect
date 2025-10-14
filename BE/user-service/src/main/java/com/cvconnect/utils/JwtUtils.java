@@ -1,10 +1,7 @@
 package com.cvconnect.utils;
 
-import com.cvconnect.dto.orgMember.OrgMemberDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.user.UserDto;
-import com.cvconnect.enums.MemberType;
-import com.cvconnect.service.OrgMemberService;
 import com.cvconnect.service.RoleMenuService;
 import com.cvconnect.service.RoleService;
 import io.jsonwebtoken.Jwts;
@@ -29,15 +26,12 @@ public class JwtUtils {
 
     private final RoleMenuService roleMenuService;
     private final RoleService roleService;
-    private final OrgMemberService orgMemberService;
 
     // functions to generate and verify JWT tokens
     public String generateToken(UserDto user) {
         Map<String, Object> claims = new HashMap<>();
 
-        OrgMemberDto orgMember = orgMemberService.getOrgMember(user.getId());
-        List<String> roles = roleService.getRoleByUserId(user.getId()).stream()
-                .filter(role -> orgMember != null || !MemberType.ORGANIZATION.equals(role.getMemberType()))
+        List<String> roles = roleService.getRoleUseByUserId(user.getId()).stream()
                 .map(RoleDto::getCode)
                 .toList();
         claims.put("roles", roles);

@@ -249,6 +249,12 @@ public class UserServiceImpl implements UserService {
         authService.sendRequestVerifyEmail(userDto);
     }
 
+    @Override
+    public List<RoleDto> getMyRoles() {
+        Long userId = WebUtils.getCurrentUserId();
+        return roleService.getRoleUseByUserId(userId);
+    }
+
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {
         RoleUserDto roleUserDto = roleUserService.findByUserIdAndRoleId(userId, roleId);
         if(roleUserDto == null) {

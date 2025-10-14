@@ -40,4 +40,17 @@ public class RoleDto extends BaseDto<Instant> {
         this.updatedBy = updatedBy;
 
     }
+
+    public RoleDto(Long id, String code, String name, MemberType memberType, Boolean isDefault, Instant createdAt, Instant updatedAt, String createdBy, String updatedBy) {
+        this.id = id;
+        this.code = code;
+        this.name = name;
+        this.memberType = memberType;
+        this.isDefault = isDefault;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
+
+    }
 }

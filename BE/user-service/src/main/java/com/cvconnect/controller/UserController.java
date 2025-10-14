@@ -1,5 +1,6 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.user.UpdatePasswordRequest;
 import com.cvconnect.dto.user.UserDto;
 import com.cvconnect.dto.user.UserUpdateRequest;
@@ -82,5 +83,11 @@ public class UserController {
     public ResponseEntity<Response<Void>> updateInfo(@Valid @RequestBody UserUpdateRequest request) {
         userService.updateInfo(request);
         return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @GetMapping("/my-roles")
+    @Operation(summary = "Get my roles")
+    public ResponseEntity<Response<List<RoleDto>>> getMyRoles() {
+        return ResponseUtils.success(userService.getMyRoles());
     }
 }
