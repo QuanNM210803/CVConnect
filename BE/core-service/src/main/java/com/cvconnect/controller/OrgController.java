@@ -6,7 +6,6 @@ import com.cvconnect.service.OrgService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import nmquan.commonlib.annotation.InternalRequest;
-import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.ResponseUtils;
@@ -47,7 +46,7 @@ public class OrgController {
     @PutMapping("/update-info")
     @PreAuthorize("hasAnyAuthority('ORG_INFO:UPDATE')")
     @Operation(summary = "Update Organization info")
-        public ResponseEntity<Response<IDResponse<Long>>> updateOrgInfo(@Valid @RequestBody OrganizationRequest data){
+    public ResponseEntity<Response<IDResponse<Long>>> updateOrgInfo(@Valid @RequestBody OrganizationRequest data){
         return ResponseUtils.success(orgService.updateOrgInfo(data));
     }
 

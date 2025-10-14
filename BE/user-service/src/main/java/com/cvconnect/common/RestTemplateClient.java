@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Component
 public class RestTemplateClient {
@@ -48,6 +51,23 @@ public class RestTemplateClient {
                 request
         );
         return response.getData();
+    }
+
+    public List<Long> uploadFile(MultipartFile[] files) {
+        Response<List<Long>> response = restTemplateService.uploadFiles(
+                SERVER_CORE_SERVICE + "/attach-file/internal/uploads",
+                new ParameterizedTypeReference<Response<List<Long>>>() {},
+                files
+        );
+        return response.getData();
+    }
+
+    public void deleteAttachFilesByIds(List<Long> ids) {
+        restTemplateService.postMethodRestTemplate(
+                SERVER_CORE_SERVICE + "/attach-file/internal/delete-by-ids",
+                new ParameterizedTypeReference<Response<Void>>() {},
+                ids
+        );
     }
 
 }

@@ -4,16 +4,20 @@ import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.internal.response.AttachFileDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.roleUser.RoleUserDto;
+import com.cvconnect.dto.user.UpdatePasswordRequest;
 import com.cvconnect.dto.user.UserDetailDto;
 import com.cvconnect.dto.user.UserDto;
+import com.cvconnect.dto.user.UserUpdateRequest;
 import com.cvconnect.entity.Candidate;
 import com.cvconnect.entity.ManagementMember;
 import com.cvconnect.entity.OrgMember;
 import com.cvconnect.entity.User;
+import com.cvconnect.enums.AccessMethod;
 import com.cvconnect.enums.UserErrorCode;
 import com.cvconnect.repository.UserRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.ServiceUtils;
+import com.cvconnect.utils.UserServiceUtils;
 import jakarta.annotation.PostConstruct;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
@@ -23,11 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,6 +56,9 @@ public class UserServiceImpl implements UserService {
     private RestTemplateClient restTemplateClient;
     @Autowired
     private ServiceUtils serviceUtils;
+    @Lazy
+    @Autowired
+    private AuthService authService;
 
     private final Map<Class<?>, Function<Long, ?>> fetcherMap = new HashMap<>();
 
@@ -114,10 +121,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updatePassword(Long userId, String newPassword) {
+    public void resetPassword(Long userId, String newPassword) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        List<String> accessMethods = user.getAccessMethod() != null
+                ? Arrays.asList(user.getAccessMethod().split(","))
+                : Collections.emptyList();
+        if (!accessMethods.contains(AccessMethod.LOCAL.name())) {
+            throw new AppException(UserErrorCode.REGISTER_THIRD_PARTY);
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -172,6 +185,68 @@ public class UserServiceImpl implements UserService {
             roleUserDto.setIsDefault(roleUserDto.getRoleId().equals(roleId));
         }
         roleUserService.saveList(roleUserDtos);
+    }
+
+    @Override
+    public void updatePassword(UpdatePasswordRequest request) {
+        Long userId = WebUtils.getCurrentUserId();
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        List<String> accessMethods = user.getAccessMethod() != null
+                ? Arrays.asList(user.getAccessMethod().split(","))
+                : Collections.emptyList();
+        if (!accessMethods.contains(AccessMethod.LOCAL.name())) {
+            throw new AppException(UserErrorCode.REGISTER_THIRD_PARTY);
+        }
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new AppException(UserErrorCode.CURRENT_PASSWORD_INCORRECT);
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Override
+    public void updateAvatar(MultipartFile file) {
+        UserServiceUtils.validateImageFileInput(file);
+        Long userId = WebUtils.getCurrentUserId();
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        Long oldFileId = user.getAvatarId();
+        Long fileId = restTemplateClient.uploadFile(new MultipartFile[]{file}).get(0);
+        user.setAvatarId(fileId);
+        userRepository.save(user);
+        if(oldFileId != null) {
+            restTemplateClient.deleteAttachFilesByIds(List.of(oldFileId));
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateInfo(UserUpdateRequest request) {
+        Long userId = WebUtils.getCurrentUserId();
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        User existsEmailUser = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (!user.getEmail().equals(request.getEmail()) && !ObjectUtils.isEmpty(existsEmailUser)) {
+            throw new AppException(UserErrorCode.EMAIL_EXISTS);
+        }
+        user.setEmail(request.getEmail());
+        user.setFullName(request.getFullName());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setAddress(request.getAddress());
+        user.setDateOfBirth(request.getDateOfBirth());
+        user.setIsEmailVerified(false);
+        userRepository.save(user);
+
+        // send email require verification
+        UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
+        authService.sendRequestVerifyEmail(userDto);
     }
 
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {

@@ -197,18 +197,7 @@ public class AuthServiceImpl implements AuthService {
             this.createCandidateForUser(userDto.getId(), roleCandidate.getId());
 
             // send email require verification
-            String token = jwtUtils.generateTokenVerifyEmail();
-            Map<String, String> dataPlaceHolders = new HashMap<>();
-            dataPlaceHolders.put("username", userDto.getFullName());
-            dataPlaceHolders.put("verifyUrl", URL_VERIFY_EMAIL + "?token=" + token);
-            dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
-            sendEmailService.sendEmailWithTemplate(
-                    List.of(userDto.getEmail()),
-                    null,
-                    EmailTemplateEnum.VERIFY_EMAIL,
-                    dataPlaceHolders
-            );
-            this.saveToken(userDto.getId(), TokenType.VERIFY_EMAIL, token, JWT_VERIFY_EMAIL_DURATION);
+            this.sendRequestVerifyEmail(userDto);
 
             return RegisterCandidateResponse.builder()
                     .id(userDto.getId())
@@ -375,18 +364,7 @@ public class AuthServiceImpl implements AuthService {
         if(Boolean.TRUE.equals(userDto.getIsEmailVerified())) {
             throw new AppException(UserErrorCode.USER_ALREADY_VERIFIED);
         }
-        String token = jwtUtils.generateTokenVerifyEmail();
-        Map<String, String> dataPlaceHolders = new HashMap<>();
-        dataPlaceHolders.put("username", userDto.getFullName());
-        dataPlaceHolders.put("verifyUrl", URL_VERIFY_EMAIL + "?token=" + token);
-        dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
-        sendEmailService.sendEmailWithTemplate(
-                List.of(userDto.getEmail()),
-                null,
-                EmailTemplateEnum.VERIFY_EMAIL,
-                dataPlaceHolders
-        );
-        this.saveToken(userDto.getId(), TokenType.VERIFY_EMAIL, token, JWT_VERIFY_EMAIL_DURATION);
+        this.sendRequestVerifyEmail(userDto);
         return RequestResendVerifyEmailResponse.builder()
                 .email(userDto.getEmail())
                 .duration((long) JWT_VERIFY_EMAIL_DURATION)
@@ -428,6 +406,12 @@ public class AuthServiceImpl implements AuthService {
         if(userDto == null) {
             throw new AppException(UserErrorCode.USER_NOT_FOUND);
         }
+        List<String> accessMethods = userDto.getAccessMethod() != null
+                ? Arrays.asList(userDto.getAccessMethod().split(","))
+                : Collections.emptyList();
+        if (!accessMethods.contains(AccessMethod.LOCAL.name())) {
+            throw new AppException(UserErrorCode.REGISTER_THIRD_PARTY);
+        }
         this.checkAccountStatus(userDto);
         // send email reset password
         String token = jwtUtils.generateTokenResetPassword();
@@ -464,11 +448,27 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(UserErrorCode.USER_NOT_FOUND);
         }
         this.checkAccountStatus(userDto);
-        userService.updatePassword(userDto.getId(), request.getNewPassword());
+        userService.resetPassword(userDto.getId(), request.getNewPassword());
         redisUtils.deleteByKey(tokenKey);
         return ResetPasswordResponse.builder()
                 .username(userDto.getUsername())
                 .build();
+    }
+
+    @Override
+    public void sendRequestVerifyEmail(UserDto userDto) {
+        String token = jwtUtils.generateTokenVerifyEmail();
+        Map<String, String> dataPlaceHolders = new HashMap<>();
+        dataPlaceHolders.put("username", userDto.getFullName());
+        dataPlaceHolders.put("verifyUrl", URL_VERIFY_EMAIL + "?token=" + token);
+        dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
+        sendEmailService.sendEmailWithTemplate(
+                List.of(userDto.getEmail()),
+                null,
+                EmailTemplateEnum.VERIFY_EMAIL,
+                dataPlaceHolders
+        );
+        this.saveToken(userDto.getId(), TokenType.VERIFY_EMAIL, token, JWT_VERIFY_EMAIL_DURATION);
     }
 
     private VerifyResponse buildErrorResponse(ErrorCode errorCode, Object... params) {

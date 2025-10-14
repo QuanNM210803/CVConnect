@@ -110,10 +110,15 @@ public class OrgServiceImpl implements OrgService {
     public OrgDto getOrgInfo() {
         Long orgId = restTemplateClient.validOrgMember();
         Organization org = orgRepository.findById(orgId).orElse(null);
-        OrgDto orgDto = ObjectMapperUtils.convertToObject(org, OrgDto.class);
+        if(ObjectUtils.isEmpty(org)) {
+            throw new AppException(CoreErrorCode.ORG_NOT_FOUND);
+        }
 
-        AttachFileDto logoInfo = attachFileService.getAttachFiles(List.of(org.getLogoId())).get(0);
-        orgDto.setLogoUrl(logoInfo.getSecureUrl());
+        OrgDto orgDto = ObjectMapperUtils.convertToObject(org, OrgDto.class);
+        if(org.getLogoId() != null) {
+            AttachFileDto logoInfo = attachFileService.getAttachFiles(List.of(org.getLogoId())).get(0);
+            orgDto.setLogoUrl(logoInfo.getSecureUrl());
+        }
         if(org.getCoverPhotoId() != null) {
             AttachFileDto coverPhotoInfo = attachFileService.getAttachFiles(List.of(org.getCoverPhotoId())).get(0);
             orgDto.setCoverPhotoUrl(coverPhotoInfo.getSecureUrl());
@@ -190,9 +195,13 @@ public class OrgServiceImpl implements OrgService {
         if(ObjectUtils.isEmpty(org)) {
             throw new AppException(CoreErrorCode.ORG_NOT_FOUND);
         }
+        Long oldLogoId = org.getLogoId();
         Long fileId = attachFileService.uploadFile(new MultipartFile[]{file}).get(0);
         org.setLogoId(fileId);
         orgRepository.save(org);
+        if(oldLogoId != null) {
+            attachFileService.deleteByIds(List.of(oldLogoId));
+        }
         return IDResponse.<Long>builder()
                 .id(orgId)
                 .build();
@@ -207,9 +216,13 @@ public class OrgServiceImpl implements OrgService {
         if(ObjectUtils.isEmpty(org)) {
             throw new AppException(CoreErrorCode.ORG_NOT_FOUND);
         }
+        Long oldCoverPhotoId = org.getCoverPhotoId();
         Long fileId = attachFileService.uploadFile(new MultipartFile[]{file}).get(0);
         org.setCoverPhotoId(fileId);
         orgRepository.save(org);
+        if(oldCoverPhotoId != null) {
+            attachFileService.deleteByIds(List.of(oldCoverPhotoId));
+        }
         return IDResponse.<Long>builder()
                 .id(orgId)
                 .build();

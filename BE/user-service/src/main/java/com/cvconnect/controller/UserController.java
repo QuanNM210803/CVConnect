@@ -1,8 +1,11 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.dto.user.UpdatePasswordRequest;
 import com.cvconnect.dto.user.UserDto;
+import com.cvconnect.dto.user.UserUpdateRequest;
 import com.cvconnect.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import nmquan.commonlib.annotation.InternalRequest;
 import nmquan.commonlib.constant.MessageConstants;
 import nmquan.commonlib.dto.response.Response;
@@ -12,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -56,6 +60,27 @@ public class UserController {
     @Operation(summary = "Set default role for users")
     public ResponseEntity<Response<Void>> setDefaultRole(@PathVariable Long roleId) {
         userService.setDefaultRole(roleId);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @PutMapping("/update-password")
+    @Operation(summary = "Update user password")
+    public ResponseEntity<Response<Void>> updatePassword(@Valid @RequestBody UpdatePasswordRequest request) {
+        userService.updatePassword(request);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @PutMapping("/update-avatar")
+    @Operation(summary = "Update avatar user")
+    public ResponseEntity<Response<Void>> updateAvatar(@RequestPart("file") MultipartFile file) {
+        userService.updateAvatar(file);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @PutMapping("/update-info")
+    @Operation(summary = "Update user info")
+    public ResponseEntity<Response<Void>> updateInfo(@Valid @RequestBody UserUpdateRequest request) {
+        userService.updateInfo(request);
         return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
     }
 }

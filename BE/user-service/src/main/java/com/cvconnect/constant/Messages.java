@@ -21,6 +21,10 @@ public class Messages {
     public static final String USER_JOINED_ORG="user.joined.org";
     public static final String USER_BELONG_TO_ANOTHER_ORG="user.belong.to.another.org";
     public static final String ORG_MUST_HAVE_AT_LEAST_ONE_ADMIN="org.must.have.at.least.one.admin";
+    public static final String REGISTER_THIRD_PARTY="register.third.party";
+    public static final String CURRENT_PASSWORD_INCORRECT="current.password.incorrect";
+    public static final String IMAGE_FILE_INVALID = "image.file.invalid";
+    public static final String DOCUMENT_FILE_INVALID = "document.file.invalid";
 
     /*
      * Validation messages
@@ -44,6 +48,8 @@ public class Messages {
     public static final String DETAIL_ADDRESS_REQUIRE = "org.address.detailAddress.require";
     public static final String INVITE_NOT_FOUND = "invite.not.found";
     public static final String STATUS_NOT_BLANK = "status.not.blank";
+    public static final String CURRENT_PASSWORD_REQUIRED = "current.password.required";
+    public static final String NEW_PASSWORD_REQUIRED = "new.password.required";
 
     /*
      * Other messages

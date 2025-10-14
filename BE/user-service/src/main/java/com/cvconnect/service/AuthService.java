@@ -1,6 +1,7 @@
 package com.cvconnect.service;
 
 import com.cvconnect.dto.auth.*;
+import com.cvconnect.dto.user.UserDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,4 +17,5 @@ public interface AuthService {
     VerifyEmailResponse verifyEmail(String token);
     RequestResetPasswordResponse requestResetPassword(String identifier);
     ResetPasswordResponse resetPassword(ResetPasswordRequest request);
+    void sendRequestVerifyEmail(UserDto userDto);
 }
