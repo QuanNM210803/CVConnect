@@ -4,6 +4,7 @@ import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
+import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.SocketSessionDto;
 import com.cvconnect.service.SocketSessionService;
 import jakarta.annotation.PostConstruct;
@@ -13,9 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 import nmquan.commonlib.model.JwtUser;
 import nmquan.commonlib.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -61,6 +64,14 @@ public class SocketHandler {
     @PreDestroy
     public void stopServer() {
         server.stop();
+    }
+
+    @Async(Constants.BeanName.ASYNC_CONFIG)
+    public void pushToSocket(Object payload, String topic, String sessionId) {
+        SocketIOClient client = server.getClient(UUID.fromString(sessionId));
+        if (client != null) {
+            client.sendEvent(topic, payload);
+        }
     }
 }
 

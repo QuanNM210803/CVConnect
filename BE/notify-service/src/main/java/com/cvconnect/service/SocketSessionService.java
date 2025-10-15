@@ -8,5 +8,5 @@ import java.util.Map;
 public interface SocketSessionService {
     String createSocketSession(SocketSessionDto socketSession);
     void deleteSocketSession(String sessionId);
-    Map<String, SocketSessionDto> getSocketSessionByUserIdIn(List<Long> ids);
+    Map<Long, List<SocketSessionDto>> getSocketSessionByUserIdIn(List<Long> ids);
 }

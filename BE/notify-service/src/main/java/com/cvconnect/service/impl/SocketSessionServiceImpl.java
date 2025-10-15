@@ -32,16 +32,20 @@ public class SocketSessionServiceImpl implements SocketSessionService {
     }
 
     @Override
-    public Map<String, SocketSessionDto> getSocketSessionByUserIdIn(List<Long> ids) {
+    public Map<Long, List<SocketSessionDto>> getSocketSessionByUserIdIn(List<Long> ids) {
         return socketSessionRepository.findAllByUserIdIn(ids)
                 .stream()
-                .collect(Collectors.toMap(SocketSession::getSessionId,
-                        socketSession -> SocketSessionDto.builder()
-                                                        .id(socketSession.getId())
-                                                        .sessionId(socketSession.getSessionId())
-                                                        .userId(socketSession.getUserId())
-                                                        .createdAt(socketSession.getCreatedAt())
-                                                        .build()
+                .collect(Collectors.groupingBy(
+                        SocketSession::getUserId,
+                        Collectors.mapping(
+                                socketSession -> SocketSessionDto.builder()
+                                        .id(socketSession.getId())
+                                        .sessionId(socketSession.getSessionId())
+                                        .userId(socketSession.getUserId())
+                                        .createdAt(socketSession.getCreatedAt())
+                                        .build(),
+                                Collectors.toList()
+                        )
                 ));
     }
 }
