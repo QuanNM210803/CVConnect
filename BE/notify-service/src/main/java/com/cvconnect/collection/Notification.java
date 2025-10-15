@@ -21,8 +21,8 @@ public class Notification {
 
     private String title;
     private String message;
-    private String senderId;
-    private String receiverId;
+    private Long senderId;
+    private Long receiverId;
     private String type;
     private String redirectUrl;
     private Boolean isRead = false;

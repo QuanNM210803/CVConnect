@@ -7,6 +7,7 @@ import com.cvconnect.service.SocketSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -31,8 +32,8 @@ public class SocketSessionServiceImpl implements SocketSessionService {
     }
 
     @Override
-    public Map<String, SocketSessionDto> getSocketSessionByUserId(Long userId) {
-        return socketSessionRepository.findAllByUserId(userId)
+    public Map<String, SocketSessionDto> getSocketSessionByUserIdIn(List<Long> ids) {
+        return socketSessionRepository.findAllByUserIdIn(ids)
                 .stream()
                 .collect(Collectors.toMap(SocketSession::getSessionId,
                         socketSession -> SocketSessionDto.builder()
