@@ -1,8 +1,10 @@
 package com.cvconnect.service.impl;
+
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.common.AssignRoleRequest;
 import com.cvconnect.dto.common.InviteUserRequest;
+import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.internal.response.OrgDto;
 import com.cvconnect.dto.inviteJoinOrg.InviteJoinOrgDto;
 import com.cvconnect.dto.common.ReplyInviteUserRequest;
@@ -15,6 +17,7 @@ import com.cvconnect.dto.user.UserDto;
 import com.cvconnect.entity.OrgMember;
 import com.cvconnect.enums.InviteJoinStatus;
 import com.cvconnect.enums.MemberType;
+import com.cvconnect.enums.NotifyTemplate;
 import com.cvconnect.enums.UserErrorCode;
 import com.cvconnect.repository.OrgMemberRepository;
 import com.cvconnect.service.*;
@@ -27,10 +30,10 @@ import nmquan.commonlib.enums.EmailTemplateEnum;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.DateUtils;
+import nmquan.commonlib.utils.KafkaUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -64,9 +67,8 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     private RestTemplateClient restTemplateClient;
     @Autowired
     private ServiceUtils serviceUtils;
-
-    @Value("${frontend.url-invite-join-org}")
-    private String URL_INVITE_JOIN_ORG;
+    @Autowired
+    private KafkaUtils kafkaUtils;
 
     @Override
     public OrgMemberDto getOrgMember(Long userId) {
@@ -133,8 +135,8 @@ public class OrgMemberServiceImpl implements OrgMemberService {
                 "fullName", userDto.getFullName(),
                 "orgName", orgDto.getName(),
                 "roleName", roleDto.getName(),
-                "acceptUrl", URL_INVITE_JOIN_ORG + "?token=" + inviteJoinOrgDto.getToken() + "&action=a",
-                "rejectUrl", URL_INVITE_JOIN_ORG + "?token=" + inviteJoinOrgDto.getToken() + "&action=r",
+                "acceptUrl", Constants.Path.INVITE_JOIN_ORG + "?token=" + inviteJoinOrgDto.getToken() + "&action=a",
+                "rejectUrl", Constants.Path.INVITE_JOIN_ORG + "?token=" + inviteJoinOrgDto.getToken() + "&action=r",
                 "year", String.valueOf(LocalDate.now().getYear())
         );
         sendEmailService.sendEmailWithTemplate(List.of(userDto.getEmail()), null, EmailTemplateEnum.INVITE_JOIN_ORG, templateVariables);
@@ -182,6 +184,17 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         roleUserService.createRoleUser(roleUserDto);
 
         // TODO: send notification to org-admin
+        List<UserDto> orgAdmin = userService.getUsersByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, inviteJoinOrgDto.getOrgId());
+        NotifyTemplate template = NotifyTemplate.NEW_MEMBER_JOINED_ORG;
+        NotificationDto notificationDto = NotificationDto.builder()
+                .title(template.getTitle())
+                .message(template.getMessage())
+                .type(Constants.NotificationType.USER)
+                .redirectUrl(Constants.Path.ORG_MEMBER + "?mode=view&targetId=" + inviteJoinOrgDto.getUserId())
+                .senderId(inviteJoinOrgDto.getUserId())
+                .receiverIds(orgAdmin.stream().map(UserDto::getId).toList())
+                .build();
+        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
     }
 
     @Override

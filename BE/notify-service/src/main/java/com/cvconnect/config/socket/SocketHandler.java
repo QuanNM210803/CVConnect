@@ -6,6 +6,7 @@ import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.SocketSessionDto;
+import com.cvconnect.enums.RoomSocketType;
 import com.cvconnect.service.SocketSessionService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -41,7 +42,9 @@ public class SocketHandler {
                     .userId(Long.valueOf(jwtUser.getUser().get("id").toString()))
                     .createdAt(Instant.now())
                     .build();
-            String sessionId = socketSessionService.createSocketSession(socketSession);
+            socketSessionService.createSocketSession(socketSession);
+            client.joinRoom(RoomSocketType.USER.getPrefix() + jwtUser.getUser().get("id").toString());
+
             log.info("Client connected: {}", client.getSessionId());
         } catch (Exception e) {
             log.error("Authentication fail: {}", client.getSessionId());
@@ -67,11 +70,16 @@ public class SocketHandler {
     }
 
     @Async(Constants.BeanName.ASYNC_CONFIG)
-    public void pushToSocket(Object payload, String topic, String sessionId) {
+    public void sendEvent(Object payload, String topic, String sessionId) {
         SocketIOClient client = server.getClient(UUID.fromString(sessionId));
         if (client != null) {
             client.sendEvent(topic, payload);
         }
+    }
+
+    @Async(Constants.BeanName.ASYNC_CONFIG)
+    public void sendEventWithRoom(Object payload, String topic, String room) {
+        server.getRoomOperations(room).sendEvent(topic, payload);
     }
 }
 

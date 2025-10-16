@@ -30,4 +30,15 @@ public class Constants {
             return roles;
         }
     }
+
+    public static class NotificationType {
+        private NotificationType() {}
+        public static final String USER = "USER";
+        public static final String SYSTEM = "SYSTEM";
+    }
+
+    public static class KafkaTopic {
+        private KafkaTopic() {}
+        public static final String NOTIFICATION = "notification-topic";
+    }
 }

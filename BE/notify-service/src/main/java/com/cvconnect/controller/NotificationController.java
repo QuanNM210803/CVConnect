@@ -1,5 +1,6 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.NotificationDto;
 import com.cvconnect.dto.NotificationFilterRequest;
 import com.cvconnect.service.NotificationService;
@@ -20,7 +21,7 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    @KafkaListener(topics = "${kafka.topic.notification}", groupId = "notify-service")
+    @KafkaListener(topics = Constants.KafkaTopic.NOTIFICATION, groupId = "notify-service")
     public void listenNotification(String message) {
         NotificationDto notification = ObjectMapperUtils.convertToObject(message, NotificationDto.class);
         notificationService.pushNotification(notification);

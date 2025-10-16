@@ -1,5 +1,6 @@
 package com.cvconnect.config.oauth2;
 
+import com.cvconnect.constant.Constants;
 import com.cvconnect.utils.JwtUtils;
 import com.cvconnect.dto.common.TokenInfo;
 import com.cvconnect.entity.User;
@@ -24,8 +25,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Autowired
     private RedisUtils redisUtils;
 
-    @Value("${frontend.url-candidate}")
-    private String frontendUrlCandidate;
     @Value("${jwt.refresh-expiration}")
     private int JWT_REFRESHABLE_DURATION;
 
@@ -43,6 +42,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         redisUtils.saveObject(refreshTokenKey, tokenInfo, JWT_REFRESHABLE_DURATION);
         CookieUtils.setRefreshTokenCookie(refreshToken, JWT_REFRESHABLE_DURATION, response);
 
-        getRedirectStrategy().sendRedirect(request, response, frontendUrlCandidate);
+        getRedirectStrategy().sendRedirect(request, response, Constants.Path.FRONTEND_URL);
     }
 }

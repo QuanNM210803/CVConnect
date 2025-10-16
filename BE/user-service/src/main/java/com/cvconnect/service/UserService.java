@@ -18,6 +18,7 @@ public interface UserService {
     void updateEmailVerified(Long userId, Boolean emailVerified);
     Boolean checkOrgUserRole(Long userId, String roleCode, Long orgId);
     List<UserDto> getUsersByRoleCodeOrg(String roleCode);
+    List<UserDto> getUsersByRoleCodeOrg(String roleCode, Long orgId);
     UserDto getUserById(Long userId);
     void setDefaultRole(Long roleId);
     void updatePassword(UpdatePasswordRequest request);

@@ -6,6 +6,8 @@ server:
   port_notify_service: ${PORT_NOTIFY_SERVICE:8081}
   host_core_service: ${HOST_CORE_SERVICE:localhost}
   port_core_service: ${PORT_CORE_SERVICE:8082}
+  host_socket: ${HOST_SOCKET:localhost}
+  port_socket: ${PORT_SOCKET:9090}
 
 app:
   api-prefix: /api/v1
@@ -34,6 +36,10 @@ spring:
             - Path=${app.api-prefix}/core/**
           filters:
             - StripPrefix=2
+        - id: socket
+          uri: ws://${server.host_socket}:${server.port_socket}
+          predicates:
+            - Path=/socket/**
 
 springdoc:
   swagger-ui:

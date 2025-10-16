@@ -60,9 +60,7 @@ jwt:
   secret-internal: LmJHf7e5q3k8nPz9u2y4rXw6vT1sQ0aC3eFhJgKpR0tY=
 
 frontend:
-  url-candidate: http://localhost:3000
-  url-management-member: http://localhost:3000
-  url-organization-member: http://localhost:3000
+  url: http://localhost:3000
 
 open-api:
   url-gateway-localhost: http://localhost:8888/api/v1${server.servlet.context-path}
@@ -75,7 +73,6 @@ redis:
 kafka:
   topic:
     send-email: send-email-topic
-    notification: notification-topic
 
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME:daygzzzwz}

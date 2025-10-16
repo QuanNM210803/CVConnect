@@ -1,12 +1,11 @@
 package com.cvconnect.service.impl;
 
-import com.corundumstudio.socketio.SocketIOServer;
 import com.cvconnect.collection.Notification;
 import com.cvconnect.config.socket.SocketHandler;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.NotificationDto;
 import com.cvconnect.dto.NotificationFilterRequest;
-import com.cvconnect.dto.SocketSessionDto;
+import com.cvconnect.enums.RoomSocketType;
 import com.cvconnect.repository.NotificationRepository;
 import com.cvconnect.service.MongoQueryService;
 import com.cvconnect.service.NotificationService;
@@ -48,9 +47,6 @@ public class NotificationServiceImpl implements NotificationService {
         }
         List<Notification> notifications = this.save(notificationDto);
 
-        Map<Long, List<SocketSessionDto>> userSocketMap = socketSessionService
-                .getSocketSessionByUserIdIn(notificationDto.getReceiverIds());
-
         List<NotificationDto> payloads = ObjectMapperUtils.convertToList(notifications, NotificationDto.class);
         Map<Long, NotificationDto> payloadMap = payloads.stream()
                 .collect(Collectors.toMap(
@@ -59,10 +55,12 @@ public class NotificationServiceImpl implements NotificationService {
                         (existing, replacement) -> existing
                 ));
 
-        userSocketMap.forEach((userId, sessions) -> {
-            NotificationDto payload = payloadMap.get(userId);
-            sessions.forEach(session -> socketHandler.pushToSocket(payload, Constants.SocketTopic.NOTIFY, session.getSessionId()));
-        });
+        for(Map.Entry<Long, NotificationDto> entry : payloadMap.entrySet()){
+            Long receiverId = entry.getKey();
+            NotificationDto payload = entry.getValue();
+            socketHandler.sendEventWithRoom(
+                    payload, Constants.SocketTopic.NOTIFY,RoomSocketType.USER.getPrefix() + receiverId.toString());
+        }
     }
 
     @Override
@@ -116,15 +114,11 @@ public class NotificationServiceImpl implements NotificationService {
             });
             notificationRepository.saveAll(notifications);
         }
-        Map<Long, List<SocketSessionDto>> userSocketMap = socketSessionService.getSocketSessionByUserIdIn(List.of(userId));
-        List<SocketSessionDto> sessions = userSocketMap.get(userId);
-        if(ObjectUtils.isEmpty(sessions)){
-            return;
-        }
         Map<String, Object> payload = Map.of(
                 "quantityUnread", 0L
         );
-        sessions.forEach(session -> socketHandler.pushToSocket(payload, Constants.SocketTopic.UNREAD_NOTIFY, session.getSessionId()));
+        socketHandler.sendEventWithRoom(
+                payload, Constants.SocketTopic.UNREAD_NOTIFY, RoomSocketType.USER.getPrefix() + userId.toString());
     }
 
     @Override
@@ -136,17 +130,14 @@ public class NotificationServiceImpl implements NotificationService {
             notification.setReadAt(Instant.now());
             notificationRepository.save(notification);
 
-            Map<Long, List<SocketSessionDto>> userSocketMap = socketSessionService.getSocketSessionByUserIdIn(List.of(userId));
-            List<SocketSessionDto> sessions = userSocketMap.get(userId);
-            if(ObjectUtils.isEmpty(sessions)){
-                return;
-            }
             Long quantityUnread = this.getQuantityUnread();
             Map<String, Object> payload = Map.of(
                     "quantityUnread", quantityUnread,
                     "notificationId", notificationId
             );
-            sessions.forEach(session -> socketHandler.pushToSocket(payload, Constants.SocketTopic.UNREAD_NOTIFY, session.getSessionId()));
+            socketHandler.sendEventWithRoom(
+                    payload, Constants.SocketTopic.UNREAD_NOTIFY, RoomSocketType.USER.getPrefix() + userId.toString()
+            );
         }
     }
 }

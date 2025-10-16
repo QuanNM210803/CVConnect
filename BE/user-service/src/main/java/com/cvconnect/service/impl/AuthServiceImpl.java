@@ -75,10 +75,6 @@ public class AuthServiceImpl implements AuthService {
     private int JWT_REFRESHABLE_DURATION;
     @Value("${jwt.secret-key}")
     private String SECRET_KEY;
-    @Value("${frontend.url-verify-email}")
-    private String URL_VERIFY_EMAIL;
-    @Value("${frontend.url-reset-password}")
-    private String URL_RESET_PASSWORD;
     @Value("${jwt.verify-expiration}")
     private int JWT_VERIFY_EMAIL_DURATION;
     @Value("${jwt.reset-password-expiration}")
@@ -274,7 +270,7 @@ public class AuthServiceImpl implements AuthService {
             String token = jwtUtils.generateTokenVerifyEmail();
             Map<String, String> dataPlaceHolders = new HashMap<>();
             dataPlaceHolders.put("orgName", request.getOrganization().getName());
-            dataPlaceHolders.put("verifyUrl", URL_VERIFY_EMAIL + "?token=" + token);
+            dataPlaceHolders.put("verifyUrl", Constants.Path.VERIFY_EMAIL + "?token=" + token);
             dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
             sendEmailService.sendEmailWithTemplate(
                     List.of(userDto.getEmail()),
@@ -417,7 +413,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtils.generateTokenResetPassword();
         Map<String, String> dataPlaceHolders = new HashMap<>();
         dataPlaceHolders.put("username", userDto.getUsername());
-        dataPlaceHolders.put("resetUrl", URL_RESET_PASSWORD + "?token=" + token);
+        dataPlaceHolders.put("resetUrl", Constants.Path.RESET_PASSWORD + "?token=" + token);
         dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
         sendEmailService.sendEmailWithTemplate(
                 List.of(userDto.getEmail()),
@@ -460,7 +456,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtils.generateTokenVerifyEmail();
         Map<String, String> dataPlaceHolders = new HashMap<>();
         dataPlaceHolders.put("username", userDto.getFullName());
-        dataPlaceHolders.put("verifyUrl", URL_VERIFY_EMAIL + "?token=" + token);
+        dataPlaceHolders.put("verifyUrl", Constants.Path.VERIFY_EMAIL + "?token=" + token);
         dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
         sendEmailService.sendEmailWithTemplate(
                 List.of(userDto.getEmail()),
