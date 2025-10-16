@@ -4,6 +4,7 @@ import com.cvconnect.dto.role.MemberTypeDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.role.RoleFilterRequest;
 import com.cvconnect.dto.role.RoleRequest;
+import com.cvconnect.enums.MemberType;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 
@@ -23,4 +24,5 @@ public interface RoleService {
     RoleDto getDetail(Long id);
     Map<Long, List<RoleDto>> getRolesByUserIds(List<Long> userIds);
     List<RoleDto> getRoleByIds(List<Long> ids);
+    List<RoleDto> getByMemberType(MemberType memberType);
 }

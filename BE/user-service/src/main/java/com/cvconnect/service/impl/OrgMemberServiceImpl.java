@@ -29,11 +29,9 @@ import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.enums.EmailTemplateEnum;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.service.SendEmailService;
-import nmquan.commonlib.utils.DateUtils;
-import nmquan.commonlib.utils.KafkaUtils;
-import nmquan.commonlib.utils.ObjectMapperUtils;
-import nmquan.commonlib.utils.PageUtils;
+import nmquan.commonlib.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -69,6 +67,10 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     private ServiceUtils serviceUtils;
     @Autowired
     private KafkaUtils kafkaUtils;
+    @Autowired
+    private LocalizationUtils localizationUtils;
+    @Value("${frontend.url}")
+    private String FRONTEND_URL;
 
     @Override
     public OrgMemberDto getOrgMember(Long userId) {
@@ -135,8 +137,8 @@ public class OrgMemberServiceImpl implements OrgMemberService {
                 "fullName", userDto.getFullName(),
                 "orgName", orgDto.getName(),
                 "roleName", roleDto.getName(),
-                "acceptUrl", Constants.Path.INVITE_JOIN_ORG + "?token=" + inviteJoinOrgDto.getToken() + "&action=a",
-                "rejectUrl", Constants.Path.INVITE_JOIN_ORG + "?token=" + inviteJoinOrgDto.getToken() + "&action=r",
+                "acceptUrl", FRONTEND_URL + Constants.Path.INVITE_JOIN_ORG + "?token=" + inviteJoinOrgDto.getToken() + "&action=a",
+                "rejectUrl", FRONTEND_URL + Constants.Path.INVITE_JOIN_ORG + "?token=" + inviteJoinOrgDto.getToken() + "&action=r",
                 "year", String.valueOf(LocalDate.now().getYear())
         );
         sendEmailService.sendEmailWithTemplate(List.of(userDto.getEmail()), null, EmailTemplateEnum.INVITE_JOIN_ORG, templateVariables);
@@ -184,11 +186,13 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         roleUserService.createRoleUser(roleUserDto);
 
         // TODO: send notification to org-admin
+        UserDto userDto = userService.findById(inviteJoinOrgDto.getUserId());
+        RoleDto roleDto = roleService.getRoleById(inviteJoinOrgDto.getRoleId());
         List<UserDto> orgAdmin = userService.getUsersByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, inviteJoinOrgDto.getOrgId());
         NotifyTemplate template = NotifyTemplate.NEW_MEMBER_JOINED_ORG;
         NotificationDto notificationDto = NotificationDto.builder()
                 .title(template.getTitle())
-                .message(template.getMessage())
+                .message(localizationUtils.getLocalizedMessage(template.getMessage(), userDto.getFullName(), roleDto.getName()))
                 .type(Constants.NotificationType.USER)
                 .redirectUrl(Constants.Path.ORG_MEMBER + "?mode=view&targetId=" + inviteJoinOrgDto.getUserId())
                 .senderId(inviteJoinOrgDto.getUserId())
@@ -287,6 +291,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     }
 
     @Override
+    @Transactional
     public void changeStatusActive(ChangeStatusActiveRequest request) {
         Long orgId = serviceUtils.validOrgMember();
         List<OrgMember> orgMembers = orgMemberRepository.findByIdsAndOrgId(request.getIds(), orgId);
@@ -295,5 +300,10 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         }
         orgMembers.forEach(orgMember -> orgMember.setIsActive(request.getActive()));
         orgMemberRepository.saveAll(orgMembers);
+
+        boolean existsOrgAdmin = orgMemberRepository.checkExistsOrgAdmin(orgId, Constants.RoleCode.ORG_ADMIN);
+        if(!existsOrgAdmin) {
+            throw new AppException(UserErrorCode.ORG_MUST_HAVE_AT_LEAST_ONE_ADMIN);
+        }
     }
 }

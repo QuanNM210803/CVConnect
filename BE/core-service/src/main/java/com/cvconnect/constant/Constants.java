@@ -37,6 +37,11 @@ public class Constants {
         public static final String SYSTEM = "SYSTEM";
     }
 
+    public static class Path {
+        private Path() {}
+        public static final String JOB_AD = "/org/job-ad";
+    }
+
     public static class KafkaTopic {
         private KafkaTopic() {}
         public static final String NOTIFICATION = "notification-topic";

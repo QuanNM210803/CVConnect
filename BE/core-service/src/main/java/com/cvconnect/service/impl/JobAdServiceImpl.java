@@ -2,6 +2,7 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
+import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.jobAd.*;
 import com.cvconnect.dto.positionProcess.PositionProcessRequest;
@@ -9,15 +10,15 @@ import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.org.OrgAddressDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.cvconnect.entity.JobAd;
-import com.cvconnect.enums.CoreErrorCode;
-import com.cvconnect.enums.JobAdStatus;
-import com.cvconnect.enums.ProcessTypeEnum;
-import com.cvconnect.enums.SalaryType;
+import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdRepository;
 import com.cvconnect.service.*;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.utils.KafkaUtils;
+import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
+import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,10 @@ public class JobAdServiceImpl implements JobAdService {
     private OrgAddressService orgAddressService;
     @Autowired
     private RestTemplateClient restTemplateClient;
+    @Autowired
+    private KafkaUtils kafkaUtils;
+    @Autowired
+    private LocalizationUtils localizationUtils;
 
     private static final String JOB_AD_CODE_PREFIX = "JD-";
 
@@ -79,7 +84,7 @@ public class JobAdServiceImpl implements JobAdService {
         jobAd.setIsPublic(request.isPublic());
         jobAd.setIsAutoSendEmail(request.isAutoSendEmail());
         jobAd.setEmailTemplateId(request.getEmailTemplateId());
-        jobAd.setIsRemote(request.isRemote());
+        jobAd.setIsRemote(request.isHasRemote());
         jobAdRepository.save(jobAd);
 
         if(!ObjectUtils.isEmpty(request.getIndustrySubIds())){
@@ -115,6 +120,17 @@ public class JobAdServiceImpl implements JobAdService {
                     .collect(Collectors.toList());
             jobAdProcessService.create(jobAdProcessDtos);
         }
+
+        // todo: send notification to HR contact
+        NotifyTemplate template = NotifyTemplate.JOB_AD_CREATED;
+        NotificationDto notificationDto = new NotificationDto();
+        notificationDto.setTitle(localizationUtils.getLocalizedMessage(template.getTitle(), WebUtils.getCurrentFullName()));
+        notificationDto.setMessage(localizationUtils.getLocalizedMessage(template.getMessage(), jobAd.getTitle()));
+        notificationDto.setSenderId(WebUtils.getCurrentUserId());
+        notificationDto.setReceiverIds(List.of(jobAd.getHrContactId()));
+        notificationDto.setType(Constants.NotificationType.USER);
+        notificationDto.setRedirectUrl(Constants.Path.JOB_AD + "?mode=view&targetId=" + jobAd.getId());
+        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
 
         return IDResponse.<Long>builder()
                 .id(jobAd.getId())

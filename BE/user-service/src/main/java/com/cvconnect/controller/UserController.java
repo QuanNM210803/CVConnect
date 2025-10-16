@@ -3,12 +3,15 @@ package com.cvconnect.controller;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.user.UpdatePasswordRequest;
 import com.cvconnect.dto.user.UserDto;
+import com.cvconnect.dto.user.UserFilterRequest;
 import com.cvconnect.dto.user.UserUpdateRequest;
 import com.cvconnect.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import nmquan.commonlib.annotation.InternalRequest;
 import nmquan.commonlib.constant.MessageConstants;
+import nmquan.commonlib.dto.request.FilterRequest;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ResponseUtils;
@@ -89,5 +92,12 @@ public class UserController {
     @Operation(summary = "Get my roles")
     public ResponseEntity<Response<List<RoleDto>>> getMyRoles() {
         return ResponseUtils.success(userService.getMyRoles());
+    }
+
+    @GetMapping("/find-not-org-member")
+    @Operation(summary = "Find users who are not organization members")
+    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW', 'USER_GROUP:VIEW')")
+    public ResponseEntity<Response<FilterResponse<UserDto>>> findNotOrgMember(@Valid @ModelAttribute UserFilterRequest request) {
+        return ResponseUtils.success(userService.findNotOrgMember(request));
     }
 }

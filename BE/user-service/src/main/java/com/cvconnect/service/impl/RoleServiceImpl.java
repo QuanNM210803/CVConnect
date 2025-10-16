@@ -225,6 +225,15 @@ public class RoleServiceImpl implements RoleService {
         return ObjectMapperUtils.convertToList(roles, RoleDto.class);
     }
 
+    @Override
+    public List<RoleDto> getByMemberType(MemberType memberType) {
+        List<Role> roles = roleRepository.findByMemberType(memberType);
+        if(ObjectUtils.isEmpty(roles)) {
+            return List.of();
+        }
+        return ObjectMapperUtils.convertToList(roles, RoleDto.class);
+    }
+
 
     void saveRoleMenus(Role role, List<RoleMenuDto> roleMenus) {
         if(roleMenus != null && !roleMenus.isEmpty()) {

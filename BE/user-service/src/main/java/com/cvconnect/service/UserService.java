@@ -3,7 +3,9 @@ package com.cvconnect.service;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.user.UpdatePasswordRequest;
 import com.cvconnect.dto.user.UserDto;
+import com.cvconnect.dto.user.UserFilterRequest;
 import com.cvconnect.dto.user.UserUpdateRequest;
+import nmquan.commonlib.dto.response.FilterResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -25,4 +27,5 @@ public interface UserService {
     void updateAvatar(MultipartFile file);
     void updateInfo(UserUpdateRequest request);
     List<RoleDto> getMyRoles();
+    FilterResponse<UserDto> findNotOrgMember(UserFilterRequest request);
 }

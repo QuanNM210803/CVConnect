@@ -20,7 +20,7 @@ public interface OrgMemberRepository extends JpaRepository<OrgMember, Long> {
     Optional<OrgMember> findByUserId(@NotNull Long userId);
 
     @Query( value = "select distinct u.id as userId, u.username as username, u.email as email, u.fullName as fullName, u.phoneNumber as phoneNumber, u.dateOfBirth as dateOfBirth," +
-            "u.isEmailVerified as isEmailVerified, u.isActive as isActive, om.createdAt as createdAt, om.updatedAt as updatedAt," +
+            "u.isEmailVerified as isEmailVerified, om.isActive as isActive, om.createdAt as createdAt, om.updatedAt as updatedAt," +
             "om.inviter as inviter, om.updatedBy as updatedBy " +
             "from User u " +
             "join OrgMember om on u.id = om.userId " +

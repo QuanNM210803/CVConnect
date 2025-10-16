@@ -98,4 +98,10 @@ public class Messages {
     * */
     public static final String UPLOAD_FILE_SUCCESS = "upload.file.success";
     public static final String APPLY_SUCCESS = "apply.success";
+
+    /*
+    * Notification Messages
+    * */
+    public static final String JOB_AD_CREATED_TITLE = "job.ad.created.title";
+    public static final String JOB_AD_CREATED_MESSAGE = "job.ad.created.message";
 }

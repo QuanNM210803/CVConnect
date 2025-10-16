@@ -5,6 +5,7 @@ import com.cvconnect.dto.role.MemberTypeDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.role.RoleFilterRequest;
 import com.cvconnect.dto.role.RoleRequest;
+import com.cvconnect.enums.MemberType;
 import com.cvconnect.service.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -56,6 +57,13 @@ public class RoleController {
     @PreAuthorize("hasAnyAuthority('USER_GROUP:VIEW')")
     public ResponseEntity<Response<FilterResponse<RoleDto>>> filter(@Valid @ModelAttribute RoleFilterRequest request) {
         return ResponseUtils.success(roleService.filter(request));
+    }
+
+    @GetMapping("/get-member-type-organization")
+    @Operation(summary = "Get role member type organization")
+    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW')")
+    public ResponseEntity<Response<List<RoleDto>>> getRoleMemberTypeOrganization() {
+        return ResponseUtils.success(roleService.getByMemberType(MemberType.ORGANIZATION));
     }
 
     @DeleteMapping("/delete")

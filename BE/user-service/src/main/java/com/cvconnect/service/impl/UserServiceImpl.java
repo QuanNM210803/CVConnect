@@ -4,27 +4,28 @@ import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.internal.response.AttachFileDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.roleUser.RoleUserDto;
-import com.cvconnect.dto.user.UpdatePasswordRequest;
-import com.cvconnect.dto.user.UserDetailDto;
-import com.cvconnect.dto.user.UserDto;
-import com.cvconnect.dto.user.UserUpdateRequest;
+import com.cvconnect.dto.user.*;
 import com.cvconnect.entity.Candidate;
 import com.cvconnect.entity.ManagementMember;
 import com.cvconnect.entity.OrgMember;
 import com.cvconnect.entity.User;
 import com.cvconnect.enums.AccessMethod;
+import com.cvconnect.enums.MemberType;
 import com.cvconnect.enums.UserErrorCode;
 import com.cvconnect.repository.UserRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.ServiceUtils;
 import com.cvconnect.utils.UserServiceUtils;
 import jakarta.annotation.PostConstruct;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.utils.ObjectMapperUtils;
+import nmquan.commonlib.utils.PageUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -265,6 +266,17 @@ public class UserServiceImpl implements UserService {
     public List<RoleDto> getMyRoles() {
         Long userId = WebUtils.getCurrentUserId();
         return roleService.getRoleUseByUserId(userId);
+    }
+
+    @Override
+    public FilterResponse<UserDto> findNotOrgMember(UserFilterRequest request) {
+        request.setMemberTypes(List.of(MemberType.ORGANIZATION));
+        Page<User> page = userRepository.findNotOrgMember(request, request.getPageable());
+        Page<UserDto> dtoPage = page.map(user -> {
+            UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
+            return userDto.configResponse();
+        });
+        return PageUtils.toFilterResponse(dtoPage, dtoPage.getContent());
     }
 
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {

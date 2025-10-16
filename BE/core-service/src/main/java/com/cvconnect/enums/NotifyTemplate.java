@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum NotifyTemplate {
-    NEW_MEMBER_JOINED_ORG(Messages.NEW_MEMBER_JOINED_ORG_TITLE, Messages.NEW_MEMBER_JOINED_ORG_MESSAGE)
+    JOB_AD_CREATED(Messages.JOB_AD_CREATED_TITLE, Messages.JOB_AD_CREATED_MESSAGE),
 
     ;
     private final String title;

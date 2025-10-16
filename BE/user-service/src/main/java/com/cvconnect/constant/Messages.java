@@ -62,5 +62,12 @@ public class Messages {
     public static final String RESET_PASSWORD_SUCCESS="reset.password.success";
     public static final String REQUEST_RESEND_VERIFY_EMAIL_SUCCESS="request.resend.verify.email.success";
     public static final String SEND_INVITE_SUCCESS="send.invite.success";
+
+
+    /*
+    * Notification messages
+    * */
+    public static final String NEW_MEMBER_JOINED_ORG_TITLE = "new.member.joined.org.title";
+    public static final String NEW_MEMBER_JOINED_ORG_MESSAGE = "new.member.joined.org.message";
 }
 

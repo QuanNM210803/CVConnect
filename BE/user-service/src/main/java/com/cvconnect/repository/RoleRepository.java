@@ -3,6 +3,7 @@ package com.cvconnect.repository;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.role.RoleFilterRequest;
 import com.cvconnect.entity.Role;
+import com.cvconnect.enums.MemberType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
@@ -44,4 +45,7 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
             "JOIN RoleUser ru ON ru.roleId = r.id " +
             "WHERE ru.userId = :userId")
     List<RoleDto> getRoleByUserId(Long userId);
+
+    @Query("SELECT r from Role r WHERE r.memberType = :memberType")
+    List<Role> findByMemberType(MemberType memberType);
 }
