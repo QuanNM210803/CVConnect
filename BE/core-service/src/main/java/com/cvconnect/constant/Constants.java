@@ -40,6 +40,7 @@ public class Constants {
     public static class Path {
         private Path() {}
         public static final String JOB_AD = "/org/job-ad";
+        public static final String JOB_AD_CANDIDATE_DETAIL = "/org/candidate";
     }
 
     public static class KafkaTopic {

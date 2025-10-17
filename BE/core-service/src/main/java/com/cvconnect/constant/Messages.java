@@ -104,4 +104,6 @@ public class Messages {
     * */
     public static final String JOB_AD_CREATED_TITLE = "job.ad.created.title";
     public static final String JOB_AD_CREATED_MESSAGE = "job.ad.created.message";
+    public static final String CANDIDATE_APPLY_JOB_AD_TITLE = "candidate.apply.job.ad.title";
+    public static final String CANDIDATE_APPLY_JOB_AD_MESSAGE = "candidate.apply.job.ad.message";
 }
