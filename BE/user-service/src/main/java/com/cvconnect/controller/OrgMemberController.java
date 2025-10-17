@@ -73,4 +73,11 @@ public class OrgMemberController {
         orgMemberService.changeStatusActive(request);
         return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
     }
+
+    @GetMapping("/org-member-info/{userId}")
+    @Operation(summary = "Get organization member info by user ID")
+    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW')")
+    public ResponseEntity<Response<OrgMemberDto>> getOrgMemberInfo(@PathVariable Long userId) {
+        return ResponseUtils.success(orgMemberService.orgMemberInfo(userId));
+    }
 }

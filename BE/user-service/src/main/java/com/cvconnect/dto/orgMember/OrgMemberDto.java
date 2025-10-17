@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import nmquan.commonlib.dto.BaseDto;
-import nmquan.commonlib.dto.BaseRepositoryDto;
 
 import java.time.Instant;
 
@@ -31,4 +29,17 @@ public class OrgMemberDto extends UserDto {
     public String updatedBy;
     public Instant createdAt;
     public Instant updatedAt;
+
+    public void setUserDto(UserDto userDto) {
+        this.setId(null);
+        this.setUsername(userDto.getUsername());
+        this.setEmail(userDto.getEmail());
+        this.setFullName(userDto.getFullName());
+        this.setPhoneNumber(userDto.getPhoneNumber());
+        this.setDateOfBirth(userDto.getDateOfBirth());
+        this.setIsEmailVerified(userDto.getIsEmailVerified());
+        this.setAvatarUrl(userDto.getAvatarUrl());
+        this.setIsDeleted(null);
+        this.setCreatedBy(null);
+    }
 }

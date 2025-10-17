@@ -5,6 +5,7 @@ import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.common.AssignRoleRequest;
 import com.cvconnect.dto.common.InviteUserRequest;
 import com.cvconnect.dto.common.NotificationDto;
+import com.cvconnect.dto.internal.response.AttachFileDto;
 import com.cvconnect.dto.internal.response.OrgDto;
 import com.cvconnect.dto.inviteJoinOrg.InviteJoinOrgDto;
 import com.cvconnect.dto.common.ReplyInviteUserRequest;
@@ -265,9 +266,11 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         }
 
         // add new role
-        List<RoleUserDto> currentRoleUsers = roleUserService.findByUserId(request.getUserId());
+        List<RoleDto> currentRoleUsers = roleService.getRoleByUserId(request.getUserId()).stream()
+                .filter(roleDto -> roleDto.getMemberType().equals(MemberType.ORGANIZATION))
+                .toList();
         List<RoleUserDto> newRoleUsers = roleIdsInReq.stream()
-                .filter(roleId -> currentRoleUsers.stream().noneMatch(r -> r.getRoleId().equals(roleId)))
+                .filter(roleId -> currentRoleUsers.stream().noneMatch(r -> r.getId().equals(roleId)))
                 .map(roleId -> RoleUserDto.builder()
                         .userId(request.getUserId())
                         .roleId(roleId)
@@ -277,7 +280,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
 
         // delete role
         List<Long> deleteRoleIds = currentRoleUsers.stream()
-                .map(RoleUserDto::getRoleId)
+                .map(RoleDto::getId)
                 .filter(roleId -> !roleIdsInReq.contains(roleId))
                 .toList();
         if(!ObjectUtils.isEmpty(deleteRoleIds)) {
@@ -305,5 +308,33 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         if(!existsOrgAdmin) {
             throw new AppException(UserErrorCode.ORG_MUST_HAVE_AT_LEAST_ONE_ADMIN);
         }
+    }
+
+    @Override
+    public OrgMemberDto orgMemberInfo(Long userId) {
+        Long orgId = serviceUtils.validOrgMember();
+        OrgMember orgMember = orgMemberRepository.findByUserIdAndOrgId(userId, orgId);
+        if(orgMember == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        OrgMemberDto orgMemberDto = ObjectMapperUtils.convertToObject(orgMember, OrgMemberDto.class);
+
+        UserDto userDto = userService.getUserById(userId);
+        if(userDto == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        if(userDto.getAvatarId() != null) {
+            AttachFileDto attachFileDto = restTemplateClient.getAttachFileById(userDto.getAvatarId());
+            userDto.setAvatarUrl(attachFileDto.getSecureUrl());
+        }
+        orgMemberDto.setUserDto(userDto);
+
+        Map<Long, List<RoleDto>> userRoles = roleService.getRolesByUserIds(List.of(userId));
+        List<RoleDto> roles = userRoles.get(userId).stream()
+                .filter(role -> MemberType.ORGANIZATION.equals(role.getMemberType()))
+                .toList();
+        orgMemberDto.setRoles(roles);
+
+        return orgMemberDto;
     }
 }

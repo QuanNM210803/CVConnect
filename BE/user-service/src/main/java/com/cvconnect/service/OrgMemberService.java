@@ -18,4 +18,6 @@ public interface OrgMemberService {
     Long validOrgMember();
     void assignRoleOrgMember(AssignRoleRequest request);
     void changeStatusActive(ChangeStatusActiveRequest request);
+    OrgMemberDto orgMemberInfo(Long userId);
+
 }
