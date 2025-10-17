@@ -123,13 +123,14 @@ public class JobAdServiceImpl implements JobAdService {
 
         // todo: send notification to HR contact
         NotifyTemplate template = NotifyTemplate.JOB_AD_CREATED;
-        NotificationDto notificationDto = new NotificationDto();
-        notificationDto.setTitle(localizationUtils.getLocalizedMessage(template.getTitle(), WebUtils.getCurrentFullName()));
-        notificationDto.setMessage(localizationUtils.getLocalizedMessage(template.getMessage(), jobAd.getTitle()));
-        notificationDto.setSenderId(WebUtils.getCurrentUserId());
-        notificationDto.setReceiverIds(List.of(jobAd.getHrContactId()));
-        notificationDto.setType(Constants.NotificationType.USER);
-        notificationDto.setRedirectUrl(Constants.Path.JOB_AD + "?mode=view&targetId=" + jobAd.getId());
+        NotificationDto notificationDto = NotificationDto.builder()
+                .title(localizationUtils.getLocalizedMessage(template.getTitle(), WebUtils.getCurrentFullName()))
+                .message(localizationUtils.getLocalizedMessage(template.getMessage(), jobAd.getTitle()))
+                .senderId(WebUtils.getCurrentUserId())
+                .receiverIds(List.of(jobAd.getHrContactId()))
+                .type(Constants.NotificationType.USER)
+                .redirectUrl(Constants.Path.JOB_AD + "?mode=view&targetId=" + jobAd.getId())
+                .build();
         kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
 
         return IDResponse.<Long>builder()

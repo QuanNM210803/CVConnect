@@ -2,8 +2,10 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.common.ReplacePlaceholder;
 import com.cvconnect.common.RestTemplateClient;
+import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.common.DataReplacePlaceholder;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
+import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
@@ -11,10 +13,7 @@ import com.cvconnect.dto.jobAd.JobAdProcessDto;
 import com.cvconnect.dto.jobAdCandidate.ApplyRequest;
 import com.cvconnect.dto.jobAdCandidate.JobAdProcessCandidateDto;
 import com.cvconnect.entity.JobAdCandidate;
-import com.cvconnect.enums.CandidateStatus;
-import com.cvconnect.enums.CoreErrorCode;
-import com.cvconnect.enums.JobAdStatus;
-import com.cvconnect.enums.ProcessTypeEnum;
+import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdCandidateRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.CoreServiceUtils;
@@ -24,6 +23,8 @@ import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.service.SendEmailService;
+import nmquan.commonlib.utils.KafkaUtils;
+import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,12 +56,17 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
     private RestTemplateClient restTemplateClient;
     @Autowired
     private ReplacePlaceholder replacePlaceholder;
+    @Autowired
+    private KafkaUtils kafkaUtils;
+    @Autowired
+    private LocalizationUtils localizationUtils;
 
     @Override
     @Transactional
     public IDResponse<Long> apply(ApplyRequest request, MultipartFile cvFile) {
         // validate
-        request.setCandidateId(WebUtils.getCurrentUserId());
+        Long userId = WebUtils.getCurrentUserId();
+        request.setCandidateId(userId);
         this.validateApply(request, cvFile);
         JobAdDto jobAdDto = this.validateJobAd(request.getJobAdId());
 
@@ -111,10 +117,10 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         jobAdProcessCandidateService.create(jobAdProcessCandidateDtos);
 
         // send email to candidate
+        CandidateInfoApplyDto candidateInfoApplyDto = candidateInfoApplyService.getById(candidateInfoApplyId);
         if(jobAdDto.getIsAutoSendEmail()){
             EmailTemplateDto emailTemplateDto = restTemplateClient.getEmailTemplateById(jobAdDto.getEmailTemplateId());
             UserDto userDto = restTemplateClient.getUser(jobAdDto.getHrContactId());
-            CandidateInfoApplyDto candidateInfoApplyDto = candidateInfoApplyService.getById(candidateInfoApplyId);
             if(ObjectUtils.isEmpty(emailTemplateDto) ||
                     ObjectUtils.isEmpty(userDto) ||
                     ObjectUtils.isEmpty(candidateInfoApplyDto)){
@@ -147,6 +153,18 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                     .build();
             sendEmailService.sendEmailWithBody(sendEmailDto);
         }
+
+        // send notification to hr
+        NotifyTemplate template = NotifyTemplate.CANDIDATE_APPLY_JOB_AD;
+        NotificationDto notification = NotificationDto.builder()
+                .title(localizationUtils.getLocalizedMessage(template.getTitle()))
+                .message(localizationUtils.getLocalizedMessage(template.getMessage(), candidateInfoApplyDto.getFullName(), jobAdDto.getTitle()))
+                .senderId(userId)
+                .receiverIds(List.of(jobAdDto.getHrContactId()))
+                .type(Constants.NotificationType.USER)
+                .redirectUrl(Constants.Path.JOB_AD_CANDIDATE_DETAIL + "/" + userId)
+                .build();
+        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notification);
 
         return IDResponse.<Long>builder()
                 .id(jobAdCandidate.getId())
