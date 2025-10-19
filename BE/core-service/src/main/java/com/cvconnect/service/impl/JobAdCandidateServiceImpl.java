@@ -157,8 +157,8 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         // send notification to hr
         NotifyTemplate template = NotifyTemplate.CANDIDATE_APPLY_JOB_AD;
         NotificationDto notification = NotificationDto.builder()
-                .title(localizationUtils.getLocalizedMessage(template.getTitle()))
-                .message(localizationUtils.getLocalizedMessage(template.getMessage(), candidateInfoApplyDto.getFullName(), jobAdDto.getTitle()))
+                .title(String.format(template.getTitle()))
+                .message(String.format(template.getMessage(), candidateInfoApplyDto.getFullName(), jobAdDto.getTitle()))
                 .senderId(userId)
                 .receiverIds(List.of(jobAdDto.getHrContactId()))
                 .type(Constants.NotificationType.USER)

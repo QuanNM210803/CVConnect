@@ -67,7 +67,7 @@ public class Messages {
     /*
     * Notification messages
     * */
-    public static final String NEW_MEMBER_JOINED_ORG_TITLE = "new.member.joined.org.title";
-    public static final String NEW_MEMBER_JOINED_ORG_MESSAGE = "new.member.joined.org.message";
+    public static final String NEW_MEMBER_JOINED_ORG_TITLE = "Doanh nghiệp của bạn có thành viên mới";
+    public static final String NEW_MEMBER_JOINED_ORG_MESSAGE = "<strong>%s</strong> đã tham gia doanh nghiệp với vai trò <strong>%s</strong>";
 }
 

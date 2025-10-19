@@ -192,8 +192,8 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         List<UserDto> orgAdmin = userService.getUsersByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, inviteJoinOrgDto.getOrgId());
         NotifyTemplate template = NotifyTemplate.NEW_MEMBER_JOINED_ORG;
         NotificationDto notificationDto = NotificationDto.builder()
-                .title(localizationUtils.getLocalizedMessage(template.getTitle()))
-                .message(localizationUtils.getLocalizedMessage(template.getMessage(), userDto.getFullName(), roleDto.getName()))
+                .title(String.format(template.getTitle()))
+                .message(String.format(template.getMessage(), userDto.getFullName(), roleDto.getName()))
                 .type(Constants.NotificationType.USER)
                 .redirectUrl(Constants.Path.ORG_MEMBER + "?mode=view&targetId=" + inviteJoinOrgDto.getUserId())
                 .senderId(inviteJoinOrgDto.getUserId())
