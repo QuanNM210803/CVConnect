@@ -124,8 +124,8 @@ public class JobAdServiceImpl implements JobAdService {
         // todo: send notification to HR contact
         NotifyTemplate template = NotifyTemplate.JOB_AD_CREATED;
         NotificationDto notificationDto = NotificationDto.builder()
-                .title(localizationUtils.getLocalizedMessage(template.getTitle(), WebUtils.getCurrentFullName()))
-                .message(localizationUtils.getLocalizedMessage(template.getMessage(), jobAd.getTitle()))
+                .title(String.format(template.getTitle(), WebUtils.getCurrentFullName()))
+                .message(String.format(template.getMessage(), jobAd.getTitle()))
                 .senderId(WebUtils.getCurrentUserId())
                 .receiverIds(List.of(jobAd.getHrContactId()))
                 .type(Constants.NotificationType.USER)

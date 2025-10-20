@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nmquan.commonlib.model.JwtUser;
 import nmquan.commonlib.utils.JwtUtils;
+import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -79,7 +80,8 @@ public class SocketHandler {
 
     @Async(Constants.BeanName.ASYNC_CONFIG)
     public void sendEventWithRoom(Object payload, String topic, String room) {
-        server.getRoomOperations(room).sendEvent(topic, payload);
+        Object payloadCopy = ObjectMapperUtils.convertToObject(payload, Object.class);
+        server.getRoomOperations(room).sendEvent(topic, payloadCopy);
     }
 }
 
