@@ -3,6 +3,7 @@ package com.cvconnect.service.impl;
 import com.cvconnect.common.ReplacePlaceholder;
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyProjection;
 import com.cvconnect.dto.common.DataReplacePlaceholder;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.common.NotificationDto;
@@ -11,6 +12,8 @@ import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.dto.jobAd.JobAdProcessDto;
 import com.cvconnect.dto.jobAdCandidate.ApplyRequest;
+import com.cvconnect.dto.jobAdCandidate.CandidateFilterRequest;
+import com.cvconnect.dto.jobAdCandidate.CandidateFilterResponse;
 import com.cvconnect.dto.jobAdCandidate.JobAdProcessCandidateDto;
 import com.cvconnect.entity.JobAdCandidate;
 import com.cvconnect.enums.*;
@@ -19,6 +22,7 @@ import com.cvconnect.service.*;
 import com.cvconnect.utils.CoreServiceUtils;
 import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.SendEmailDto;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
@@ -27,6 +31,7 @@ import nmquan.commonlib.utils.KafkaUtils;
 import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -58,8 +63,6 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
     private ReplacePlaceholder replacePlaceholder;
     @Autowired
     private KafkaUtils kafkaUtils;
-    @Autowired
-    private LocalizationUtils localizationUtils;
 
     @Override
     @Transactional
@@ -169,6 +172,22 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         return IDResponse.<Long>builder()
                 .id(jobAdCandidate.getId())
                 .build();
+    }
+
+    @Override
+    public FilterResponse<CandidateFilterResponse> filter(CandidateFilterRequest request) {
+        Long orgId = restTemplateClient.validOrgMember();
+        Long participantId = null;
+        List<String> role = WebUtils.getCurrentRole();
+        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
+            participantId = WebUtils.getCurrentUserId();
+            request.setHrContactId(null);
+        }
+
+        // todo: nho viet them cau lenh check nguoi tham gia la HR va interviewer
+        Page<CandidateInfoApplyProjection> page = jobAdCandidateRepository.filter(request, orgId, participantId, request.getPageable());
+
+        return null;
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {

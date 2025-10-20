@@ -122,10 +122,18 @@ public class OrgAddressServiceImpl implements OrgAddressService {
 
     private String buildDisplayAddress(OrgAddressDto dto) {
         StringJoiner addressJoiner = new StringJoiner(", ");
-        if (dto.getDetailAddress() != null) addressJoiner.add(dto.getDetailAddress());
-        if (dto.getWard() != null) addressJoiner.add(dto.getWard());
-        if (dto.getDistrict() != null) addressJoiner.add(dto.getDistrict());
-        if (dto.getProvince() != null) addressJoiner.add(dto.getProvince());
+        if (dto.getDetailAddress() != null && !dto.getDetailAddress().isEmpty()) {
+            addressJoiner.add(dto.getDetailAddress());
+        }
+        if (dto.getWard() != null && !dto.getWard().isEmpty()) {
+            addressJoiner.add(dto.getWard());
+        }
+        if (dto.getDistrict() != null && !dto.getDistrict().isEmpty()) {
+            addressJoiner.add(dto.getDistrict());
+        }
+        if (dto.getProvince() != null && !dto.getProvince().isEmpty()) {
+            addressJoiner.add(dto.getProvince());
+        }
 
         return addressJoiner.toString();
     }

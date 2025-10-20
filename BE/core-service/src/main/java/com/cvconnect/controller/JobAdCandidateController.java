@@ -2,9 +2,12 @@ package com.cvconnect.controller;
 
 import com.cvconnect.constant.Messages;
 import com.cvconnect.dto.jobAdCandidate.ApplyRequest;
+import com.cvconnect.dto.jobAdCandidate.CandidateFilterRequest;
+import com.cvconnect.dto.jobAdCandidate.CandidateFilterResponse;
 import com.cvconnect.service.JobAdCandidateService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.LocalizationUtils;
@@ -29,5 +32,12 @@ public class JobAdCandidateController {
     public ResponseEntity<Response<IDResponse<Long>>> apply(@Valid @RequestPart ApplyRequest request,
                                                             @RequestPart(required = false) MultipartFile cvFile) {
         return ResponseUtils.success(jobAdCandidateService.apply(request, cvFile), localizationUtils.getLocalizedMessage(Messages.APPLY_SUCCESS));
+    }
+
+    @GetMapping("/filter")
+    @Operation(summary = "Filter job ad candidates")
+    @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:VIEW')")
+    public ResponseEntity<Response<FilterResponse<CandidateFilterResponse>>> filter(@Valid @ModelAttribute CandidateFilterRequest request) {
+        return ResponseUtils.success(jobAdCandidateService.filter(request));
     }
 }

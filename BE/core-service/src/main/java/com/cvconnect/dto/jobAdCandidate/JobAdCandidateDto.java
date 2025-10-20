@@ -1,0 +1,36 @@
+package com.cvconnect.dto.jobAdCandidate;
+
+import com.cvconnect.dto.jobAd.JobAdDto;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import nmquan.commonlib.dto.BaseDto;
+
+import java.time.Instant;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class JobAdCandidateDto extends BaseDto<Instant> {
+    private Long jobAdId;
+
+    private Long candidateInfoId;
+
+    private Instant applyDate;
+
+    private String candidateStatus;
+
+    private String eliminateReasonType;
+
+    private String eliminateReasonDetail;
+
+    private Instant onboardDate;
+
+    // attribute expansion
+    private JobAdDto jobAd;
+    private JobAdProcessCandidateDto currentRound;
+}

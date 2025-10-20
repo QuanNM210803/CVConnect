@@ -27,4 +27,6 @@ public class OrganizationRequest {
     private List<Long> industryIds;
     @Valid
     private List<OrgAddressRequest> addresses;
+
+    private String createdBy;
 }

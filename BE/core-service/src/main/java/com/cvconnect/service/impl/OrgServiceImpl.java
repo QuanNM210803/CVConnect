@@ -59,6 +59,10 @@ public class OrgServiceImpl implements OrgService {
         org.setCoverPhotoId(attachFileIds.size() > 1 ? attachFileIds.get(1) : null);
         orgRepository.save(org);
 
+        if(request.getCreatedBy() != null) {
+            orgRepository.updateCreatedBy(org.getId(), request.getCreatedBy());
+        }
+
         if(request.getIndustryIds() != null && !request.getIndustryIds().isEmpty()) {
             if(request.getIndustryIds().size() > Constants.MAX_INDUSTRY_PER_ORG) {
                 throw new AppException(CoreErrorCode.INDUSTRY_EXCEED_LIMIT, Constants.MAX_INDUSTRY_PER_ORG);

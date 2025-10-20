@@ -262,6 +262,7 @@ public class AuthServiceImpl implements AuthService {
             OrgMemberDto saved = this.createOrgMemberForUser(userDto.getId(), roleOrgAdmin.getId());
 
             // create organization
+            request.getOrganization().setCreatedBy(request.getUsername());
             IDResponse<Long> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
 
             // update orgId for org-admin
@@ -315,6 +316,7 @@ public class AuthServiceImpl implements AuthService {
             OrgMemberDto saved = this.createOrgMemberForUser(existsByEmail.getId(), roleOrgAdmin.getId());
 
             // create organization
+            request.getOrganization().setCreatedBy(request.getUsername());
             IDResponse<Long> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
 
             // update orgId for org-admin
