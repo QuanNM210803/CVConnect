@@ -12,8 +12,8 @@ import nmquan.commonlib.model.BaseEntity;
 @Getter
 @Setter
 @Entity
-@Table(name = "industry_sub")
-public class IndustrySub extends BaseEntity {
+@Table(name = "careers")
+public class Careers extends BaseEntity {
     @Size(max = 50)
     @NotNull
     @Column(name = "code", nullable = false, length = 50)
@@ -23,9 +23,5 @@ public class IndustrySub extends BaseEntity {
     @NotNull
     @Column(name = "name", nullable = false)
     private String name;
-
-    @NotNull
-    @Column(name = "industry_id", nullable = false)
-    private Long industryId;
 
 }

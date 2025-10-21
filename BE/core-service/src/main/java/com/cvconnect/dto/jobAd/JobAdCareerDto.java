@@ -14,7 +14,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JobAdIndustrySubDto extends BaseDto<Instant> {
-    private Long industrySubId;
+public class JobAdCareerDto extends BaseDto<Instant> {
+    private Long careerId;
     private Long jobAdId;
 }

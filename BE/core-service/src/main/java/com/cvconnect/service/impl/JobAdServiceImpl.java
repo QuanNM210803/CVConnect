@@ -37,7 +37,7 @@ public class JobAdServiceImpl implements JobAdService {
     @Autowired
     private JobAdProcessService jobAdProcessService;
     @Autowired
-    private JobAdIndustrySubService jobAdIndustrySubService;
+    private JobAdCareerService jobAdCareerService;
     @Autowired
     private JobAdWorkLocationService jobAdWorkLocationService;
     @Autowired
@@ -90,14 +90,14 @@ public class JobAdServiceImpl implements JobAdService {
         jobAd.setIsAllLevel(request.getIsAllLevel());
         jobAdRepository.save(jobAd);
 
-        if(!ObjectUtils.isEmpty(request.getIndustrySubIds())){
-            List<JobAdIndustrySubDto> jobAdIndustrySubDtos = request.getIndustrySubIds().stream()
-                    .map(industrySubId -> JobAdIndustrySubDto.builder()
+        if(!ObjectUtils.isEmpty(request.getCareerIds())){
+            List<JobAdCareerDto> jobAdCareerDtos = request.getCareerIds().stream()
+                    .map(careerId -> JobAdCareerDto.builder()
                             .jobAdId(jobAd.getId())
-                            .industrySubId(industrySubId)
+                            .careerId(careerId)
                             .build())
                     .collect(Collectors.toList());
-            jobAdIndustrySubService.create(jobAdIndustrySubDtos);
+            jobAdCareerService.create(jobAdCareerDtos);
         }
 
         if(!ObjectUtils.isEmpty(request.getWorkLocationIds())){

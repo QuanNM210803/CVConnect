@@ -1,4 +1,4 @@
-package com.cvconnect.dto.industrySub;
+package com.cvconnect.dto.career;
 
 import com.cvconnect.constant.Messages;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,10 +14,10 @@ import nmquan.commonlib.dto.Identifiable;
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class IndustrySubRequest implements Identifiable {
+public class CareerRequest implements Identifiable {
     private Long id;
-    @NotBlank(message = Messages.INDUSTRY_SUB_CODE_REQUIRED)
+    @NotBlank(message = Messages.CAREER_CODE_REQUIRED)
     private String code;
-    @NotBlank(message = Messages.INDUSTRY_SUB_NAME_REQUIRED)
+    @NotBlank(message = Messages.CAREER_NAME_REQUIRED)
     private String name;
 }

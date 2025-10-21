@@ -1,4 +1,4 @@
-package com.cvconnect.dto.industrySub;
+package com.cvconnect.dto.career;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -15,8 +15,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class IndustrySubDto extends BaseDto<Instant> implements Identifiable {
+public class CareerDto extends BaseDto<Instant> implements Identifiable {
     private String code;
     private String name;
-    private Long industryId;
 }

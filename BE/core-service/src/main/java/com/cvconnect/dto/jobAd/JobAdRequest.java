@@ -31,7 +31,7 @@ public class JobAdRequest {
     private String title;
     @NotNull(message = Messages.POSITION_ID_REQUIRED)
     private Long positionId;
-    private List<Long> industrySubIds;
+    private List<Long> careerIds;
     @NotNull(message = Messages.WORK_LOCATION_ID_REQUIRED)
     private List<Long> workLocationIds;
     @NotNull(message = Messages.JOB_TYPE_REQUIRED)
