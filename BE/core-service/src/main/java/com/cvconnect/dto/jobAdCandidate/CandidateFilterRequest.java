@@ -18,7 +18,7 @@ import java.util.List;
 public class CandidateFilterRequest extends FilterRequest {
     private String fullName;
     private String email;
-    private String phoneNumber;
+    private String phone;
     private Long numOfApplyStart;
     private Long numOfApplyEnd;
     private String jobAdTitle;

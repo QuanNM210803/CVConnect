@@ -1,6 +1,7 @@
 package com.cvconnect.dto.jobAdCandidate;
 
 import com.cvconnect.dto.jobAd.JobAdDto;
+import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,5 +33,5 @@ public class JobAdCandidateDto extends BaseDto<Instant> {
 
     // attribute expansion
     private JobAdDto jobAd;
-    private JobAdProcessCandidateDto currentRound;
+    private ProcessTypeDto currentRound;
 }

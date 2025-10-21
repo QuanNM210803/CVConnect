@@ -279,6 +279,18 @@ public class UserServiceImpl implements UserService {
         return PageUtils.toFilterResponse(dtoPage, dtoPage.getContent());
     }
 
+    @Override
+    public Map<Long, UserDto> getByIds(List<Long> userIds) {
+        List<User> users = userRepository.findAllById(userIds);
+        if(!ObjectUtils.isEmpty(users)){
+            return Map.of();
+        }
+        List<UserDto> userDtos = ObjectMapperUtils.convertToList(users, UserDto.class);
+        return userDtos.stream()
+                .map(UserDto::configResponse)
+                .collect(Collectors.toMap(UserDto::getId, Function.identity()));
+    }
+
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {
         RoleUserDto roleUserDto = roleUserService.findByUserIdAndRoleId(userId, roleId);
         if(roleUserDto == null) {

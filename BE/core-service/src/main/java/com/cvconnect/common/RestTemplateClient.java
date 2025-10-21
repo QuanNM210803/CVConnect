@@ -11,6 +11,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class RestTemplateClient {
@@ -74,6 +75,15 @@ public class RestTemplateClient {
         Response<Long> response = restTemplateService.getMethodRestTemplate(
                 SERVER_USER_SERVICE + "/org-member/internal/valid-org-member",
                 new ParameterizedTypeReference<Response<Long>>() {}
+        );
+        return response.getData();
+    }
+
+    public Map<Long,UserDto> getUsersByIds(List<Long> userIds) {
+        Response<Map<Long,UserDto>> response = restTemplateService.postMethodRestTemplate(
+                SERVER_USER_SERVICE + "/user/internal/get-by-ids",
+                new ParameterizedTypeReference<Response<Map<Long,UserDto>>>() {},
+                userIds
         );
         return response.getData();
     }

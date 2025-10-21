@@ -11,10 +11,8 @@ import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.dto.jobAd.JobAdProcessDto;
-import com.cvconnect.dto.jobAdCandidate.ApplyRequest;
-import com.cvconnect.dto.jobAdCandidate.CandidateFilterRequest;
-import com.cvconnect.dto.jobAdCandidate.CandidateFilterResponse;
-import com.cvconnect.dto.jobAdCandidate.JobAdProcessCandidateDto;
+import com.cvconnect.dto.jobAdCandidate.*;
+import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.cvconnect.entity.JobAdCandidate;
 import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdCandidateRepository;
@@ -28,7 +26,7 @@ import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.KafkaUtils;
-import nmquan.commonlib.utils.LocalizationUtils;
+import nmquan.commonlib.utils.PageUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -39,7 +37,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JobAdCandidateServiceImpl implements JobAdCandidateService {
@@ -185,9 +188,60 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         }
 
         // todo: nho viet them cau lenh check nguoi tham gia la HR va interviewer
-//        Page<CandidateInfoApplyProjection> page = jobAdCandidateRepository.filter(request, orgId, participantId, request.getPageable());
+        Page<CandidateInfoApplyProjection> page = jobAdCandidateRepository.filter(request, orgId, participantId, request.getPageable());
+        List<CandidateFilterResponse> data = page.getContent().stream()
+                .map(projection -> CandidateFilterResponse.builder()
+                        .candidateInfo(
+                                CandidateInfoApplyDto.builder()
+                                        .id(projection.getId())
+                                        .fullName(projection.getFullName())
+                                        .email(projection.getEmail())
+                                        .phone(projection.getPhone())
+                                        .build()
+                        )
+                        .numOfApply(projection.getNumOfApply())
+                        .build())
+                .toList();
 
-        return null;
+        Map<Long, CandidateFilterResponse> candidateInfoMap = data.stream()
+                .collect(Collectors.toMap(
+                        item -> item.getCandidateInfo().getId(),
+                        Function.identity(),
+                        (existing, replacement) -> existing,
+                        LinkedHashMap::new
+                ));
+        List<Long> candidateInfoIds = new ArrayList<>(candidateInfoMap.keySet());
+        List<CandidateFilterProjection> jobAdCandidates = jobAdCandidateRepository.findAllByCandidateInfoIds(candidateInfoIds, orgId, participantId);
+
+        // get Hr contacts
+        List<Long> hrIds = jobAdCandidates.stream()
+                .map(CandidateFilterProjection::getHrContactId)
+                .distinct()
+                .toList();
+        Map<Long, UserDto> hrContacts = restTemplateClient.getUsersByIds(hrIds);
+
+        for(CandidateFilterProjection projection : jobAdCandidates){
+            CandidateFilterResponse response = candidateInfoMap.get(projection.getCandidateInfoId());
+            if(response != null){
+                JobAdCandidateDto jobAdCandidateDto = JobAdCandidateDto.builder()
+                        .candidateStatus(projection.getCandidateStatus())
+                        .applyDate(projection.getApplyDate())
+                        .jobAd(JobAdDto.builder()
+                                .title(projection.getJobAdTitle())
+                                .hrContactName(hrContacts.get(projection.getHrContactId()).getUsername())
+                                .build())
+                        .currentRound(ProcessTypeDto.builder()
+                                .id(projection.getProcessTypeId())
+                                .code(projection.getProcessTypeCode())
+                                .name(projection.getProcessTypeName())
+                                .build())
+                        .build();
+                response.getJobAdCandidates().add(jobAdCandidateDto);
+            }
+        }
+
+        List<CandidateFilterResponse> result = new ArrayList<>(candidateInfoMap.values());
+        return PageUtils.toFilterResponse(page, result);
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {

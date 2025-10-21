@@ -62,7 +62,7 @@ public class JobAdRequest {
     private boolean isAutoSendEmail = false;
     private Long emailTemplateId;
     @Valid
-    @NotNull
+    @NotNull(message = Messages.PROCESS_TYPE_REQUIRE)
     private List<PositionProcessRequest> positionProcess;
     private boolean hasRemote = false;
 

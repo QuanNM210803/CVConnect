@@ -16,5 +16,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CandidateFilterResponse {
     private CandidateInfoApplyDto candidateInfo;
+    private Long numOfApply;
     private List<JobAdCandidateDto> jobAdCandidates;
 }

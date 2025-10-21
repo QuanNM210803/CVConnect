@@ -9,5 +9,6 @@ public interface CandidateInfoApplyProjection extends BaseRepositoryDto {
     String getPhone();
     Long getCvFileId();
     String getCoverLetter();
+    Long getNumOfApply();
 
 }

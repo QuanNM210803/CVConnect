@@ -9,6 +9,7 @@ import nmquan.commonlib.dto.response.FilterResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     UserDto findById(Long id);
@@ -28,4 +29,5 @@ public interface UserService {
     void updateInfo(UserUpdateRequest request);
     List<RoleDto> getMyRoles();
     FilterResponse<UserDto> findNotOrgMember(UserFilterRequest request);
+    Map<Long, UserDto> getByIds(List<Long> userIds);
 }

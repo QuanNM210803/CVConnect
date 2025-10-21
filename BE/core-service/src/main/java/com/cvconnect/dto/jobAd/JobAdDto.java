@@ -58,4 +58,7 @@ public class JobAdDto extends BaseDto<Instant> {
     private Boolean isRemote;
 
     private Boolean isAllLevel;
+
+    // attribute expansion
+    private String hrContactName;
 }

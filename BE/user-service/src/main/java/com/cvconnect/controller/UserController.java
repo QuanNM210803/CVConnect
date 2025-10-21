@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -58,6 +59,13 @@ public class UserController {
     @Operation(summary = "Get user by ID")
     public ResponseEntity<Response<UserDto>> getUserById(@PathVariable Long userId) {
         return ResponseUtils.success(userService.getUserById(userId));
+    }
+
+    @InternalRequest
+    @PostMapping("/internal/get-by-ids")
+    @Operation(summary = "Get user by IDs")
+    public ResponseEntity<Response<Map<Long, UserDto>>> getUserByIds(@RequestBody List<Long> userIds) {
+        return ResponseUtils.success(userService.getByIds(userIds));
     }
 
     @PutMapping("/role-default/{roleId}")
