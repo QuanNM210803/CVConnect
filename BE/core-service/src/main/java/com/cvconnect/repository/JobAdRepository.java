@@ -17,9 +17,8 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
     @Query("SELECT CASE WHEN COUNT(d) > 0 THEN true ELSE false END " +
             "FROM Department d " +
             "JOIN Position p ON p.departmentId = d.id AND p.isActive = true " +
-            "JOIN PositionLevel pl ON pl.positionId = p.id " +
-            "WHERE d.isActive = true AND d.orgId = :orgId AND p.id = :positionId AND pl.id = :positionLevelId")
-    boolean existsByOrgIdAndPositionIdAndPositionLevelId(Long orgId, Long positionId, Long positionLevelId);
+            "WHERE d.isActive = true AND d.orgId = :orgId AND p.id = :positionId")
+    boolean existsByOrgIdAndPositionId(Long orgId, Long positionId);
 
     @Query("SELECT ja FROM JobAd ja WHERE ja.id = :id")
     JobAd findById(Long id);

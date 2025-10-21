@@ -18,7 +18,6 @@ import java.util.List;
 public class PositionFilterRequest extends FilterRequest {
     private String code;
     private String name;
-    private String positionLevelName;
     private List<Long> departmentIds;
     private Boolean isActive;
     private Instant createdAtStart;

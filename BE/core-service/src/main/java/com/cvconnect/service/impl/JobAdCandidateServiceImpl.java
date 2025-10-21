@@ -185,7 +185,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         }
 
         // todo: nho viet them cau lenh check nguoi tham gia la HR va interviewer
-        Page<CandidateInfoApplyProjection> page = jobAdCandidateRepository.filter(request, orgId, participantId, request.getPageable());
+//        Page<CandidateInfoApplyProjection> page = jobAdCandidateRepository.filter(request, orgId, participantId, request.getPageable());
 
         return null;
     }

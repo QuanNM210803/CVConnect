@@ -5,6 +5,8 @@ import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.jobAd.*;
+import com.cvconnect.dto.jobAdLevel.JobAdLevelDto;
+import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.org.OrgAddressDto;
@@ -16,7 +18,6 @@ import com.cvconnect.service.*;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.KafkaUtils;
-import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,9 @@ public class JobAdServiceImpl implements JobAdService {
     @Autowired
     private KafkaUtils kafkaUtils;
     @Autowired
-    private LocalizationUtils localizationUtils;
+    private LevelService levelService;
+    @Autowired
+    private JobAdLevelService jobAdLevelService;
 
     private static final String JOB_AD_CODE_PREFIX = "JD-";
 
@@ -67,7 +70,6 @@ public class JobAdServiceImpl implements JobAdService {
         jobAd.setTitle(request.getTitle());
         jobAd.setOrgId(request.getOrgId());
         jobAd.setPositionId(request.getPositionId());
-        jobAd.setPositionLevelId(request.getPositionLevelId());
         jobAd.setJobType(request.getJobType().name());
         jobAd.setDueDate(request.getDueDate());
         jobAd.setQuantity(request.getQuantity());
@@ -85,6 +87,7 @@ public class JobAdServiceImpl implements JobAdService {
         jobAd.setIsAutoSendEmail(request.isAutoSendEmail());
         jobAd.setEmailTemplateId(request.getEmailTemplateId());
         jobAd.setIsRemote(request.isHasRemote());
+        jobAd.setIsAllLevel(request.getIsAllLevel());
         jobAdRepository.save(jobAd);
 
         if(!ObjectUtils.isEmpty(request.getIndustrySubIds())){
@@ -121,6 +124,16 @@ public class JobAdServiceImpl implements JobAdService {
             jobAdProcessService.create(jobAdProcessDtos);
         }
 
+        if(!request.getIsAllLevel()) {
+            List<JobAdLevelDto> jobAdLevelDtos = request.getLevelIds().stream()
+                    .map(levelId -> JobAdLevelDto.builder()
+                            .jobAdId(jobAd.getId())
+                            .levelId(levelId)
+                            .build())
+                    .collect(Collectors.toList());
+            jobAdLevelService.create(jobAdLevelDtos);
+        }
+
         // todo: send notification to HR contact
         NotifyTemplate template = NotifyTemplate.JOB_AD_CREATED;
         NotificationDto notificationDto = NotificationDto.builder()
@@ -148,9 +161,8 @@ public class JobAdServiceImpl implements JobAdService {
     }
 
     private void validateCreate(JobAdRequest request) {
-        // validate orgId, positionId, positionLevelId
-        boolean exists = jobAdRepository.existsByOrgIdAndPositionIdAndPositionLevelId(
-                request.getOrgId(), request.getPositionId(), request.getPositionLevelId());
+        // validate orgId, positionId
+        boolean exists = jobAdRepository.existsByOrgIdAndPositionId(request.getOrgId(), request.getPositionId());
         if(!exists){
             throw new AppException(CoreErrorCode.ORG_POSITION_LEVEL_NOT_FOUND);
         }
@@ -225,6 +237,18 @@ public class JobAdServiceImpl implements JobAdService {
         ProcessTypeDto endProcessType = processTypeService.detail(endProcessRequest.getProcessTypeId());
         if(!ProcessTypeEnum.ONBOARD.name().equals(endProcessType.getCode())){
             throw new AppException(CoreErrorCode.LAST_PROCESS_MUST_BE_ONBOARD);
+        }
+
+        // validate level
+        if(request.getIsAllLevel() == null || !request.getIsAllLevel()) {
+            if(ObjectUtils.isEmpty(request.getLevelIds())) {
+                throw new AppException(CoreErrorCode.LEVEL_REQUIRED);
+            }
+            List<LevelDto> levelDtos = levelService.getByIds(request.getLevelIds());
+            if(levelDtos.size() != request.getLevelIds().size()) {
+                throw new AppException(CoreErrorCode.LEVEL_NOT_FOUND);
+            }
+            request.setIsAllLevel(Boolean.FALSE);
         }
     }
 }

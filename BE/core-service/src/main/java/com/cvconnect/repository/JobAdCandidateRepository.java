@@ -19,10 +19,10 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
     boolean existsByJobAdIdAndCandidateId(Long jobAdId, Long candidateId);
 
 
-    Page<CandidateInfoApplyProjection> filter(
-            CandidateFilterRequest request,
-            Long orgId,
-            Long participantId,
-            Pageable pageable
-    );
+//    Page<CandidateInfoApplyProjection> filter(
+//            CandidateFilterRequest request,
+//            Long orgId,
+//            Long participantId,
+//            Pageable pageable
+//    );
 }

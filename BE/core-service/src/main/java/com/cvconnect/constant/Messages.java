@@ -47,6 +47,7 @@ public class Messages {
     public static final String ORG_NOT_FOUND = "org.not.found";
     public static final String IMAGE_FILE_INVALID = "image.file.invalid";
     public static final String DOCUMENT_FILE_INVALID = "document.file.invalid";
+    public static final String LEVEL_REQUIRED = "level.required";
 
 
     /*

@@ -5,8 +5,6 @@ import com.cvconnect.dto.department.DepartmentDto;
 import com.cvconnect.dto.position.PositionDto;
 import com.cvconnect.dto.position.PositionFilterRequest;
 import com.cvconnect.dto.position.PositionRequest;
-import com.cvconnect.dto.positionLevel.PositionLevelDto;
-import com.cvconnect.dto.positionLevel.PositionLevelRequest;
 import com.cvconnect.dto.positionProcess.PositionProcessDto;
 import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.cvconnect.dto.processType.ProcessTypeDto;
@@ -32,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -43,8 +40,6 @@ public class PositionServiceImpl implements PositionService {
     private PositionRepository positionRepository;
     @Autowired
     private DepartmentService departmentService;
-    @Autowired
-    private PositionLevelService positionLevelService;
     @Autowired
     private PositionProcessService positionProcessService;
     @Autowired
@@ -69,7 +64,6 @@ public class PositionServiceImpl implements PositionService {
         position.setDepartmentId(request.getDepartmentId());
         positionRepository.save(position);
 
-        this.savePositionLevels(request.getPositionLevel(), position.getId());
         this.savePositionProcesses(request.getPositionProcess(), position.getId());
         return IDResponse.<Long>builder()
                 .id(position.getId())
@@ -106,11 +100,9 @@ public class PositionServiceImpl implements PositionService {
         if(Objects.isNull(position)){
             throw new AppException(CoreErrorCode.POSITION_NOT_FOUND);
         }
-        List<PositionLevelDto> listLevel = positionLevelService.getByPositionId(position.getId());
         List<PositionProcessDto> listProcess = positionProcessService.getByPositionId(position.getId());
 
         PositionDto positionDto = ObjectMapperUtils.convertToObject(position, PositionDto.class);
-        positionDto.setListLevel(listLevel);
         positionDto.setListProcess(listProcess);
         return positionDto;
     }
@@ -127,15 +119,7 @@ public class PositionServiceImpl implements PositionService {
         }
         Page<PositionDto> page = positionRepository.filter(request, request.getPageable());
 
-        // get list position level
         List<PositionDto> positionDtos = page.getContent();
-        List<Long> positionIds = positionDtos.stream()
-                .map(PositionDto::getId)
-                .toList();
-        Map<Long, List<PositionLevelDto>> mapPositionLevel = positionLevelService.getByPositionIds(positionIds);
-        positionDtos.forEach(positionDto ->
-                positionDto.setListLevel(mapPositionLevel.get(positionDto.getId()))
-        );
         return PageUtils.toFilterResponse(page, positionDtos);
     }
 
@@ -160,19 +144,12 @@ public class PositionServiceImpl implements PositionService {
         position.setDepartmentId(request.getDepartmentId());
         positionRepository.save(position);
 
-        // Xoá những position level không còn trong request
-        List<PositionLevelRequest> plRequests = request.getPositionLevel();
-        List<PositionLevelDto> plDtos = positionLevelService.getByPositionId(position.getId());
-        List<Long> deleteIdsPositionLevel = WebUtils.getDeleteIds(plRequests, plDtos);
-        positionLevelService.deleteByIds(deleteIdsPositionLevel);
-
         // Xoá những position process không còn trong request
         List<PositionProcessRequest> ppRequests = request.getPositionProcess();
         List<PositionProcessDto> ppDtos = positionProcessService.getByPositionId(position.getId());
         List<Long> deleteIdsPositionProcess = WebUtils.getDeleteIds(ppRequests, ppDtos);
         positionProcessService.deleteByIds(deleteIdsPositionProcess);
 
-        this.savePositionLevels(plRequests, position.getId());
         this.savePositionProcesses(ppRequests, position.getId());
 
         return IDResponse.<Long>builder()
@@ -187,20 +164,6 @@ public class PositionServiceImpl implements PositionService {
             return null;
         }
         return ObjectMapperUtils.convertToObject(position, PositionDto.class);
-    }
-
-    private void savePositionLevels(List<PositionLevelRequest> positionLevelRequests, Long positionId){
-        if(Objects.nonNull(positionLevelRequests)){
-            List<PositionLevelDto> positionLevels = positionLevelRequests.stream()
-                    .map(req -> PositionLevelDto.builder()
-                            .id(req.getId())
-                            .name(req.getName())
-                            .levelId(req.getLevelId())
-                            .positionId(positionId)
-                            .build()
-                    ).collect(Collectors.toList());
-            positionLevelService.create(positionLevels);
-        }
     }
 
     private void savePositionProcesses(List<PositionProcessRequest> positionProcessRequests, Long positionId){

@@ -1,13 +1,11 @@
-package com.cvconnect.dto.positionLevel;
+package com.cvconnect.dto.jobAdLevel;
 
-import com.cvconnect.dto.level.LevelDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import nmquan.commonlib.dto.BaseDto;
-import nmquan.commonlib.dto.Identifiable;
 
 import java.time.Instant;
 
@@ -16,11 +14,8 @@ import java.time.Instant;
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PositionLevelDto extends BaseDto<Instant> implements Identifiable {
-    private String name;
-    private Long positionId;
-    private Long levelId;
+public class JobAdLevelDto extends BaseDto<Instant> {
+    private Long jobAdId;
 
-    // attribute expansion
-    private LevelDto level;
+    private Long levelId;
 }

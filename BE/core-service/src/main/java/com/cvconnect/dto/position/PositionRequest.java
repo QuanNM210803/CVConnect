@@ -1,7 +1,6 @@
 package com.cvconnect.dto.position;
 
 import com.cvconnect.constant.Messages;
-import com.cvconnect.dto.positionLevel.PositionLevelRequest;
 import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
@@ -29,8 +28,6 @@ public class PositionRequest {
     @NotNull(message = Messages.DEPARTMENT_REQUIRED)
     private Long departmentId;
 
-    @Valid
-    private List<PositionLevelRequest> positionLevel;
     @Valid
     private List<PositionProcessRequest> positionProcess;
 
