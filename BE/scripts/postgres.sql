@@ -630,3 +630,28 @@
 --
 -- alter table job_ad
 -- add column if not exists is_remote BOOLEAN DEFAULT FALSE;
+
+alter table job_ad
+drop column position_level_id;
+
+drop table position_level;
+
+CREATE TABLE IF NOT EXISTS job_ad_level (
+    id BIGSERIAL PRIMARY KEY,
+
+    job_ad_id BIGINT NOT NULL,
+    level_id BIGINT NOT NULL,
+
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+
+    FOREIGN KEY (job_ad_id) REFERENCES job_ad (id) ON DELETE CASCADE,
+    FOREIGN KEY (level_id) REFERENCES level (id) ON DELETE CASCADE
+);
+
+alter table job_ad
+add column is_all_level BOOLEAN DEFAULT FALSE;

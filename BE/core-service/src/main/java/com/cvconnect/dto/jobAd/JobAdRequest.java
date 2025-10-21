@@ -31,8 +31,6 @@ public class JobAdRequest {
     private String title;
     @NotNull(message = Messages.POSITION_ID_REQUIRED)
     private Long positionId;
-    @NotNull(message = Messages.POSITION_LEVEL_ID_REQUIRED)
-    private Long positionLevelId;
     private List<Long> industrySubIds;
     @NotNull(message = Messages.WORK_LOCATION_ID_REQUIRED)
     private List<Long> workLocationIds;
@@ -67,6 +65,10 @@ public class JobAdRequest {
     @NotNull
     private List<PositionProcessRequest> positionProcess;
     private boolean hasRemote = false;
+
+    // validate in service
+    private Boolean isAllLevel;
+    private List<Long> levelIds;
 
     private Long orgId;
 

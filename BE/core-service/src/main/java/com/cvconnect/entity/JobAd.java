@@ -33,10 +33,6 @@ public class JobAd extends BaseEntity {
     @Column(name = "position_id", nullable = false)
     private Long positionId;
 
-    @NotNull
-    @Column(name = "position_level_id", nullable = false)
-    private Long positionLevelId;
-
     @Size(max = 100)
     @NotNull
     @Column(name = "job_type", nullable = false, length = 100)
@@ -102,4 +98,6 @@ public class JobAd extends BaseEntity {
     @Column(name = "is_remote")
     private Boolean isRemote;
 
+    @Column(name = "is_all_level")
+    private Boolean isAllLevel;
 }

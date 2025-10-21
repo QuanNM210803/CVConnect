@@ -34,7 +34,6 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
             "d.id, d.name, d.code) FROM Position p " +
             "JOIN Department d ON d.id = p.departmentId " +
             "JOIN Organization o ON o.id = d.orgId AND o.id = :#{#request.orgId} " +
-            "JOIN PositionLevel pl ON pl.positionId = p.id " +
             "WHERE (:#{#request.code} IS NULL OR LOWER(p.code) LIKE LOWER(CONCAT('%', :#{#request.code}, '%'))) " +
             "AND (:#{#request.name} IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :#{#request.name}, '%'))) " +
             "AND (:#{#request.isActive} IS NULL OR p.isActive = :#{#request.isActive}) " +
@@ -44,8 +43,7 @@ public interface PositionRepository extends JpaRepository<Position, Long> {
             "AND (COALESCE(:#{#request.updatedAtEnd}, NULL) IS NULL OR (p.updatedAt IS NOT NULL AND p.updatedAt <= :#{#request.updatedAtEnd})) " +
             "AND (:#{#request.createdBy} IS NULL OR LOWER(p.createdBy) LIKE LOWER(CONCAT('%', :#{#request.createdBy}, '%'))) " +
             "AND (:#{#request.updatedBy} IS NULL OR LOWER(p.updatedBy) LIKE LOWER(CONCAT('%', :#{#request.updatedBy}, '%'))) " +
-            "AND (:#{#request.departmentIds} IS NULL OR p.departmentId IN :#{#request.departmentIds}) " +
-            "AND (:#{#request.positionLevelName} IS NULL OR LOWER(pl.name) LIKE LOWER(CONCAT('%', :#{#request.positionLevelName}, '%')))"
+            "AND (:#{#request.departmentIds} IS NULL OR p.departmentId IN :#{#request.departmentIds}) "
     )
     Page<PositionDto> filter(PositionFilterRequest request, Pageable pageable);
 }

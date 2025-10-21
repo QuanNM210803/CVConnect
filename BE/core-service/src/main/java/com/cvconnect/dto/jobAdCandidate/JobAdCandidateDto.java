@@ -3,9 +3,9 @@ package com.cvconnect.dto.jobAdCandidate;
 import com.cvconnect.dto.jobAd.JobAdDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import nmquan.commonlib.dto.BaseDto;
 
 import java.time.Instant;
@@ -13,7 +13,7 @@ import java.time.Instant;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JobAdCandidateDto extends BaseDto<Instant> {
     private Long jobAdId;

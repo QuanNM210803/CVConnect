@@ -92,4 +92,13 @@ public class LevelServiceImpl implements LevelService {
         levelRepository.deleteAll(levels);
     }
 
+    @Override
+    public List<LevelDto> getByIds(List<Long> ids) {
+        List<Level> levels = levelRepository.findAllById(ids);
+        if(levels.isEmpty()) {
+            return List.of();
+        }
+        return ObjectMapperUtils.convertToList(levels, LevelDto.class);
+    }
+
 }

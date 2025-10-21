@@ -1,6 +1,5 @@
 package com.cvconnect.dto.position;
 
-import com.cvconnect.dto.positionLevel.PositionLevelDto;
 import com.cvconnect.dto.positionProcess.PositionProcessDto;
 import com.cvconnect.dto.department.DepartmentDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -28,7 +27,6 @@ public class PositionDto extends BaseDto<Instant> {
     private String departmentCode;
 
     private List<PositionProcessDto> listProcess;
-    private List<PositionLevelDto> listLevel;
     private DepartmentDto department;
 
     public PositionDto(Long id, String code, String name, Boolean isActive, String createdBy, String updatedBy, Instant createdAt, Instant updatedAt,

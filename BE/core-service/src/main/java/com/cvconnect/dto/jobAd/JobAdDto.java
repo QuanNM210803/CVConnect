@@ -23,8 +23,6 @@ public class JobAdDto extends BaseDto<Instant> {
 
     private Long positionId;
 
-    private Long positionLevelId;
-
     private String jobType;
 
     private Instant dueDate;
@@ -58,4 +56,6 @@ public class JobAdDto extends BaseDto<Instant> {
     private Long emailTemplateId;
 
     private Boolean isRemote;
+
+    private Boolean isAllLevel;
 }
