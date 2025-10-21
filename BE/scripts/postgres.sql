@@ -655,3 +655,14 @@ CREATE TABLE IF NOT EXISTS job_ad_level (
 
 alter table job_ad
 add column is_all_level BOOLEAN DEFAULT FALSE;
+
+alter table industry_sub
+drop column industry_id;
+
+alter table job_ad_industry_sub
+rename column industry_sub_id to career_id;
+
+ALTER TABLE industry_sub RENAME TO careers;
+
+alter table job_ad_industry_sub rename to job_ad_career;
+

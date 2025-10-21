@@ -9,11 +9,11 @@ import nmquan.commonlib.model.BaseEntity;
 @Getter
 @Setter
 @Entity
-@Table(name = "job_ad_industry_sub")
-public class JobAdIndustrySub extends BaseEntity {
+@Table(name = "job_ad_career")
+public class JobAdCareer extends BaseEntity {
     @NotNull
-    @Column(name = "industry_sub_id", nullable = false)
-    private Long industrySubId;
+    @Column(name = "career_id", nullable = false)
+    private Long careerId;
 
     @NotNull
     @Column(name = "job_ad_id", nullable = false)

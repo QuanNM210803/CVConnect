@@ -1,8 +1,8 @@
 package com.cvconnect.controller;
 
-import com.cvconnect.dto.industrySub.IndustrySubDto;
-import com.cvconnect.dto.industrySub.IndustrySubFilterRequest;
-import com.cvconnect.service.IndustrySubService;
+import com.cvconnect.dto.career.CareerDto;
+import com.cvconnect.dto.career.CareerFilterRequest;
+import com.cvconnect.service.CareerService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import nmquan.commonlib.dto.response.FilterResponse;
@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/industry-sub")
-public class IndustrySubController {
+@RequestMapping("/career")
+public class CareerController {
     @Autowired
-    private IndustrySubService industrySubService;
+    private CareerService careerService;
 
     @GetMapping("/filter")
     @Operation(summary = "Filter Industry Sub")
-    public ResponseEntity<Response<FilterResponse<IndustrySubDto>>> filterIndustrySub(@Valid @ModelAttribute IndustrySubFilterRequest request) {
-        return ResponseUtils.success(industrySubService.filter(request));
+    public ResponseEntity<Response<FilterResponse<CareerDto>>> filterIndustrySub(@Valid @ModelAttribute CareerFilterRequest request) {
+        return ResponseUtils.success(careerService.filter(request));
     }
 }

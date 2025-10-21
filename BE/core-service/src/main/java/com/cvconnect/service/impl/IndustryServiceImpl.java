@@ -1,7 +1,5 @@
 package com.cvconnect.service.impl;
 
-import com.cvconnect.dto.industrySub.IndustrySubDto;
-import com.cvconnect.dto.industrySub.IndustrySubRequest;
 import com.cvconnect.dto.industry.IndustryDto;
 import com.cvconnect.dto.industry.IndustryFilterRequest;
 import com.cvconnect.dto.industry.IndustryRequest;
@@ -9,7 +7,6 @@ import com.cvconnect.entity.Industry;
 import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.IndustryRepository;
 import com.cvconnect.service.IndustryService;
-import com.cvconnect.service.IndustrySubService;
 import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
@@ -24,15 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Service
 public class IndustryServiceImpl implements IndustryService {
     @Autowired
     private IndustryRepository industryRepository;
-    @Autowired
-    private IndustrySubService industrySubService;
 
     @Override
     public List<IndustryDto> findByIds(List<Long> ids) {
@@ -53,24 +47,12 @@ public class IndustryServiceImpl implements IndustryService {
         Page<Industry> page = industryRepository.filter(request, request.getPageable());
         List<IndustryDto> data = ObjectMapperUtils.convertToList(page.getContent(), IndustryDto.class);
 
-        // get industrySub
-        List<Long> industryIds = data.stream()
-                .map(IndustryDto::getId)
-                .toList();
-        Map<Long, List<IndustrySubDto>> industrySubMap = industrySubService.getIndustryIds(industryIds);
-        data.forEach(industryDto -> {
-            industryDto.setIndustrySubs(industrySubMap.get(industryDto.getId()));
-        });
-
         return PageUtils.toFilterResponse(page, data);
     }
 
     @Override
     public FilterResponse<IndustryDto> filterPublic(IndustryFilterRequest request) {
         FilterResponse<IndustryDto> response = this.filter(request);
-        response.getData().forEach(industryDto -> {
-            industryDto.setIndustrySubs(null);
-        });
         return WebUtils.configResponsePublic(response);
     }
 
@@ -80,10 +62,7 @@ public class IndustryServiceImpl implements IndustryService {
         if (Objects.isNull(entity)) {
             return null;
         }
-        IndustryDto dto = ObjectMapperUtils.convertToObject(entity, IndustryDto.class);
-        List<IndustrySubDto> industrySubs = industrySubService.getIndustryIds(List.of(id)).get(id);
-        dto.setIndustrySubs(industrySubs);
-        return dto;
+        return ObjectMapperUtils.convertToObject(entity, IndustryDto.class);
     }
 
     @Override
@@ -109,7 +88,6 @@ public class IndustryServiceImpl implements IndustryService {
         entity.setDescription(request.getDescription());
         industryRepository.save(entity);
 
-        this.createIndustrySubs(request.getIndustrySubs(), entity.getId());
         return IDResponse.<Long>builder()
                 .id(entity.getId())
                 .build();
@@ -131,16 +109,8 @@ public class IndustryServiceImpl implements IndustryService {
         entity.setDescription(request.getDescription());
         industryRepository.save(entity);
 
-        // save industrySub
-        Long industryId = entity.getId();
-        List<IndustrySubRequest> industrySubInRequest = request.getIndustrySubs();
-        List<IndustrySubDto> industrySubInDB = industrySubService.getIndustryIds(List.of(industryId)).get(industryId);
-        List<Long> deleteIds = WebUtils.getDeleteIds(industrySubInRequest, industrySubInDB);
-        industrySubService.deleteByIds(deleteIds);
-        this.createIndustrySubs(industrySubInRequest, industryId);
-
         return IDResponse.<Long>builder()
-                .id(industryId)
+                .id(entity.getId())
                 .build();
     }
 
@@ -148,13 +118,5 @@ public class IndustryServiceImpl implements IndustryService {
     public List<IndustryDto> getIndustriesByOrgId(Long orgId) {
         List<Industry> entities = industryRepository.getIndustriesByOrgId(orgId);
         return ObjectMapperUtils.convertToList(entities, IndustryDto.class);
-    }
-
-    void createIndustrySubs(List<IndustrySubRequest> listSub, Long industryId) {
-        if (Objects.nonNull(listSub) && !listSub.isEmpty()) {
-            List<IndustrySubDto> industrySubDtos = ObjectMapperUtils.convertToList(listSub, IndustrySubDto.class);
-            industrySubDtos.forEach(subDto -> subDto.setIndustryId(industryId));
-            industrySubService.create(industrySubDtos);
-        }
     }
 }
