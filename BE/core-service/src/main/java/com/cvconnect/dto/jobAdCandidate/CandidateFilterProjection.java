@@ -4,6 +4,7 @@ import java.time.Instant;
 
 public interface CandidateFilterProjection {
     Long getCandidateInfoId();
+    Long getJobAdId();
     String getJobAdTitle();
     String getCandidateStatus();
     Long getProcessTypeId();

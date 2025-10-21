@@ -37,10 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -188,6 +185,9 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         }
 
         // todo: nho viet them cau lenh check nguoi tham gia la HR va interviewer
+        if(Objects.equals(request.getSortBy(), CommonConstants.DEFAULT_SORT_BY)){
+            request.setSortBy("applyDate");
+        }
         Page<CandidateInfoApplyProjection> page = jobAdCandidateRepository.filter(request, orgId, participantId, request.getPageable());
         List<CandidateFilterResponse> data = page.getContent().stream()
                 .map(projection -> CandidateFilterResponse.builder()
@@ -227,8 +227,10 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                         .candidateStatus(projection.getCandidateStatus())
                         .applyDate(projection.getApplyDate())
                         .jobAd(JobAdDto.builder()
+                                .id(projection.getJobAdId())
                                 .title(projection.getJobAdTitle())
-                                .hrContactName(hrContacts.get(projection.getHrContactId()).getUsername())
+                                .hrContactName(hrContacts.get(projection.getHrContactId()) != null ?
+                                        hrContacts.get(projection.getHrContactId()).getUsername() : null)
                                 .build())
                         .currentRound(ProcessTypeDto.builder()
                                 .id(projection.getProcessTypeId())
@@ -236,6 +238,9 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                 .name(projection.getProcessTypeName())
                                 .build())
                         .build();
+                if(response.getJobAdCandidates() == null){
+                    response.setJobAdCandidates(new ArrayList<>());
+                }
                 response.getJobAdCandidates().add(jobAdCandidateDto);
             }
         }

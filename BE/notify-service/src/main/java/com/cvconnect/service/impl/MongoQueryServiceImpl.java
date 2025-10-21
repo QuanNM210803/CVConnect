@@ -44,9 +44,9 @@ public class MongoQueryServiceImpl implements MongoQueryService {
         } else if (request.getCreatedAtEnd() != null) {
             query.addCriteria(Criteria.where("createdAt").lte(request.getCreatedAtEnd()));
         }
+        long total = mongoTemplate.count(query, Notification.class);
 
         query.with(pageable);
-        long total = mongoTemplate.count(query, Notification.class);
         List<Notification> list = mongoTemplate.find(query, Notification.class);
 
         return new PageImpl<>(list, pageable, total);

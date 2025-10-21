@@ -105,6 +105,6 @@ public class Messages {
     * */
     public static final String JOB_AD_CREATED_TITLE = "<strong>%s</strong> đã tạo một tin tuyển dụng";
     public static final String JOB_AD_CREATED_MESSAGE = "Bạn đã được chỉ định làm người liên hệ cho tin tuyển dụng <strong>%s</strong>";
-    public static final String CANDIDATE_APPLY_JOB_AD_TITLE = "Ứng viên mới ứng tuyển";
+    public static final String CANDIDATE_APPLY_JOB_AD_TITLE = "<strong>Ứng viên mới ứng tuyển</strong>";
     public static final String CANDIDATE_APPLY_JOB_AD_MESSAGE = "<strong>%s</strong> đã ứng tuyển vào tin tuyển dụng <strong>%s</strong>";
 }

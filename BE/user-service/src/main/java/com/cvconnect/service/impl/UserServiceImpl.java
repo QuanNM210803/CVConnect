@@ -282,7 +282,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map<Long, UserDto> getByIds(List<Long> userIds) {
         List<User> users = userRepository.findAllById(userIds);
-        if(!ObjectUtils.isEmpty(users)){
+        if(ObjectUtils.isEmpty(users)){
             return Map.of();
         }
         List<UserDto> userDtos = ObjectMapperUtils.convertToList(users, UserDto.class);
