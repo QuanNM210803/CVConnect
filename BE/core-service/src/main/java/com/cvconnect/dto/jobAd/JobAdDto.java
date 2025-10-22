@@ -61,4 +61,8 @@ public class JobAdDto extends BaseDto<Instant> {
 
     // attribute expansion
     private String hrContactName;
+
+    private String positionName;
+    private Long departmentId;
+    private String departmentName;
 }

@@ -18,4 +18,7 @@ public class LevelDto extends BaseDto<Instant> {
     private String code;
     private String name;
     private Boolean isDefault;
+
+    // attribute expansion
+    private String levelName;
 }

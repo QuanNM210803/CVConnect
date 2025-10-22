@@ -1,6 +1,7 @@
 package com.cvconnect.dto.candidateInfoApply;
 
 import com.cvconnect.dto.attachFile.AttachFileDto;
+import com.cvconnect.dto.candidateSummaryOrg.CandidateSummaryOrgDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,4 +31,6 @@ public class CandidateInfoApplyDto extends BaseDto<Instant> {
 
     // attribute expansion
     private AttachFileDto attachFile;
+
+    private CandidateSummaryOrgDto candidateSummaryOrg;
 }

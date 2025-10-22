@@ -1,5 +1,6 @@
 package com.cvconnect.service;
 
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoDetail;
 import com.cvconnect.dto.jobAdCandidate.ApplyRequest;
 import com.cvconnect.dto.jobAdCandidate.CandidateFilterRequest;
 import com.cvconnect.dto.jobAdCandidate.CandidateFilterResponse;
@@ -10,5 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface JobAdCandidateService {
     IDResponse<Long> apply(ApplyRequest request, MultipartFile cvFile);
     FilterResponse<CandidateFilterResponse> filter(CandidateFilterRequest request);
+    CandidateInfoDetail candidateDetail(Long candidateInfoId);
+    boolean checkCandidateInfoInOrg(Long candidateInfoId, Long orgId, Long hrContactId);
 
 }

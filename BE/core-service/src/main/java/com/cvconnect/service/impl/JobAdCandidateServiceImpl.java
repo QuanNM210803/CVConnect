@@ -3,7 +3,10 @@ package com.cvconnect.service.impl;
 import com.cvconnect.common.ReplacePlaceholder;
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
+import com.cvconnect.dto.attachFile.AttachFileDto;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyProjection;
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoDetail;
+import com.cvconnect.dto.candidateSummaryOrg.CandidateSummaryOrgDto;
 import com.cvconnect.dto.common.DataReplacePlaceholder;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.common.NotificationDto;
@@ -12,6 +15,7 @@ import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.dto.jobAd.JobAdProcessDto;
 import com.cvconnect.dto.jobAdCandidate.*;
+import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.cvconnect.entity.JobAdCandidate;
 import com.cvconnect.enums.*;
@@ -197,6 +201,12 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                         .fullName(projection.getFullName())
                                         .email(projection.getEmail())
                                         .phone(projection.getPhone())
+                                        .candidateSummaryOrg(CandidateSummaryOrgDto.builder()
+                                                .level(LevelDto.builder()
+                                                        .id(projection.getLevelId())
+                                                        .levelName(projection.getLevelName())
+                                                        .build())
+                                                .build())
                                         .build()
                         )
                         .numOfApply(projection.getNumOfApply())
@@ -247,6 +257,96 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
 
         List<CandidateFilterResponse> result = new ArrayList<>(candidateInfoMap.values());
         return PageUtils.toFilterResponse(page, result);
+    }
+
+    @Override
+    public CandidateInfoDetail candidateDetail(Long candidateInfoId) {
+        Long orgId = restTemplateClient.validOrgMember();
+        Long participantId = null;
+        List<String> role = WebUtils.getCurrentRole();
+        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
+            participantId = WebUtils.getCurrentUserId();
+        }
+        CandidateInfoApplyProjection projection = jobAdCandidateRepository.getCandidateInfoDetailProjection(candidateInfoId, orgId, participantId);
+        if(ObjectUtils.isEmpty(projection)){
+            throw new AppException(CoreErrorCode.CANDIDATE_INFO_APPLY_NOT_FOUND);
+        }
+        CandidateInfoApplyDto candidateInfoApply = CandidateInfoApplyDto.builder()
+                                    .id(projection.getId())
+                                    .fullName(projection.getFullName())
+                                    .email(projection.getEmail())
+                                    .phone(projection.getPhone())
+                                    .attachFile(AttachFileDto.builder()
+                                            .id(projection.getCvFileId())
+                                            .secureUrl(projection.getCvFileUrl())
+                                            .build()
+                                    )
+                                    .coverLetter(projection.getCoverLetter())
+                                    .candidateSummaryOrg(CandidateSummaryOrgDto.builder()
+                                            .level(LevelDto.builder()
+                                                    .id(projection.getLevelId())
+                                                    .levelName(projection.getLevelName())
+                                                    .build())
+                                            .skill(projection.getSkill())
+                                            .build())
+                                    .build();
+
+        List<JobAdCandidateProjection> jobAdCandidates = jobAdCandidateRepository.getJobAdCandidatesByCandidateInfoId(candidateInfoId, orgId, participantId);
+
+        // get Hr contacts
+        List<Long> hrIds = jobAdCandidates.stream()
+                .map(JobAdCandidateProjection::getHrContactId)
+                .distinct()
+                .toList();
+        Map<Long, UserDto> hrContacts = restTemplateClient.getUsersByIds(hrIds);
+
+        Map<Long, List<JobAdCandidateProjection>> groupedByCandidate = jobAdCandidates.stream()
+                .collect(Collectors.groupingBy(JobAdCandidateProjection::getJobAdCandidateId, LinkedHashMap::new, Collectors.toList()));
+
+        List<JobAdCandidateDto> jobAdCandidateDtos = groupedByCandidate.values().stream()
+                .map(projections -> {
+                    JobAdCandidateProjection first = projections.get(0);
+
+                    JobAdCandidateDto dto = JobAdCandidateDto.builder()
+                            .id(first.getJobAdCandidateId())
+                            .candidateStatus(first.getCandidateStatus())
+                            .applyDate(first.getApplyDate())
+                            .jobAd(JobAdDto.builder()
+                                    .id(first.getJobAdId())
+                                    .title(first.getJobAdTitle())
+                                    .hrContactId(first.getHrContactId())
+                                    .hrContactName(hrContacts.get(first.getHrContactId()) != null ?
+                                            hrContacts.get(first.getHrContactId()).getUsername() : null)
+                                    .positionId(first.getPositionId())
+                                    .positionName(first.getPositionName())
+                                    .departmentId(first.getDepartmentId())
+                                    .departmentName(first.getDepartmentName())
+                                    .build())
+                            .build();
+
+                    List<JobAdProcessCandidateDto> jobAdProcessCandidateDtos = projections.stream()
+                            .map(p -> JobAdProcessCandidateDto.builder()
+                                    .id(p.getJobAdProcessCandidateId())
+                                    .processName(p.getProcessName())
+                                    .isCurrentProcess(p.getIsCurrentProcess())
+                                    .actionDate(p.getActionDate())
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    dto.setJobAdProcessCandidates(jobAdProcessCandidateDtos);
+                    return dto;
+                })
+                .toList();
+
+        return CandidateInfoDetail.builder()
+                .candidateInfo(candidateInfoApply)
+                .jobAdCandidates(jobAdCandidateDtos)
+                .build();
+    }
+
+    @Override
+    public boolean checkCandidateInfoInOrg(Long candidateInfoId, Long orgId, Long hrContactId) {
+        return jobAdCandidateRepository.existsByCandidateInfoIdAndOrgIdAndHrContactId(candidateInfoId, orgId, hrContactId);
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {

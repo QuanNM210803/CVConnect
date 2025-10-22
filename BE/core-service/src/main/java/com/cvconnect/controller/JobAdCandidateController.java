@@ -1,6 +1,7 @@
 package com.cvconnect.controller;
 
 import com.cvconnect.constant.Messages;
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoDetail;
 import com.cvconnect.dto.jobAdCandidate.ApplyRequest;
 import com.cvconnect.dto.jobAdCandidate.CandidateFilterRequest;
 import com.cvconnect.dto.jobAdCandidate.CandidateFilterResponse;
@@ -39,5 +40,12 @@ public class JobAdCandidateController {
     @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:VIEW')")
     public ResponseEntity<Response<FilterResponse<CandidateFilterResponse>>> filter(@Valid @ModelAttribute CandidateFilterRequest request) {
         return ResponseUtils.success(jobAdCandidateService.filter(request));
+    }
+
+    @GetMapping("/candidate-detail/{candidateInfoId}")
+    @Operation(summary = "Get candidate detail by candidateInfoId")
+    @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:VIEW')")
+    public ResponseEntity<Response<CandidateInfoDetail>> getCandidateDetail(@PathVariable Long candidateInfoId) {
+        return ResponseUtils.success(jobAdCandidateService.candidateDetail(candidateInfoId));
     }
 }

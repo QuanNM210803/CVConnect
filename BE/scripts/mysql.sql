@@ -344,12 +344,12 @@
 # alter table `cvconnect-user-service`.org_members
 # add column `inviter` varchar(255) after org_id;
 
-insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, for_member_type, is_show, created_by) values
-(27, 'CAREER', 'Ngành nghề', 'mdi:circle-medium', '/system-admin/careers', 11, 3, 'MANAGEMENT', 1, 'admin');
-
-update `cvconnect-user-service`.menus
-set sort_order = 4
-where code = 'CAREER';
+# insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, for_member_type, is_show, created_by) values
+# (27, 'CAREER', 'Ngành nghề', 'mdi:circle-medium', '/system-admin/careers', 11, 3, 'MANAGEMENT', 1, 'admin');
+#
+# update `cvconnect-user-service`.menus
+# set sort_order = 4
+# where code = 'CAREER';
 
 #----------------------------------------------------------------------------------------------------------------------#
 

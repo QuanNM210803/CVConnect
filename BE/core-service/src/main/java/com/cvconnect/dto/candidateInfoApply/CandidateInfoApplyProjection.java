@@ -11,4 +11,9 @@ public interface CandidateInfoApplyProjection extends BaseRepositoryDto {
     String getCoverLetter();
     Long getNumOfApply();
 
+    String getCvFileUrl();
+    String getSkill();
+    Long getLevelId();
+    String getLevelName();
+
 }

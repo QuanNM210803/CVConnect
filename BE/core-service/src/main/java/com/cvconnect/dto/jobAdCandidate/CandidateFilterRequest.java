@@ -19,6 +19,7 @@ public class CandidateFilterRequest extends FilterRequest {
     private String fullName;
     private String email;
     private String phone;
+    private List<Long> levelIds;
     private Long numOfApplyStart;
     private Long numOfApplyEnd;
     private String jobAdTitle;

@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import nmquan.commonlib.dto.BaseDto;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -34,4 +35,5 @@ public class JobAdCandidateDto extends BaseDto<Instant> {
     // attribute expansion
     private JobAdDto jobAd;
     private ProcessTypeDto currentRound;
+    private List<JobAdProcessCandidateDto> jobAdProcessCandidates;
 }

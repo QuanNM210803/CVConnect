@@ -24,4 +24,7 @@ public class JobAdProcessCandidateDto extends BaseDto<Instant> {
     private Boolean isCurrentProcess;
 
     private String note;
+
+    // attribute expansion
+    private String processName;
 }
