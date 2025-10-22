@@ -20,14 +20,14 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmailLogDto extends BaseDto<Instant> {
     private Long id;
-    private String messageId;
-    private String replyMessageId;
     private String emailGroup;
     private String sender;
     private String recipients;
     private String ccList;
     private String subject;
     private String body;
+    private Long candidateInfoId;
+    private Long orgId;
     private Long emailTemplateId;
     private EmailTemplateEnum template;
     private String templateVariables;

@@ -1,12 +1,15 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.EmailLogDto;
 import com.cvconnect.entity.EmailLog;
 import com.cvconnect.enums.SendEmailStatus;
 import com.cvconnect.repository.EmailLogRepository;
 import com.cvconnect.service.EmailLogService;
+import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
@@ -14,18 +17,22 @@ import java.util.List;
 public class EmailLogServiceImpl implements EmailLogService {
     @Autowired
     private EmailLogRepository emailLogRepository;
+    @Autowired
+    private RestTemplateClient restTemplateClient;
 
     @Override
     public Long save(EmailLogDto emailLogDto) {
         EmailLog emailLog = new EmailLog();
         emailLog.setId(emailLogDto.getId());
-        emailLog.setMessageId(emailLogDto.getMessageId());
         emailLog.setSender(emailLogDto.getSender());
         emailLog.setEmailGroup(emailLogDto.getEmailGroup());
         emailLog.setRecipients(emailLogDto.getRecipients());
         emailLog.setCcList(emailLogDto.getCcList());
         emailLog.setSubject(emailLogDto.getSubject());
         emailLog.setBody(emailLogDto.getBody());
+        emailLog.setCandidateInfoId(emailLogDto.getCandidateInfoId());
+        emailLog.setOrgId(emailLogDto.getOrgId());
+        emailLog.setEmailTemplateId(emailLogDto.getEmailTemplateId());
         emailLog.setTemplate(emailLogDto.getTemplate());
         emailLog.setTemplateVariables(emailLogDto.getTemplateVariables());
         emailLog.setErrorMessage(emailLogDto.getErrorMessage());
@@ -56,11 +63,19 @@ public class EmailLogServiceImpl implements EmailLogService {
                 .map(this::buildEmailLogDto).toList();
     }
 
+    @Override
+    public List<EmailLogDto> getByCandidateInfoId(Long candidateInfoId) {
+        Long orgId = restTemplateClient.validOrgMember();
+        List<EmailLog> emailLogs = emailLogRepository.findByCandidateInfoIdAndOrgId(candidateInfoId, orgId);
+        if(ObjectUtils.isEmpty(emailLogs)){
+            return List.of();
+        }
+        return ObjectMapperUtils.convertToList(emailLogs, EmailLogDto.class);
+    }
+
     private EmailLogDto buildEmailLogDto(EmailLog emailLog) {
         EmailLogDto emailLogDto = new EmailLogDto();
         emailLogDto.setId(emailLog.getId());
-        emailLogDto.setMessageId(emailLog.getMessageId());
-        emailLogDto.setReplyMessageId(emailLogDto.getReplyMessageId());
         emailLogDto.setEmailGroup(emailLog.getEmailGroup());
         emailLogDto.setSender(emailLog.getSender());
         emailLogDto.setRecipients(emailLog.getRecipients());

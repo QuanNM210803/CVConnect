@@ -22,7 +22,6 @@ public class Messages {
     public static final String LAST_PROCESS_MUST_BE_ONBOARD = "last.process.must.be.onboard";
     public static final String POSITION_NOT_FOUND = "position.not.found";
     public static final String INDUSTRY_CODE_ALREADY_EXISTS = "industry.code.already.exists";
-    public static final String CAREER_CODE_DUPLICATED = "career.code.duplicated";
     public static final String CAREER_CODE_EXISTS = "career.code.exists";
     public static final String DUE_DATE_MUST_BE_IN_FUTURE = "due.date.must.be.in.future";
     public static final String ORG_POSITION_LEVEL_NOT_FOUND = "org.position.level.not.found";
@@ -48,6 +47,7 @@ public class Messages {
     public static final String IMAGE_FILE_INVALID = "image.file.invalid";
     public static final String DOCUMENT_FILE_INVALID = "document.file.invalid";
     public static final String LEVEL_REQUIRED = "level.required";
+    public static final String CAREER_NOT_FOUND = "career.not.found";
 
 
     /*

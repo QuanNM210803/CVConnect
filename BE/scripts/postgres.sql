@@ -666,72 +666,72 @@
 --
 -- alter table job_ad_industry_sub rename to job_ad_career;
 
-CREATE TABLE IF NOT EXISTS candidate_summary_hr (
-    id BIGSERIAL PRIMARY KEY,
-
-    level VARCHAR(100),
-    skill TEXT,
-    org_id BIGINT NOT NULL,
-    candidate_info_id BIGINT NOT NULL ,
-    hr_contact_id BIGINT NOT NULL,
-
-    is_active BOOLEAN DEFAULT TRUE,
-    is_deleted BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE,
-    created_by VARCHAR(100),
-    updated_by VARCHAR(100),
-
-    FOREIGN KEY (org_id) REFERENCES organization (id) ON DELETE CASCADE,
-    FOREIGN KEY (candidate_info_id) REFERENCES candidate_info_apply (id) ON DELETE CASCADE
-);
-
-drop table candidate_summary_hr;
-
-CREATE TABLE IF NOT EXISTS candidate_summary_org (
-    id BIGSERIAL PRIMARY KEY,
-
-    skill TEXT,
-    level_id BIGINT NOT NULL ,
-    org_id BIGINT NOT NULL,
-    candidate_info_id BIGINT NOT NULL ,
-
-    is_active BOOLEAN DEFAULT TRUE,
-    is_deleted BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE,
-    created_by VARCHAR(100),
-    updated_by VARCHAR(100),
-
-    FOREIGN KEY (org_id) REFERENCES organization (id) ON DELETE CASCADE,
-    FOREIGN KEY (candidate_info_id) REFERENCES candidate_info_apply (id) ON DELETE CASCADE,
-    FOREIGN KEY (level_id) REFERENCES level (id) ON DELETE CASCADE
-);
-
-update level
-set code = 'FRESHER', name = 'Fresher'
-where code = 'STAFF';
-
-update level
-set code = 'JUNIOR', name = 'Junior'
-where code = 'LEADER';
-
-update level
-set code = 'JUNIOR_PLUS', name = 'Junior+'
-where code = 'DEPARTMENT_HEAD';
-
-update level
-set code = 'MIDDLE', name = 'Middle'
-where code = 'MANAGER';
-
-update level
-set code = 'MIDDLE_PLUS', name = 'Middle+'
-where code = 'BRANCH_HEAD';
-
-update level
-set code = 'SENIOR', name = 'Senior'
-where code = 'VICE_DIRECTOR';
-
-update level
-set code = 'LEADER', name = 'Leader'
-where code = 'DIRECTOR';
+-- CREATE TABLE IF NOT EXISTS candidate_summary_hr (
+--     id BIGSERIAL PRIMARY KEY,
+--
+--     level VARCHAR(100),
+--     skill TEXT,
+--     org_id BIGINT NOT NULL,
+--     candidate_info_id BIGINT NOT NULL ,
+--     hr_contact_id BIGINT NOT NULL,
+--
+--     is_active BOOLEAN DEFAULT TRUE,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITHOUT TIME ZONE,
+--     created_by VARCHAR(100),
+--     updated_by VARCHAR(100),
+--
+--     FOREIGN KEY (org_id) REFERENCES organization (id) ON DELETE CASCADE,
+--     FOREIGN KEY (candidate_info_id) REFERENCES candidate_info_apply (id) ON DELETE CASCADE
+-- );
+--
+-- drop table candidate_summary_hr;
+--
+-- CREATE TABLE IF NOT EXISTS candidate_summary_org (
+--     id BIGSERIAL PRIMARY KEY,
+--
+--     skill TEXT,
+--     level_id BIGINT NOT NULL ,
+--     org_id BIGINT NOT NULL,
+--     candidate_info_id BIGINT NOT NULL ,
+--
+--     is_active BOOLEAN DEFAULT TRUE,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITHOUT TIME ZONE,
+--     created_by VARCHAR(100),
+--     updated_by VARCHAR(100),
+--
+--     FOREIGN KEY (org_id) REFERENCES organization (id) ON DELETE CASCADE,
+--     FOREIGN KEY (candidate_info_id) REFERENCES candidate_info_apply (id) ON DELETE CASCADE,
+--     FOREIGN KEY (level_id) REFERENCES level (id) ON DELETE CASCADE
+-- );
+--
+-- update level
+-- set code = 'FRESHER', name = 'Fresher'
+-- where code = 'STAFF';
+--
+-- update level
+-- set code = 'JUNIOR', name = 'Junior'
+-- where code = 'LEADER';
+--
+-- update level
+-- set code = 'JUNIOR_PLUS', name = 'Junior+'
+-- where code = 'DEPARTMENT_HEAD';
+--
+-- update level
+-- set code = 'MIDDLE', name = 'Middle'
+-- where code = 'MANAGER';
+--
+-- update level
+-- set code = 'MIDDLE_PLUS', name = 'Middle+'
+-- where code = 'BRANCH_HEAD';
+--
+-- update level
+-- set code = 'SENIOR', name = 'Senior'
+-- where code = 'VICE_DIRECTOR';
+--
+-- update level
+-- set code = 'LEADER', name = 'Leader'
+-- where code = 'DIRECTOR';

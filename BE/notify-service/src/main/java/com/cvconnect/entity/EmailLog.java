@@ -15,14 +15,6 @@ import java.time.Instant;
 @Entity
 @Table(name = "email_logs", schema = "cvconnect-notify-service")
 public class EmailLog extends BaseEntity {
-    @Size(max = 255)
-    @Column(name = "message_id")
-    private String messageId;
-
-    @Size(max = 255)
-    @Column(name = "reply_message_id")
-    private String replyMessageId;
-
     @Size(max = 100)
     @Column(name = "email_group")
     private String emailGroup;
@@ -43,6 +35,12 @@ public class EmailLog extends BaseEntity {
 
     @Column(name = "body")
     private String body;
+
+    @Column(name = "candidate_info_id")
+    private Long candidateInfoId;
+
+    @Column(name = "org_id")
+    private Long orgId;
 
     @Column(name = "email_template_id")
     private Long emailTemplateId;

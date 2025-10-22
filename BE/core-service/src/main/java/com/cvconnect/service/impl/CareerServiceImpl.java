@@ -2,12 +2,14 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.dto.career.CareerDto;
 import com.cvconnect.dto.career.CareerFilterRequest;
+import com.cvconnect.dto.career.CareerRequest;
 import com.cvconnect.entity.Careers;
 import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.CareerRepository;
 import com.cvconnect.service.CareerService;
 import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
+import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
@@ -18,44 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class CareerServiceImpl implements CareerService {
     @Autowired
     private CareerRepository careerRepository;
-
-    @Override
-    @Transactional
-    public void create(List<CareerDto> careerDtos) {
-        Map<String, Long> freq = careerDtos.stream()
-                .collect(Collectors.groupingBy(CareerDto::getCode, Collectors.counting()));
-        List<String> duplicatedCodes = freq.entrySet().stream()
-                .filter(e -> e.getValue() > 1)
-                .map(Map.Entry::getKey)
-                .toList();
-        if (!duplicatedCodes.isEmpty()) {
-            throw new AppException(CoreErrorCode.CAREER_CODE_DUPLICATED, String.join(", ", duplicatedCodes));
-        }
-
-        Map<String, Long> inputCodeToId = new LinkedHashMap<>();
-        careerDtos.forEach(dto -> inputCodeToId.putIfAbsent(dto.getCode(), dto.getId()));
-        Set<String> inputCodes = inputCodeToId.keySet();
-        List<Careers> existingEntities = careerRepository.findAllByCodeIn(inputCodes);
-        List<String> conflictCodes = existingEntities.stream()
-                .filter(entity -> {
-                    Long inputId = inputCodeToId.get(entity.getCode());
-                    return Objects.isNull(inputId) || !entity.getId().equals(inputId);
-                })
-                .map(Careers::getCode)
-                .toList();
-        if (!conflictCodes.isEmpty()) {
-            throw new AppException(CoreErrorCode.CAREER_CODE_EXISTS, String.join(", ", conflictCodes));
-        }
-
-        List<Careers> entities = ObjectMapperUtils.convertToList(careerDtos, Careers.class);
-        careerRepository.saveAll(entities);
-    }
 
     @Override
     public void deleteByIds(List<Long> ids) {
@@ -75,6 +44,52 @@ public class CareerServiceImpl implements CareerService {
         Page<Careers> page = careerRepository.filter(request, request.getPageable());
         List<CareerDto> dtos = ObjectMapperUtils.convertToList(page.getContent(), CareerDto.class);
         return PageUtils.toFilterResponse(page, dtos);
+    }
+
+    @Override
+    public CareerDto getCareerDetail(Long careerId) {
+        Careers career = careerRepository.findById(careerId).orElseThrow(
+                () -> new AppException(CoreErrorCode.CAREER_NOT_FOUND)
+        );
+        return ObjectMapperUtils.convertToObject(career, CareerDto.class);
+    }
+
+    @Override
+    @Transactional
+    public IDResponse<Long> create(CareerRequest request) {
+        List<Careers> careers = careerRepository.findAllByCodeIn(Collections.singletonList(request.getCode()));
+        if (!careers.isEmpty()) {
+            throw new AppException(CoreErrorCode.CAREER_CODE_EXISTS, request.getCode());
+        }
+        Careers entity = new Careers();
+        entity.setCode(request.getCode());
+        entity.setName(request.getName());
+        careerRepository.save(entity);
+        return IDResponse.<Long>builder()
+                .id(entity.getId())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public IDResponse<Long> update(CareerRequest request) {
+        Careers existingCareer = careerRepository.findById(request.getId()).orElseThrow(
+                () -> new AppException(CoreErrorCode.CAREER_NOT_FOUND)
+        );
+        List<Careers> careers = careerRepository.findAllByCodeIn(Collections.singletonList(request.getCode()));
+        if (!careers.isEmpty()) {
+            for (Careers career : careers) {
+                if (!career.getId().equals(request.getId())) {
+                    throw new AppException(CoreErrorCode.CAREER_CODE_EXISTS, request.getCode());
+                }
+            }
+        }
+        existingCareer.setCode(request.getCode());
+        existingCareer.setName(request.getName());
+        careerRepository.save(existingCareer);
+        return IDResponse.<Long>builder()
+                .id(existingCareer.getId())
+                .build();
     }
 
 }

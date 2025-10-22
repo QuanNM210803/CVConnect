@@ -14,4 +14,7 @@ public interface EmailLogRepository extends JpaRepository<EmailLog, Long> {
     @Query("SELECT e FROM EmailLog e WHERE e.status = :status AND e.createdAt <= CURRENT_TIMESTAMP - 1 MINUTE " +
             "ORDER BY e.createdAt ASC LIMIT :limit")
     List<EmailLog> findByStatus(SendEmailStatus status, Long limit);
+
+    @Query("SELECT e FROM EmailLog e WHERE e.candidateInfoId = :candidateInfoId AND e.orgId = :orgId ORDER BY e.createdAt DESC")
+    List<EmailLog> findByCandidateInfoIdAndOrgId(Long candidateInfoId, Long orgId);
 }

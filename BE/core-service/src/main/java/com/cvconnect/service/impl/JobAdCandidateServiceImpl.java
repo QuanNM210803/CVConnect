@@ -156,7 +156,9 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                     .recipients(List.of(emailCandidate))
                     .subject(subject)
                     .body(body)
+                    .candidateInfoId(candidateInfoApplyId)
                     .orgId(jobAdDto.getOrgId())
+                    .emailTemplateId(jobAdDto.getEmailTemplateId())
                     .build();
             sendEmailService.sendEmailWithBody(sendEmailDto);
         }
