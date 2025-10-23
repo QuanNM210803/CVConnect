@@ -134,7 +134,7 @@ public class JobAdServiceImpl implements JobAdService {
             jobAdLevelService.create(jobAdLevelDtos);
         }
 
-        // todo: send notification to HR contact
+        // send notification to HR contact
         NotifyTemplate template = NotifyTemplate.JOB_AD_CREATED;
         NotificationDto notificationDto = NotificationDto.builder()
                 .title(String.format(template.getTitle(), WebUtils.getCurrentFullName()))

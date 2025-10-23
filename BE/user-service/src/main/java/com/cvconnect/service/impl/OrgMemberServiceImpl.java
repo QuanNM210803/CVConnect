@@ -186,7 +186,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
                 .build();
         roleUserService.createRoleUser(roleUserDto);
 
-        // TODO: send notification to org-admin
+        // send notification to org-admin
         UserDto userDto = userService.findById(inviteJoinOrgDto.getUserId());
         RoleDto roleDto = roleService.getRoleById(inviteJoinOrgDto.getRoleId());
         List<UserDto> orgAdmin = userService.getUsersByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, inviteJoinOrgDto.getOrgId());

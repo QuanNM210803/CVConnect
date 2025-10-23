@@ -531,15 +531,15 @@
 #
 # alter table `cvconnect-notify-service`.email_templates
 # modify column body TEXT NOT NULL;
-
-alter table `cvconnect-notify-service`.email_logs
-drop column message_id;
-
-alter table `cvconnect-notify-service`.email_logs
-drop column reply_message_id;
-
-alter table `cvconnect-notify-service`.email_logs
-add column candidate_info_id BIGINT after body;
-
-alter table `cvconnect-notify-service`.email_logs
-add column org_id BIGINT after candidate_info_id;
+#
+# alter table `cvconnect-notify-service`.email_logs
+# drop column message_id;
+#
+# alter table `cvconnect-notify-service`.email_logs
+# drop column reply_message_id;
+#
+# alter table `cvconnect-notify-service`.email_logs
+# add column candidate_info_id BIGINT after body;
+#
+# alter table `cvconnect-notify-service`.email_logs
+# add column org_id BIGINT after candidate_info_id;

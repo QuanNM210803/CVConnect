@@ -48,6 +48,7 @@ public class Messages {
     public static final String DOCUMENT_FILE_INVALID = "document.file.invalid";
     public static final String LEVEL_REQUIRED = "level.required";
     public static final String CAREER_NOT_FOUND = "career.not.found";
+    public static final String INVALID_PROCESS_TYPE_CHANGE = "invalid.process.type.change";
 
 
     /*
@@ -99,6 +100,7 @@ public class Messages {
     * */
     public static final String UPLOAD_FILE_SUCCESS = "upload.file.success";
     public static final String APPLY_SUCCESS = "apply.success";
+    public static final String CHANGE_CANDIDATE_PROCESS_SUCCESS = "change.candidate.process.success";
 
     /*
     * Notification Messages

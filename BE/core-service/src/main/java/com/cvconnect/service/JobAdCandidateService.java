@@ -4,6 +4,7 @@ import com.cvconnect.dto.candidateInfoApply.CandidateInfoDetail;
 import com.cvconnect.dto.jobAdCandidate.ApplyRequest;
 import com.cvconnect.dto.jobAdCandidate.CandidateFilterRequest;
 import com.cvconnect.dto.jobAdCandidate.CandidateFilterResponse;
+import com.cvconnect.dto.jobAdCandidate.ChangeCandidateProcessRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,5 +14,6 @@ public interface JobAdCandidateService {
     FilterResponse<CandidateFilterResponse> filter(CandidateFilterRequest request);
     CandidateInfoDetail candidateDetail(Long candidateInfoId);
     boolean checkCandidateInfoInOrg(Long candidateInfoId, Long orgId, Long hrContactId);
+    void changeCandidateProcess(ChangeCandidateProcessRequest request);
 
 }

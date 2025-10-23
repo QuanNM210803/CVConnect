@@ -351,6 +351,36 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         return jobAdCandidateRepository.existsByCandidateInfoIdAndOrgIdAndHrContactId(candidateInfoId, orgId, hrContactId);
     }
 
+    @Override
+    public void changeCandidateProcess(ChangeCandidateProcessRequest request) {
+        Long orgId = restTemplateClient.validOrgMember();
+        Long hrContactId = WebUtils.getCurrentUserId();
+        List<String> role = WebUtils.getCurrentRole();
+        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
+            Boolean checkAuthorized = jobAdCandidateRepository.existsByJobAdProcessCandidateIdAndHrContactId(
+                    request.getToJobAdProcessCandidateId(), hrContactId);
+            if(!checkAuthorized) {
+                throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            }
+        }
+        JobAdProcessCandidateDto toProcessCandidate = jobAdProcessCandidateService.findById(request.getToJobAdProcessCandidateId());
+        if(ObjectUtils.isEmpty(toProcessCandidate)){
+            throw new AppException(CoreErrorCode.PROCESS_TYPE_NOT_FOUND);
+        }
+
+        Boolean checkProcessOrder = jobAdProcessCandidateService
+                .validateProcessOrderChange(toProcessCandidate.getId(), toProcessCandidate.getJobAdCandidateId());
+        if(!checkProcessOrder){
+            throw new AppException(CoreErrorCode.INVALID_PROCESS_TYPE_CHANGE);
+        }
+
+        toProcessCandidate.setIsCurrentProcess(true);
+        toProcessCandidate.setActionDate(ZonedDateTime.now(CommonConstants.ZONE.UTC).toInstant());
+
+        // todo: code tiep o day sau
+
+    }
+
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {
         Long candidateInfoApplyId = request.getCandidateInfoApplyId();
         if(ObjectUtils.isEmpty(candidateInfoApplyId)) {

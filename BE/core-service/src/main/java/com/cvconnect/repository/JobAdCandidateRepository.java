@@ -123,4 +123,13 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
             and (:hrContactId is null or ja.hrContactId = :hrContactId)
         """)
     boolean existsByCandidateInfoIdAndOrgIdAndHrContactId(Long candidateInfoId, Long orgId, Long hrContactId);
+
+    @Query("""
+        select case when count(*) > 0 then true else false end
+            from JobAdProcessCandidate as japc
+            join JobAdCandidate as jac on jac.id = japc.jobAdCandidateId
+            join JobAd as ja on ja.id = jac.jobAdId
+            where ja.hrContactId = :hrContactId and japc.id = :jobAdProcessCandidateId
+    """)
+    Boolean existsByJobAdProcessCandidateIdAndHrContactId(Long jobAdProcessCandidateId, Long hrContactId);
 }

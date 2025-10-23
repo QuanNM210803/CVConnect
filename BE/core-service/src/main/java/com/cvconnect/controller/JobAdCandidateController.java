@@ -5,6 +5,7 @@ import com.cvconnect.dto.candidateInfoApply.CandidateInfoDetail;
 import com.cvconnect.dto.jobAdCandidate.ApplyRequest;
 import com.cvconnect.dto.jobAdCandidate.CandidateFilterRequest;
 import com.cvconnect.dto.jobAdCandidate.CandidateFilterResponse;
+import com.cvconnect.dto.jobAdCandidate.ChangeCandidateProcessRequest;
 import com.cvconnect.service.JobAdCandidateService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -47,5 +48,13 @@ public class JobAdCandidateController {
     @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:VIEW')")
     public ResponseEntity<Response<CandidateInfoDetail>> getCandidateDetail(@PathVariable Long candidateInfoId) {
         return ResponseUtils.success(jobAdCandidateService.candidateDetail(candidateInfoId));
+    }
+
+    @PutMapping("/change-process")
+    @Operation(summary = "Change candidate process status")
+    @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:UPDATE')")
+    public ResponseEntity<Response<Void>> changeCandidateProcess(@Valid @RequestBody ChangeCandidateProcessRequest request) {
+        jobAdCandidateService.changeCandidateProcess(request);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(Messages.CHANGE_CANDIDATE_PROCESS_SUCCESS));
     }
 }
