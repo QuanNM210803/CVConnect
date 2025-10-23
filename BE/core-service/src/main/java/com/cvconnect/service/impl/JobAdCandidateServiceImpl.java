@@ -262,6 +262,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
     }
 
     @Override
+    @Transactional
     public CandidateInfoDetail candidateDetail(Long candidateInfoId) {
         Long orgId = restTemplateClient.validOrgMember();
         Long participantId = null;
@@ -340,6 +341,17 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 })
                 .toList();
 
+        // update candidate status to VIEWED_CV if current user is hr contact and status is APPLIED
+        Long currentUserId = WebUtils.getCurrentUserId();
+        if(hrIds.contains(currentUserId)){
+            for(JobAdCandidateDto jobAdCandidateDto : jobAdCandidateDtos){
+                if(jobAdCandidateDto.getJobAd().getHrContactId().equals(currentUserId) &&
+                        CandidateStatus.APPLIED.name().equals(jobAdCandidateDto.getCandidateStatus())){
+                    jobAdCandidateRepository.updateCandidateStatus(jobAdCandidateDto.getId(), CandidateStatus.VIEWED_CV.name());
+                }
+            }
+        }
+
         return CandidateInfoDetail.builder()
                 .candidateInfo(candidateInfoApply)
                 .jobAdCandidates(jobAdCandidateDtos)
@@ -352,33 +364,199 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
     }
 
     @Override
+    @Transactional
     public void changeCandidateProcess(ChangeCandidateProcessRequest request) {
+        Long toJobAdProcessCandidateId = request.getToJobAdProcessCandidateId();
+
+        // check authorization
         Long orgId = restTemplateClient.validOrgMember();
         Long hrContactId = WebUtils.getCurrentUserId();
         List<String> role = WebUtils.getCurrentRole();
         if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
-            Boolean checkAuthorized = jobAdCandidateRepository.existsByJobAdProcessCandidateIdAndHrContactId(
-                    request.getToJobAdProcessCandidateId(), hrContactId);
+            Boolean checkAuthorized = jobAdCandidateRepository.existsByJobAdProcessCandidateIdAndHrContactId(toJobAdProcessCandidateId, hrContactId);
             if(!checkAuthorized) {
                 throw new AppException(CommonErrorCode.UNAUTHENTICATED);
             }
         }
-        JobAdProcessCandidateDto toProcessCandidate = jobAdProcessCandidateService.findById(request.getToJobAdProcessCandidateId());
+
+        JobAdProcessCandidateDto toProcessCandidate = jobAdProcessCandidateService.findById(toJobAdProcessCandidateId);
         if(ObjectUtils.isEmpty(toProcessCandidate)){
             throw new AppException(CoreErrorCode.PROCESS_TYPE_NOT_FOUND);
         }
+        Long jobAdCandidateId = toProcessCandidate.getJobAdCandidateId();
+        JobAdCandidate jobAdCandidate = jobAdCandidateRepository.findById(jobAdCandidateId)
+                .orElseThrow(() -> new AppException(CommonErrorCode.ERROR));
+        if(CandidateStatus.REJECTED.name().equals(jobAdCandidate.getCandidateStatus())){
+            throw new AppException(CoreErrorCode.CANDIDATE_ALREADY_ELIMINATED);
+        }
 
-        Boolean checkProcessOrder = jobAdProcessCandidateService
-                .validateProcessOrderChange(toProcessCandidate.getId(), toProcessCandidate.getJobAdCandidateId());
+        // check valid process order change
+        Boolean checkProcessOrder = jobAdProcessCandidateService.validateProcessOrderChange(toJobAdProcessCandidateId, jobAdCandidateId);
         if(!checkProcessOrder){
             throw new AppException(CoreErrorCode.INVALID_PROCESS_TYPE_CHANGE);
         }
 
-        toProcessCandidate.setIsCurrentProcess(true);
-        toProcessCandidate.setActionDate(ZonedDateTime.now(CommonConstants.ZONE.UTC).toInstant());
+        // update job ad candidate status
+        JobAdProcessDto jobAdProcessDto = jobAdProcessService.getById(toProcessCandidate.getJobAdProcessId());
+        if(ObjectUtils.isEmpty(jobAdProcessDto)){
+            throw new AppException(CoreErrorCode.PROCESS_TYPE_NOT_FOUND);
+        }
+        ProcessTypeDto processTypeDto = jobAdProcessDto.getProcessType();
+        if (!ProcessTypeEnum.APPLY.name().equals(processTypeDto.getCode()) &&
+                !ProcessTypeEnum.ONBOARD.name().equals(processTypeDto.getCode())) {
+            jobAdCandidateRepository.updateCandidateStatus(jobAdCandidateId, CandidateStatus.IN_PROGRESS.name());
+        }
 
-        // todo: code tiep o day sau
+        // update process candidates
+        List<JobAdProcessCandidateDto> dtos = jobAdProcessCandidateService.findByJobAdCandidateId(jobAdCandidateId);
+        Instant now = ZonedDateTime.now(CommonConstants.ZONE.UTC).toInstant();
+        for (JobAdProcessCandidateDto dto : dtos) {
+            boolean isCurrent = dto.getId().equals(toJobAdProcessCandidateId);
+            dto.setIsCurrentProcess(isCurrent);
+            if (isCurrent) {
+                dto.setActionDate(now);
+                dto.setNote(request.getNote());
+            }
+        }
+        jobAdProcessCandidateService.create(dtos);
 
+        // send email to candidate
+        if(request.isSendEmail()){
+            String subject;
+            String template;
+            List<String> placeholders;
+
+            // get email template
+            Long emailTemplateId = request.getEmailTemplateId();
+            if(emailTemplateId != null){
+                EmailTemplateDto emailTemplateDto = restTemplateClient.getEmailTemplateById(emailTemplateId);
+                if(ObjectUtils.isEmpty(emailTemplateDto)){
+                    throw new AppException(CoreErrorCode.EMAIL_TEMPLATE_NOT_FOUND);
+                }
+                subject = emailTemplateDto.getSubject();
+                template = emailTemplateDto.getBody();
+                placeholders = emailTemplateDto.getPlaceholderCodes();
+            } else {
+                this.validateManualEmail(request.getSubject(), request.getTemplate());
+                subject = request.getSubject();
+                template = request.getTemplate();
+                placeholders = request.getPlaceholders();
+            }
+
+            // get data to replace placeholder
+            CandidateInfoApplyDto candidateInfo = candidateInfoApplyService.getById(jobAdCandidate.getCandidateInfoId());
+            UserDto hrContact = restTemplateClient.getUser(hrContactId);
+            JobAdDto jobAd = jobAdService.findById(jobAdCandidate.getJobAdId());
+            if(ObjectUtils.isEmpty(hrContact) || ObjectUtils.isEmpty(candidateInfo) || ObjectUtils.isEmpty(jobAd)){
+                throw new AppException(CommonErrorCode.ERROR);
+            }
+
+            // replace placeholders
+            DataReplacePlaceholder dataReplacePlaceholder = DataReplacePlaceholder.builder()
+                    .positionId(jobAd.getPositionId())
+                    .jobAdName(jobAd.getTitle())
+                    .jobAdProcessName(jobAdProcessDto.getName())
+                    .orgId(jobAd.getOrgId())
+                    .candidateName(candidateInfo.getFullName())
+                    .hrName(hrContact.getFullName())
+                    .hrEmail(hrContact.getEmail())
+                    .hrPhone(hrContact.getPhoneNumber())
+                    .build();
+            String body = replacePlaceholder.replacePlaceholder(template, placeholders, dataReplacePlaceholder);
+
+            // send email
+            SendEmailDto sendEmailDto = SendEmailDto.builder()
+                    .sender(hrContact.getEmail())
+                    .recipients(List.of(candidateInfo.getEmail()))
+                    .subject(subject)
+                    .body(body)
+                    .candidateInfoId(candidateInfo.getId())
+                    .orgId(jobAd.getOrgId())
+                    .emailTemplateId(emailTemplateId)
+                    .build();
+            sendEmailService.sendEmailWithBody(sendEmailDto);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void eliminateCandidate(EliminateCandidateRequest request) {
+        Long orgId = restTemplateClient.validOrgMember();
+        Long hrContactId = WebUtils.getCurrentUserId();
+        List<String> role = WebUtils.getCurrentRole();
+        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
+            Boolean checkAuthorized = jobAdCandidateRepository.existsByJobAdCandidateIdAndHrContactId(request.getJobAdCandidateId(), hrContactId);
+            if(!checkAuthorized) {
+                throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            }
+        }
+
+        JobAdCandidate jobAdCandidate = jobAdCandidateRepository.findById(request.getJobAdCandidateId()).orElseThrow(
+                () -> new AppException(CommonErrorCode.DATA_NOT_FOUND)
+        );
+        if(CandidateStatus.REJECTED.name().equals(jobAdCandidate.getCandidateStatus())){
+            throw new AppException(CoreErrorCode.CANDIDATE_ALREADY_ELIMINATED);
+        }
+        jobAdCandidate.setCandidateStatus(CandidateStatus.REJECTED.name());
+        jobAdCandidate.setEliminateReasonType(request.getReason().name());
+        jobAdCandidate.setEliminateReasonDetail(request.getReasonDetail());
+        jobAdCandidate.setEliminateDate(ZonedDateTime.now(CommonConstants.ZONE.UTC).toInstant());
+        jobAdCandidateRepository.save(jobAdCandidate);
+
+        if(request.isSendEmail()){
+            String subject;
+            String template;
+            List<String> placeholders;
+
+            // get email template
+            Long emailTemplateId = request.getEmailTemplateId();
+            if(emailTemplateId != null){
+                EmailTemplateDto emailTemplateDto = restTemplateClient.getEmailTemplateById(emailTemplateId);
+                if(ObjectUtils.isEmpty(emailTemplateDto)){
+                    throw new AppException(CoreErrorCode.EMAIL_TEMPLATE_NOT_FOUND);
+                }
+                subject = emailTemplateDto.getSubject();
+                template = emailTemplateDto.getBody();
+                placeholders = emailTemplateDto.getPlaceholderCodes();
+            } else {
+                this.validateManualEmail(request.getSubject(), request.getTemplate());
+                subject = request.getSubject();
+                template = request.getTemplate();
+                placeholders = request.getPlaceholders();
+            }
+
+            // get data to replace placeholder
+            CandidateInfoApplyDto candidateInfo = candidateInfoApplyService.getById(jobAdCandidate.getCandidateInfoId());
+            UserDto hrContact = restTemplateClient.getUser(hrContactId);
+            JobAdDto jobAd = jobAdService.findById(jobAdCandidate.getJobAdId());
+            if(ObjectUtils.isEmpty(hrContact) || ObjectUtils.isEmpty(candidateInfo) || ObjectUtils.isEmpty(jobAd)){
+                throw new AppException(CommonErrorCode.ERROR);
+            }
+
+            // replace placeholders
+            DataReplacePlaceholder dataReplacePlaceholder = DataReplacePlaceholder.builder()
+                    .positionId(jobAd.getPositionId())
+                    .jobAdName(jobAd.getTitle())
+                    .orgId(jobAd.getOrgId())
+                    .candidateName(candidateInfo.getFullName())
+                    .hrName(hrContact.getFullName())
+                    .hrEmail(hrContact.getEmail())
+                    .hrPhone(hrContact.getPhoneNumber())
+                    .build();
+            String body = replacePlaceholder.replacePlaceholder(template, placeholders, dataReplacePlaceholder);
+
+            // send email
+            SendEmailDto sendEmailDto = SendEmailDto.builder()
+                    .sender(hrContact.getEmail())
+                    .recipients(List.of(candidateInfo.getEmail()))
+                    .subject(subject)
+                    .body(body)
+                    .candidateInfoId(candidateInfo.getId())
+                    .orgId(jobAd.getOrgId())
+                    .emailTemplateId(emailTemplateId)
+                    .build();
+            sendEmailService.sendEmailWithBody(sendEmailDto);
+        }
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {
@@ -426,4 +604,14 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         }
         return jobAdDto;
     }
+
+    private void validateManualEmail(String subject, String template) {
+        if (ObjectUtils.isEmpty(subject)) {
+            throw new AppException(CoreErrorCode.EMAIL_SUBJECT_REQUIRED);
+        }
+        if (ObjectUtils.isEmpty(template)) {
+            throw new AppException(CoreErrorCode.EMAIL_TEMPLATE_REQUIRED);
+        }
+    }
+
 }

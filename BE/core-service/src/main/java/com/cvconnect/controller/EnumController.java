@@ -1,9 +1,6 @@
 package com.cvconnect.controller;
 
-import com.cvconnect.dto.enums.CurrencyTypeDto;
-import com.cvconnect.dto.enums.JobAdStatusDto;
-import com.cvconnect.dto.enums.JobTypeDto;
-import com.cvconnect.dto.enums.SalaryTypeDto;
+import com.cvconnect.dto.enums.*;
 import com.cvconnect.service.EnumService;
 import io.swagger.v3.oas.annotations.Operation;
 import nmquan.commonlib.dto.response.Response;
@@ -44,5 +41,11 @@ public class EnumController {
     @Operation(summary = "Get all salary types")
     public ResponseEntity<Response<List<SalaryTypeDto>>> getSalaryType() {
         return ResponseUtils.success(enumService.getSalaryType());
+    }
+
+    @GetMapping("/eliminate-reason")
+    @Operation(summary = "Get all eliminate reasons")
+    public ResponseEntity<Response<List<EliminateReasonEnumDto>>> getEliminateReason() {
+        return ResponseUtils.success(enumService.getEliminateReason());
     }
 }

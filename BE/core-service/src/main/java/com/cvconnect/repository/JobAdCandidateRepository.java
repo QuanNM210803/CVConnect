@@ -8,6 +8,7 @@ import com.cvconnect.entity.JobAdCandidate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -70,6 +71,7 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
         where (:#{#candidateInfoIds == null || #candidateInfoIds.isEmpty()} = true or jac.candidate_info_id in :candidateInfoIds)
         and (:participantId is null or ja.hr_contact_id = :participantId)
         and (:orgId is null or ja.org_id = :orgId)
+        order by applyDate desc
     """ , nativeQuery = true)
     List<CandidateFilterProjection> findAllByCandidateInfoIds(List<Long> candidateInfoIds, Long orgId, Long participantId);
 
@@ -126,10 +128,22 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
 
     @Query("""
         select case when count(*) > 0 then true else false end
+            from JobAdCandidate as jac
+            join JobAd as ja on ja.id = jac.jobAdId
+            where ja.hrContactId = :hrContactId and jac.id = :jobAdCandidateId
+    """)
+    Boolean existsByJobAdCandidateIdAndHrContactId(Long jobAdCandidateId, Long hrContactId);
+
+    @Query("""
+        select case when count(*) > 0 then true else false end
             from JobAdProcessCandidate as japc
             join JobAdCandidate as jac on jac.id = japc.jobAdCandidateId
             join JobAd as ja on ja.id = jac.jobAdId
             where ja.hrContactId = :hrContactId and japc.id = :jobAdProcessCandidateId
     """)
     Boolean existsByJobAdProcessCandidateIdAndHrContactId(Long jobAdProcessCandidateId, Long hrContactId);
+
+    @Modifying
+    @Query("UPDATE JobAdCandidate jac SET jac.candidateStatus = :candidateStatus WHERE jac.id = :jobAdCandidateId")
+    void updateCandidateStatus(Long jobAdCandidateId, String candidateStatus);
 }

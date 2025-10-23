@@ -32,6 +32,8 @@ public class JobAdCandidateDto extends BaseDto<Instant> {
 
     private Instant onboardDate;
 
+    private Instant eliminateDate;
+
     // attribute expansion
     private JobAdDto jobAd;
     private ProcessTypeDto currentRound;

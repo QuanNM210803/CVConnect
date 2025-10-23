@@ -11,11 +11,11 @@ import java.util.Objects;
 public enum CandidateStatus {
     APPLIED("Đã ứng tuyển"),
     VIEWED_CV("Đã xem hồ sơ"),
-    IN_PROGRESS("Đang trong quá trình tuyển dụng"),
+    IN_PROGRESS("Đang xử lý"),
     WAITING_ONBOARDING("Chờ onboard"),
     ONBOARDED("Đã onboard"),
     NOT_ONBOARDED("Không onboard"),
-    REJECTED("Hồ sơ bị từ chối");
+    REJECTED("Từ chối");
 
     private final String label;
 

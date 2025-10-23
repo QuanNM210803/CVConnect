@@ -51,6 +51,14 @@ public class JobAdProcessServiceImpl implements JobAdProcessService {
         if(ObjectUtils.isEmpty(entity)){
             return null;
         }
-        return ObjectMapperUtils.convertToObject(entity, JobAdProcessDto.class);
+        JobAdProcessDto jobAdProcessDto = ObjectMapperUtils.convertToObject(entity, JobAdProcessDto.class);
+        List<ProcessTypeDto> processTypeDtos = processTypeService.getAllProcessType();
+        for(ProcessTypeDto dto : processTypeDtos){
+            if(dto.getId().equals(jobAdProcessDto.getProcessTypeId())){
+                jobAdProcessDto.setProcessType(dto);
+                break;
+            }
+        }
+        return jobAdProcessDto;
     }
 }

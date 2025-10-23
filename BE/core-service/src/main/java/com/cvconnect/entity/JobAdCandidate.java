@@ -43,4 +43,7 @@ public class JobAdCandidate extends BaseEntity {
     @Column(name = "onboard_date")
     private Instant onboardDate;
 
+    @Column(name = "eliminate_date")
+    private Instant eliminateDate;
+
 }

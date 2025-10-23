@@ -49,7 +49,9 @@ public class Messages {
     public static final String LEVEL_REQUIRED = "level.required";
     public static final String CAREER_NOT_FOUND = "career.not.found";
     public static final String INVALID_PROCESS_TYPE_CHANGE = "invalid.process.type.change";
-
+    public static final String EMAIL_SUBJECT_REQUIRED = "email.subject.required";
+    public static final String EMAIL_TEMPLATE_REQUIRED = "email.template.required";
+    public static final String CANDIDATE_ALREADY_ELIMINATED = "candidate.already.eliminated";
 
     /*
     * Validation Messages
@@ -70,7 +72,6 @@ public class Messages {
     public static final String POSITION_NAME_REQUIRED = "position.name.required";
     public static final String POSITION_CODE_REQUIRED = "position.code.required";
     public static final String DEPARTMENT_REQUIRED = "position.department.required";
-    public static final String POSITION_LEVEL_NAME_REQUIRED = "position.level.name.required";
     public static final String LEVEL_REQUIRE = "level.require";
     public static final String POSITION_PROCESS_NAME_REQUIRED = "position.process.name.required";
     public static final String PROCESS_TYPE_REQUIRE = "position.process.type.require";
@@ -81,7 +82,6 @@ public class Messages {
     public static final String CAREER_NAME_REQUIRED = "career.name.required";
     public static final String JOB_AD_TITLE_REQUIRED = "job.ad.title.required";
     public static final String POSITION_ID_REQUIRED = "job.ad.position.id.required";
-    public static final String POSITION_LEVEL_ID_REQUIRED = "job.ad.position.level.id.required";
     public static final String WORK_LOCATION_ID_REQUIRED = "job.ad.work.location.id.required";
     public static final String JOB_TYPE_REQUIRED = "job.ad.job.type.required";
     public static final String DUE_DATE_REQUIRED = "job.ad.due.date.required";
@@ -93,6 +93,7 @@ public class Messages {
     public static final String JOB_AD_STATUS_REQUIRED = "job.ad.status.required";
     public static final String QUANTITY_MIN_LENGTH = "job.ad.quantity.min.length";
     public static final String JOB_AD_REQUIRED = "job.ad.required";
+    public static final String ELIMINATE_REASON_REQUIRE = "eliminate.reason.require";
 
 
     /*

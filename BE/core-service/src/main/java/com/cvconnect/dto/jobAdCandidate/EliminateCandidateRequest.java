@@ -1,6 +1,7 @@
 package com.cvconnect.dto.jobAdCandidate;
 
 import com.cvconnect.constant.Messages;
+import com.cvconnect.enums.EliminateReasonEnum;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -15,10 +16,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ChangeCandidateProcessRequest {
-    @NotNull(message = Messages.PROCESS_TYPE_REQUIRE)
-    private Long toJobAdProcessCandidateId;
-    private String note;
+public class EliminateCandidateRequest {
+    @NotNull(message = Messages.CANDIDATE_INFO_APPLY_NOT_FOUND)
+    private Long jobAdCandidateId;
+    @NotNull(message = Messages.ELIMINATE_REASON_REQUIRE)
+    private EliminateReasonEnum reason;
+    private String reasonDetail;
     private boolean isSendEmail;
 
     private Long emailTemplateId;
@@ -26,4 +29,5 @@ public class ChangeCandidateProcessRequest {
     private String subject;
     private String template;
     private List<String> placeholders;
+
 }
