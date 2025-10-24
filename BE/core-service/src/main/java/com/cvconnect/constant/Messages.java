@@ -52,6 +52,11 @@ public class Messages {
     public static final String EMAIL_SUBJECT_REQUIRED = "email.subject.required";
     public static final String EMAIL_TEMPLATE_REQUIRED = "email.template.required";
     public static final String CANDIDATE_ALREADY_ELIMINATED = "candidate.already.eliminated";
+    public static final String ONBOARD_DATE_REQUIRED = "onboard.date.required";
+    public static final String ONBOARD_DATE_INVALID = "onboard.date.invalid";
+    public static final String CANDIDATE_ALREADY_ONBOARDED = "candidate.already.onboarded";
+    public static final String CANDIDATE_NOT_IN_ONBOARD_PROCESS = "candidate.not.in.onboard.process";
+    public static final String ONBOARD_STATUS_REQUIRED = "onboard.status.required";
 
     /*
     * Validation Messages

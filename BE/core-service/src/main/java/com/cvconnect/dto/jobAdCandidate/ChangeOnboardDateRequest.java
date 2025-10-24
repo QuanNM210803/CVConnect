@@ -7,25 +7,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import nmquan.commonlib.constant.MessageConstants;
 
 import java.time.Instant;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ChangeCandidateProcessRequest {
-    @NotNull(message = Messages.PROCESS_TYPE_REQUIRE)
-    private Long toJobAdProcessCandidateId;
-    private String note;
-    private Instant onboardDate;
-    private boolean isSendEmail;
-
-    private Long emailTemplateId;
-
-    private String subject;
-    private String template;
-    private List<String> placeholders;
+public class ChangeOnboardDateRequest {
+    @NotNull(message = MessageConstants.DATA_NOTFOUND)
+    private Long jobAdCandidateId;
+    @NotNull(message = Messages.ONBOARD_DATE_REQUIRED)
+    private Instant newOnboardDate;
 }

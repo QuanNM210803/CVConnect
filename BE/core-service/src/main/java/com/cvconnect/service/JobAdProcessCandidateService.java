@@ -9,4 +9,5 @@ public interface JobAdProcessCandidateService {
     List<JobAdProcessCandidateDto> findByJobAdCandidateId(Long jobAdCandidateId);
     JobAdProcessCandidateDto findById(Long jobAdCandidateId);
     Boolean validateProcessOrderChange(Long jobAdProcessCandidateId, Long jobAdCandidateId);
+    Boolean validateCurrentProcessTypeIs(Long jobAdCandidateId, String processTypeCode);
 }

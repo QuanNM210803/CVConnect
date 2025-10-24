@@ -735,6 +735,6 @@
 -- update level
 -- set code = 'LEADER', name = 'Leader'
 -- where code = 'DIRECTOR';
-
-alter table job_ad_candidate
-add column if not exists eliminate_date TIMESTAMP WITHOUT TIME ZONE;
+--
+-- alter table job_ad_candidate
+-- add column if not exists eliminate_date TIMESTAMP WITHOUT TIME ZONE;

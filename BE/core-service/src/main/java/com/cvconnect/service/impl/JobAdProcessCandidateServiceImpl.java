@@ -46,4 +46,9 @@ public class JobAdProcessCandidateServiceImpl implements JobAdProcessCandidateSe
     public Boolean validateProcessOrderChange(Long jobAdProcessCandidateId, Long jobAdCandidateId) {
         return jobAdProcessCandidateRepository.validateProcessOrderChange(jobAdProcessCandidateId, jobAdCandidateId);
     }
+
+    @Override
+    public Boolean validateCurrentProcessTypeIs(Long jobAdCandidateId, String processTypeCode) {
+        return jobAdProcessCandidateRepository.validateCurrentProcessTypeIs(jobAdCandidateId, processTypeCode);
+    }
 }

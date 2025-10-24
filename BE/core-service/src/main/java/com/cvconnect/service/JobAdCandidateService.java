@@ -13,5 +13,7 @@ public interface JobAdCandidateService {
     boolean checkCandidateInfoInOrg(Long candidateInfoId, Long orgId, Long hrContactId);
     void changeCandidateProcess(ChangeCandidateProcessRequest request);
     void eliminateCandidate(EliminateCandidateRequest request);
+    void changeOnboardDate(ChangeOnboardDateRequest request);
+    void markOnboard(MarkOnboardRequest request);
 
 }

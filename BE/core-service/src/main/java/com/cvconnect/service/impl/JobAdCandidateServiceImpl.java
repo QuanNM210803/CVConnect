@@ -383,11 +383,19 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         if(ObjectUtils.isEmpty(toProcessCandidate)){
             throw new AppException(CoreErrorCode.PROCESS_TYPE_NOT_FOUND);
         }
+
+        // check candidate reject
         Long jobAdCandidateId = toProcessCandidate.getJobAdCandidateId();
         JobAdCandidate jobAdCandidate = jobAdCandidateRepository.findById(jobAdCandidateId)
                 .orElseThrow(() -> new AppException(CommonErrorCode.ERROR));
         if(CandidateStatus.REJECTED.name().equals(jobAdCandidate.getCandidateStatus())){
             throw new AppException(CoreErrorCode.CANDIDATE_ALREADY_ELIMINATED);
+        }
+
+        // check candidate already onboarded
+        Boolean checkOnboarded = jobAdCandidateRepository.existsByCandidateInfoAndOrg(jobAdCandidate.getCandidateInfoId(), orgId, CandidateStatus.ONBOARDED.name());
+        if(checkOnboarded){
+            throw new AppException(CoreErrorCode.CANDIDATE_ALREADY_ONBOARDED);
         }
 
         // check valid process order change
@@ -404,8 +412,18 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         ProcessTypeDto processTypeDto = jobAdProcessDto.getProcessType();
         if (!ProcessTypeEnum.APPLY.name().equals(processTypeDto.getCode()) &&
                 !ProcessTypeEnum.ONBOARD.name().equals(processTypeDto.getCode())) {
-            jobAdCandidateRepository.updateCandidateStatus(jobAdCandidateId, CandidateStatus.IN_PROGRESS.name());
+            jobAdCandidate.setCandidateStatus(CandidateStatus.IN_PROGRESS.name());
+        } else if (ProcessTypeEnum.ONBOARD.name().equals(processTypeDto.getCode())) {
+            if(request.getOnboardDate() == null){
+                throw new AppException(CoreErrorCode.ONBOARD_DATE_REQUIRED);
+            }
+            if(request.getOnboardDate().isBefore(ZonedDateTime.now(CommonConstants.ZONE.UTC).toInstant())){
+                throw new AppException(CoreErrorCode.ONBOARD_DATE_INVALID);
+            }
+            jobAdCandidate.setCandidateStatus(CandidateStatus.WAITING_ONBOARDING.name());
+            jobAdCandidate.setOnboardDate(request.getOnboardDate());
         }
+        jobAdCandidateRepository.save(jobAdCandidate);
 
         // update process candidates
         List<JobAdProcessCandidateDto> dtos = jobAdProcessCandidateService.findByJobAdCandidateId(jobAdCandidateId);
@@ -557,6 +575,84 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                     .build();
             sendEmailService.sendEmailWithBody(sendEmailDto);
         }
+    }
+
+    @Override
+    @Transactional
+    public void changeOnboardDate(ChangeOnboardDateRequest request) {
+        if(request.getNewOnboardDate().isBefore(ZonedDateTime.now(CommonConstants.ZONE.UTC).toInstant())){
+            throw new AppException(CoreErrorCode.ONBOARD_DATE_INVALID);
+        }
+
+        // check authorization
+        Long orgId = restTemplateClient.validOrgMember();
+        Long hrContactId = WebUtils.getCurrentUserId();
+        List<String> role = WebUtils.getCurrentRole();
+        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
+            Boolean checkAuthorized = jobAdCandidateRepository.existsByJobAdCandidateIdAndHrContactId(request.getJobAdCandidateId(), hrContactId);
+            if(!checkAuthorized) {
+                throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            }
+        }
+
+        // check candidate reject
+        JobAdCandidate jobAdCandidate = jobAdCandidateRepository.findById(request.getJobAdCandidateId())
+                .orElseThrow(() -> new AppException(CommonErrorCode.ERROR));
+        if(CandidateStatus.REJECTED.name().equals(jobAdCandidate.getCandidateStatus())){
+            throw new AppException(CoreErrorCode.CANDIDATE_ALREADY_ELIMINATED);
+        }
+
+        // check candidate in onboard process
+        Boolean isMatchCurrentProcess = jobAdProcessCandidateService.validateCurrentProcessTypeIs(jobAdCandidate.getId(), ProcessTypeEnum.ONBOARD.name());
+        if(!isMatchCurrentProcess){
+            throw new AppException(CoreErrorCode.CANDIDATE_NOT_IN_ONBOARD_PROCESS);
+        }
+
+        // check candidate already onboarded
+        Boolean checkOnboarded = jobAdCandidateRepository.existsByCandidateInfoAndOrg(jobAdCandidate.getCandidateInfoId(), orgId, CandidateStatus.ONBOARDED.name());
+        if(checkOnboarded){
+            throw new AppException(CoreErrorCode.CANDIDATE_ALREADY_ONBOARDED);
+        }
+
+        jobAdCandidate.setOnboardDate(request.getNewOnboardDate());
+        jobAdCandidateRepository.save(jobAdCandidate);
+    }
+
+    @Override
+    public void markOnboard(MarkOnboardRequest request) {
+        // check authorization
+        Long orgId = restTemplateClient.validOrgMember();
+        Long hrContactId = WebUtils.getCurrentUserId();
+        List<String> role = WebUtils.getCurrentRole();
+        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
+            Boolean checkAuthorized = jobAdCandidateRepository.existsByJobAdCandidateIdAndHrContactId(request.getJobAdCandidateId(), hrContactId);
+            if(!checkAuthorized) {
+                throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            }
+        }
+
+        // check candidate reject
+        JobAdCandidate jobAdCandidate = jobAdCandidateRepository.findById(request.getJobAdCandidateId())
+                .orElseThrow(() -> new AppException(CommonErrorCode.ERROR));
+        if(CandidateStatus.REJECTED.name().equals(jobAdCandidate.getCandidateStatus())){
+            throw new AppException(CoreErrorCode.CANDIDATE_ALREADY_ELIMINATED);
+        }
+
+        // check candidate in onboard process
+        Boolean isMatchCurrentProcess = jobAdProcessCandidateService.validateCurrentProcessTypeIs(jobAdCandidate.getId(), ProcessTypeEnum.ONBOARD.name());
+        if(!isMatchCurrentProcess){
+            throw new AppException(CoreErrorCode.CANDIDATE_NOT_IN_ONBOARD_PROCESS);
+        }
+
+        // check candidate already onboarded
+        Boolean checkOnboarded = jobAdCandidateRepository.existsByCandidateInfoAndOrgAndNotJobAdCandidate(jobAdCandidate.getCandidateInfoId(), orgId, jobAdCandidate.getId(), CandidateStatus.ONBOARDED.name());
+        if(checkOnboarded){
+            throw new AppException(CoreErrorCode.CANDIDATE_ALREADY_ONBOARDED);
+        }
+
+        jobAdCandidate.setCandidateStatus(request.getIsOnboarded() ?
+                CandidateStatus.ONBOARDED.name() : CandidateStatus.NOT_ONBOARDED.name());
+        jobAdCandidateRepository.save(jobAdCandidate);
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {

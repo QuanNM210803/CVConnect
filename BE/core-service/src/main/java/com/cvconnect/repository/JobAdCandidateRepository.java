@@ -5,6 +5,7 @@ import com.cvconnect.dto.jobAdCandidate.CandidateFilterProjection;
 import com.cvconnect.dto.jobAdCandidate.CandidateFilterRequest;
 import com.cvconnect.dto.jobAdCandidate.JobAdCandidateProjection;
 import com.cvconnect.entity.JobAdCandidate;
+import com.cvconnect.enums.CandidateStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -146,4 +147,18 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
     @Modifying
     @Query("UPDATE JobAdCandidate jac SET jac.candidateStatus = :candidateStatus WHERE jac.id = :jobAdCandidateId")
     void updateCandidateStatus(Long jobAdCandidateId, String candidateStatus);
+
+    @Query("SELECT CASE WHEN COUNT(jc) > 0 THEN true ELSE false END " +
+            "FROM JobAdCandidate jc " +
+            "JOIN JobAd ja ON ja.id = jc.jobAdId " +
+            "WHERE jc.candidateInfoId = :candidateInfoId AND jc.candidateStatus = :candidateStatus " +
+            "AND ja.orgId = :orgId")
+    Boolean existsByCandidateInfoAndOrg(Long candidateInfoId, Long orgId, String candidateStatus);
+
+    @Query("SELECT CASE WHEN COUNT(jc) > 0 THEN true ELSE false END " +
+            "FROM JobAdCandidate jc " +
+            "JOIN JobAd ja ON ja.id = jc.jobAdId " +
+            "WHERE jc.candidateInfoId = :candidateInfoId AND jc.candidateStatus = :candidateStatus " +
+            "AND ja.orgId = :orgId AND jc.id <> :jobAdCandidateId")
+    Boolean existsByCandidateInfoAndOrgAndNotJobAdCandidate(Long candidateInfoId, Long orgId, Long jobAdCandidateId, String candidateStatus);
 }

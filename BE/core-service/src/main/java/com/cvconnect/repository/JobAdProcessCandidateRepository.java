@@ -30,4 +30,14 @@ public interface JobAdProcessCandidateRepository extends JpaRepository<JobAdProc
           )
     """)
     Boolean validateProcessOrderChange(Long jobAdProcessCandidateId, Long jobAdCandidateId);
+
+    @Query("""
+        select case when count(*) > 0 then true else false end
+        from JobAdProcessCandidate as japc
+        join JobAdProcess as jap on jap.id = japc.jobAdProcessId
+        join ProcessType as pt on pt.id = jap.processTypeId
+        where japc.jobAdCandidateId = :jobAdCandidateId and japc.isCurrentProcess = true
+            and pt.code = :processTypeCode
+    """)
+    Boolean validateCurrentProcessTypeIs(Long jobAdCandidateId, String processTypeCode);
 }

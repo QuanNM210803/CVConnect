@@ -63,4 +63,20 @@ public class JobAdCandidateController {
         jobAdCandidateService.eliminateCandidate(request);
         return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
     }
+
+    @PutMapping("/change-onboard-date")
+    @Operation(summary = "Change candidate onboard date")
+    @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:UPDATE')")
+    public ResponseEntity<Response<Void>> changeOnboardDate(@Valid @RequestBody ChangeOnboardDateRequest request) {
+        jobAdCandidateService.changeOnboardDate(request);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @PutMapping("/mark-onboard")
+    @Operation(summary = "Mark candidate as onboarded")
+    @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:UPDATE')")
+    public ResponseEntity<Response<Void>> markOnboard(@Valid @RequestBody MarkOnboardRequest request) {
+        jobAdCandidateService.markOnboard(request);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
 }
