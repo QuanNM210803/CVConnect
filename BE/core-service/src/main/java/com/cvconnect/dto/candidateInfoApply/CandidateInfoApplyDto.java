@@ -33,4 +33,6 @@ public class CandidateInfoApplyDto extends BaseDto<Instant> {
     private AttachFileDto attachFile;
 
     private CandidateSummaryOrgDto candidateSummaryOrg;
+
+    private String avatarUrl;
 }

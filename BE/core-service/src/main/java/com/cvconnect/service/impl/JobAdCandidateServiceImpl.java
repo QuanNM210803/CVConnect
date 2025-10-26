@@ -157,6 +157,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                     .subject(subject)
                     .body(body)
                     .candidateInfoId(candidateInfoApplyId)
+                    .jobAdId(jobAdCandidate.getJobAdId())
                     .orgId(jobAdDto.getOrgId())
                     .emailTemplateId(jobAdDto.getEmailTemplateId())
                     .build();
@@ -171,7 +172,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 .senderId(userId)
                 .receiverIds(List.of(jobAdDto.getHrContactId()))
                 .type(Constants.NotificationType.USER)
-                .redirectUrl(Constants.Path.JOB_AD_CANDIDATE_DETAIL + "/" + userId)
+                .redirectUrl(Constants.Path.JOB_AD_CANDIDATE_DETAIL + "/" + candidateInfoApplyId)
                 .build();
         kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notification);
 
@@ -223,7 +224,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                         LinkedHashMap::new
                 ));
         List<Long> candidateInfoIds = new ArrayList<>(candidateInfoMap.keySet());
-        List<CandidateFilterProjection> jobAdCandidates = jobAdCandidateRepository.findAllByCandidateInfoIds(candidateInfoIds, orgId, participantId);
+        List<CandidateFilterProjection> jobAdCandidates = jobAdCandidateRepository.findAllByCandidateInfoIds(request, candidateInfoIds, orgId, participantId);
 
         // get Hr contacts
         List<Long> hrIds = jobAdCandidates.stream()
@@ -274,6 +275,16 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         if(ObjectUtils.isEmpty(projection)){
             throw new AppException(CoreErrorCode.CANDIDATE_INFO_APPLY_NOT_FOUND);
         }
+        UserDto candidate = restTemplateClient.getUser(projection.getCandidateId());
+
+        String secureUrl = null;
+        if(candidate.getAvatarId() != null) {
+            List<AttachFileDto> files = attachFileService.getAttachFiles(List.of(candidate.getAvatarId()));
+            if (!ObjectUtils.isEmpty(files)) {
+                secureUrl = files.get(0).getSecureUrl();
+            }
+        }
+
         CandidateInfoApplyDto candidateInfoApply = CandidateInfoApplyDto.builder()
                                     .id(projection.getId())
                                     .fullName(projection.getFullName())
@@ -292,6 +303,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                                     .build())
                                             .skill(projection.getSkill())
                                             .build())
+                                    .avatarUrl(secureUrl)
                                     .build();
 
         List<JobAdCandidateProjection> jobAdCandidates = jobAdCandidateRepository.getJobAdCandidatesByCandidateInfoId(candidateInfoId, orgId, participantId);
@@ -489,6 +501,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                     .subject(subject)
                     .body(body)
                     .candidateInfoId(candidateInfo.getId())
+                    .jobAdId(jobAd.getId())
                     .orgId(jobAd.getOrgId())
                     .emailTemplateId(emailTemplateId)
                     .build();
@@ -570,6 +583,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                     .subject(subject)
                     .body(body)
                     .candidateInfoId(candidateInfo.getId())
+                    .jobAdId(jobAd.getId())
                     .orgId(jobAd.getOrgId())
                     .emailTemplateId(emailTemplateId)
                     .build();

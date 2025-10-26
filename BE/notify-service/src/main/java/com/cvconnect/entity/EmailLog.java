@@ -39,6 +39,9 @@ public class EmailLog extends BaseEntity {
     @Column(name = "candidate_info_id")
     private Long candidateInfoId;
 
+    @Column(name = "job_ad_id")
+    private Long jobAdId;
+
     @Column(name = "org_id")
     private Long orgId;
 

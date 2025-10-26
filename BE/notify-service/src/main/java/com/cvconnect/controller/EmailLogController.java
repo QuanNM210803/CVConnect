@@ -21,10 +21,10 @@ public class EmailLogController {
     @Autowired
     private EmailLogService emailLogService;
 
-    @GetMapping("/log-by-candidate-info/{candidateInfoId}")
+    @GetMapping("/log-by-candidate-info/{candidateInfoId}/{jobAdId}")
     @Operation(summary = "Get email logs by candidate info ID")
     @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:VIEW')")
-    public ResponseEntity<Response<List<EmailLogDto>>> getByCandidateInfoId(@PathVariable Long candidateInfoId) {
-        return ResponseUtils.success(emailLogService.getByCandidateInfoId(candidateInfoId));
+    public ResponseEntity<Response<List<EmailLogDto>>> getByCandidateInfoId(@PathVariable Long candidateInfoId, @PathVariable Long jobAdId) {
+        return ResponseUtils.success(emailLogService.getByCandidateInfoId(candidateInfoId, jobAdId));
     }
 }

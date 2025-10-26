@@ -27,6 +27,7 @@ public class EmailLogDto extends BaseDto<Instant> {
     private String subject;
     private String body;
     private Long candidateInfoId;
+    private Long jobAdId;
     private Long orgId;
     private Long emailTemplateId;
     private EmailTemplateEnum template;

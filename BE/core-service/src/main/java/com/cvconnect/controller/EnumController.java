@@ -48,4 +48,10 @@ public class EnumController {
     public ResponseEntity<Response<List<EliminateReasonEnumDto>>> getEliminateReason() {
         return ResponseUtils.success(enumService.getEliminateReason());
     }
+
+    @GetMapping("/calendar-type")
+    @Operation(summary = "Get all calendar types")
+    public ResponseEntity<Response<List<CalendarTypeDto>>> getCalendarType() {
+        return ResponseUtils.success(enumService.getCalendarType());
+    }
 }

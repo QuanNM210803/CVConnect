@@ -33,4 +33,9 @@ public class EnumServiceImpl implements EnumService {
     public List<EliminateReasonEnumDto> getEliminateReason() {
         return EliminateReasonEnum.getAll();
     }
+
+    @Override
+    public List<CalendarTypeDto> getCalendarType() {
+        return CalendarType.getAll();
+    }
 }

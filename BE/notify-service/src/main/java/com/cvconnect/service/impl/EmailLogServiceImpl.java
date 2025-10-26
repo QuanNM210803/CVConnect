@@ -31,6 +31,7 @@ public class EmailLogServiceImpl implements EmailLogService {
         emailLog.setSubject(emailLogDto.getSubject());
         emailLog.setBody(emailLogDto.getBody());
         emailLog.setCandidateInfoId(emailLogDto.getCandidateInfoId());
+        emailLog.setJobAdId(emailLogDto.getJobAdId());
         emailLog.setOrgId(emailLogDto.getOrgId());
         emailLog.setEmailTemplateId(emailLogDto.getEmailTemplateId());
         emailLog.setTemplate(emailLogDto.getTemplate());
@@ -64,9 +65,9 @@ public class EmailLogServiceImpl implements EmailLogService {
     }
 
     @Override
-    public List<EmailLogDto> getByCandidateInfoId(Long candidateInfoId) {
+    public List<EmailLogDto> getByCandidateInfoId(Long candidateInfoId, Long jobAdId) {
         Long orgId = restTemplateClient.validOrgMember();
-        List<EmailLog> emailLogs = emailLogRepository.findByCandidateInfoIdAndOrgId(candidateInfoId, orgId);
+        List<EmailLog> emailLogs = emailLogRepository.findByCandidateInfoIdAndOrgId(candidateInfoId, jobAdId);
         if(ObjectUtils.isEmpty(emailLogs)){
             return List.of();
         }
@@ -82,6 +83,10 @@ public class EmailLogServiceImpl implements EmailLogService {
         emailLogDto.setCcList(emailLog.getCcList());
         emailLogDto.setSubject(emailLog.getSubject());
         emailLogDto.setBody(emailLog.getBody());
+        emailLogDto.setCandidateInfoId(emailLog.getCandidateInfoId());
+        emailLogDto.setJobAdId(emailLog.getJobAdId());
+        emailLogDto.setOrgId(emailLog.getOrgId());
+        emailLogDto.setEmailTemplateId(emailLog.getEmailTemplateId());
         emailLogDto.setTemplate(emailLog.getTemplate());
         emailLogDto.setTemplateVariables(emailLog.getTemplateVariables());
         emailLogDto.setErrorMessage(emailLog.getErrorMessage());

@@ -10,4 +10,5 @@ public interface EnumService {
     List<JobTypeDto> getJobType();
     List<SalaryTypeDto> getSalaryType();
     List<EliminateReasonEnumDto> getEliminateReason();
+    List<CalendarTypeDto> getCalendarType();
 }

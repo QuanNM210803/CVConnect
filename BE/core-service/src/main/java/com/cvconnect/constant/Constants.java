@@ -9,6 +9,8 @@ import java.util.List;
 
 public class Constants {
     public static final int MAX_INDUSTRY_PER_ORG = 5;
+    public static final String ONLINE = "ONLINE";
+    public static final String OFFLINE = "OFFLINE";
 
     public static class RoleCode {
         private RoleCode() {}
@@ -40,7 +42,7 @@ public class Constants {
     public static class Path {
         private Path() {}
         public static final String JOB_AD = "/org/job-ad";
-        public static final String JOB_AD_CANDIDATE_DETAIL = "/org/candidate";
+        public static final String JOB_AD_CANDIDATE_DETAIL = "/org/candidate/detail";
     }
 
     public static class KafkaTopic {

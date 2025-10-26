@@ -543,3 +543,6 @@
 #
 # alter table `cvconnect-notify-service`.email_logs
 # add column org_id BIGINT after candidate_info_id;
+#
+# alter table `cvconnect-notify-service`.email_logs
+# add column job_ad_id BIGINT after candidate_info_id;
