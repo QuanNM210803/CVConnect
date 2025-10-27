@@ -738,86 +738,86 @@
 --
 -- alter table job_ad_candidate
 -- add column if not exists eliminate_date TIMESTAMP WITHOUT TIME ZONE;
-
-CREATE TABLE IF NOT EXISTS calendar (
-    id BIGSERIAL PRIMARY KEY,
-
-    job_ad_process_id BIGINT NOT NULL,
-    calendar_type VARCHAR(100) NOT NULL,
-    join_same_time BOOLEAN DEFAULT FALSE,
-
-    date DATE NOT NULL,
-    time_from TIME WITHOUT TIME ZONE NOT NULL,
-    duration_minutes INT NOT NULL,
-
-    -- danh cho offline
-    org_address_id BIGINT,
-    -- danh cho online
-    meeting_link VARCHAR(500),
-
-    note TEXT,
-    creator_id BIGINT NOT NULL,
-
-    is_active BOOLEAN DEFAULT TRUE,
-    is_deleted BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE,
-    created_by VARCHAR(100),
-    updated_by VARCHAR(100),
-
-    FOREIGN KEY (job_ad_process_id) REFERENCES job_ad_process (id) ON DELETE CASCADE,
-    FOREIGN KEY (org_address_id) REFERENCES organization_address (id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS calendar_candidate_info (
-    id BIGSERIAL PRIMARY KEY,
-
-    calendar_id BIGINT NOT NULL,
-    candidate_info_id BIGINT NOT NULL,
-    time_from TIME WITHOUT TIME ZONE NOT NULL ,
-    time_to TIME WITHOUT TIME ZONE NOT NULL ,
-
-    is_active BOOLEAN DEFAULT TRUE,
-    is_deleted BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE,
-    created_by VARCHAR(100),
-    updated_by VARCHAR(100),
-
-    FOREIGN KEY (calendar_id) REFERENCES calendar (id) ON DELETE CASCADE,
-    FOREIGN KEY (candidate_info_id) REFERENCES candidate_info_apply (id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS interview_panel (
-    id BIGSERIAL PRIMARY KEY,
-
-    calendar_id BIGINT NOT NULL,
-    interviewer_id BIGINT NOT NULL,
-
-    is_active BOOLEAN DEFAULT TRUE,
-    is_deleted BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE,
-    created_by VARCHAR(100),
-    updated_by VARCHAR(100),
-
-    FOREIGN KEY (calendar_id) REFERENCES calendar (id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS candidate_evaluation (
-    id BIGSERIAL PRIMARY KEY,
-
-    job_ad_process_candidate_id BIGINT NOT NULL,
-    evaluator_id BIGINT NOT NULL,
-    comments TEXT NOT NULL ,
-    score DECIMAL,
-
-    is_active BOOLEAN DEFAULT TRUE,
-    is_deleted BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE,
-    created_by VARCHAR(100),
-    updated_by VARCHAR(100),
-
-    FOREIGN KEY (job_ad_process_candidate_id) REFERENCES job_ad_process_candidate (id) ON DELETE CASCADE
-);
+--
+-- CREATE TABLE IF NOT EXISTS calendar (
+--     id BIGSERIAL PRIMARY KEY,
+--
+--     job_ad_process_id BIGINT NOT NULL,
+--     calendar_type VARCHAR(100) NOT NULL,
+--     join_same_time BOOLEAN DEFAULT FALSE,
+--
+--     date DATE NOT NULL,
+--     time_from TIME WITHOUT TIME ZONE NOT NULL,
+--     duration_minutes INT NOT NULL,
+--
+--     -- danh cho offline
+--     org_address_id BIGINT,
+--     -- danh cho online
+--     meeting_link VARCHAR(500),
+--
+--     note TEXT,
+--     creator_id BIGINT NOT NULL,
+--
+--     is_active BOOLEAN DEFAULT TRUE,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITHOUT TIME ZONE,
+--     created_by VARCHAR(100),
+--     updated_by VARCHAR(100),
+--
+--     FOREIGN KEY (job_ad_process_id) REFERENCES job_ad_process (id) ON DELETE CASCADE,
+--     FOREIGN KEY (org_address_id) REFERENCES organization_address (id) ON DELETE CASCADE
+-- );
+--
+-- CREATE TABLE IF NOT EXISTS calendar_candidate_info (
+--     id BIGSERIAL PRIMARY KEY,
+--
+--     calendar_id BIGINT NOT NULL,
+--     candidate_info_id BIGINT NOT NULL,
+--     time_from TIME WITHOUT TIME ZONE NOT NULL ,
+--     time_to TIME WITHOUT TIME ZONE NOT NULL ,
+--
+--     is_active BOOLEAN DEFAULT TRUE,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITHOUT TIME ZONE,
+--     created_by VARCHAR(100),
+--     updated_by VARCHAR(100),
+--
+--     FOREIGN KEY (calendar_id) REFERENCES calendar (id) ON DELETE CASCADE,
+--     FOREIGN KEY (candidate_info_id) REFERENCES candidate_info_apply (id) ON DELETE CASCADE
+-- );
+--
+-- CREATE TABLE IF NOT EXISTS interview_panel (
+--     id BIGSERIAL PRIMARY KEY,
+--
+--     calendar_id BIGINT NOT NULL,
+--     interviewer_id BIGINT NOT NULL,
+--
+--     is_active BOOLEAN DEFAULT TRUE,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITHOUT TIME ZONE,
+--     created_by VARCHAR(100),
+--     updated_by VARCHAR(100),
+--
+--     FOREIGN KEY (calendar_id) REFERENCES calendar (id) ON DELETE CASCADE
+-- );
+--
+-- CREATE TABLE IF NOT EXISTS candidate_evaluation (
+--     id BIGSERIAL PRIMARY KEY,
+--
+--     job_ad_process_candidate_id BIGINT NOT NULL,
+--     evaluator_id BIGINT NOT NULL,
+--     comments TEXT NOT NULL ,
+--     score DECIMAL,
+--
+--     is_active BOOLEAN DEFAULT TRUE,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITHOUT TIME ZONE,
+--     created_by VARCHAR(100),
+--     updated_by VARCHAR(100),
+--
+--     FOREIGN KEY (job_ad_process_candidate_id) REFERENCES job_ad_process_candidate (id) ON DELETE CASCADE
+-- );

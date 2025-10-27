@@ -351,6 +351,18 @@
 # set sort_order = 4
 # where code = 'CAREER';
 
+update `cvconnect-user-service`.menus
+set is_show = false
+where code = 'CV_TEMPLATE';
+
+update `cvconnect-user-service`.menus
+set parent_id = 4, sort_order = 2
+where code = 'PROCESS_TYPE';
+
+update `cvconnect-user-service`.menus
+set sort_order = 3
+where code = 'CAREER';
+
 #----------------------------------------------------------------------------------------------------------------------#
 
 # create database if not exists `cvconnect-notify-service`;
