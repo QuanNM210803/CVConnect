@@ -30,6 +30,7 @@ import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.KafkaUtils;
+import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -379,22 +380,15 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
     @Transactional
     public void changeCandidateProcess(ChangeCandidateProcessRequest request) {
         Long toJobAdProcessCandidateId = request.getToJobAdProcessCandidateId();
-
-        // check authorization
-        Long orgId = restTemplateClient.validOrgMember();
-        Long hrContactId = WebUtils.getCurrentUserId();
-        List<String> role = WebUtils.getCurrentRole();
-        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
-            Boolean checkAuthorized = jobAdCandidateRepository.existsByJobAdProcessCandidateIdAndHrContactId(toJobAdProcessCandidateId, hrContactId);
-            if(!checkAuthorized) {
-                throw new AppException(CommonErrorCode.UNAUTHENTICATED);
-            }
-        }
-
         JobAdProcessCandidateDto toProcessCandidate = jobAdProcessCandidateService.findById(toJobAdProcessCandidateId);
         if(ObjectUtils.isEmpty(toProcessCandidate)){
             throw new AppException(CoreErrorCode.PROCESS_TYPE_NOT_FOUND);
         }
+
+        // check authorization
+        Long orgId = restTemplateClient.validOrgMember();
+        Long hrContactId = WebUtils.getCurrentUserId();
+        this.checkAuthorizedChangeProcess(toProcessCandidate.getJobAdCandidateId(), orgId, hrContactId);
 
         // check candidate reject
         Long jobAdCandidateId = toProcessCandidate.getJobAdCandidateId();
@@ -514,13 +508,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
     public void eliminateCandidate(EliminateCandidateRequest request) {
         Long orgId = restTemplateClient.validOrgMember();
         Long hrContactId = WebUtils.getCurrentUserId();
-        List<String> role = WebUtils.getCurrentRole();
-        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
-            Boolean checkAuthorized = jobAdCandidateRepository.existsByJobAdCandidateIdAndHrContactId(request.getJobAdCandidateId(), hrContactId);
-            if(!checkAuthorized) {
-                throw new AppException(CommonErrorCode.UNAUTHENTICATED);
-            }
-        }
+        this.checkAuthorizedChangeProcess(request.getJobAdCandidateId(), orgId, hrContactId);
 
         JobAdCandidate jobAdCandidate = jobAdCandidateRepository.findById(request.getJobAdCandidateId()).orElseThrow(
                 () -> new AppException(CommonErrorCode.DATA_NOT_FOUND)
@@ -601,13 +589,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         // check authorization
         Long orgId = restTemplateClient.validOrgMember();
         Long hrContactId = WebUtils.getCurrentUserId();
-        List<String> role = WebUtils.getCurrentRole();
-        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
-            Boolean checkAuthorized = jobAdCandidateRepository.existsByJobAdCandidateIdAndHrContactId(request.getJobAdCandidateId(), hrContactId);
-            if(!checkAuthorized) {
-                throw new AppException(CommonErrorCode.UNAUTHENTICATED);
-            }
-        }
+        this.checkAuthorizedChangeProcess(request.getJobAdCandidateId(), orgId, hrContactId);
 
         // check candidate reject
         JobAdCandidate jobAdCandidate = jobAdCandidateRepository.findById(request.getJobAdCandidateId())
@@ -634,16 +616,11 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
 
     @Override
     public void markOnboard(MarkOnboardRequest request) {
-        // check authorization
         Long orgId = restTemplateClient.validOrgMember();
         Long hrContactId = WebUtils.getCurrentUserId();
-        List<String> role = WebUtils.getCurrentRole();
-        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
-            Boolean checkAuthorized = jobAdCandidateRepository.existsByJobAdCandidateIdAndHrContactId(request.getJobAdCandidateId(), hrContactId);
-            if(!checkAuthorized) {
-                throw new AppException(CommonErrorCode.UNAUTHENTICATED);
-            }
-        }
+
+        // check authorization
+        this.checkAuthorizedChangeProcess(request.getJobAdCandidateId(), orgId, hrContactId);
 
         // check candidate reject
         JobAdCandidate jobAdCandidate = jobAdCandidateRepository.findById(request.getJobAdCandidateId())
@@ -667,6 +644,25 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         jobAdCandidate.setCandidateStatus(request.getIsOnboarded() ?
                 CandidateStatus.ONBOARDED.name() : CandidateStatus.NOT_ONBOARDED.name());
         jobAdCandidateRepository.save(jobAdCandidate);
+    }
+
+    @Override
+    public Boolean existsByJobAdCandidateIdAndHrContactId(Long jobAdCandidateId, Long hrContactId) {
+        return jobAdCandidateRepository.existsByJobAdCandidateIdAndHrContactId(jobAdCandidateId, hrContactId);
+    }
+
+    @Override
+    public Boolean existsByJobAdCandidateIdAndOrgId(Long jobAdCandidateId, Long orgId) {
+        return jobAdCandidateRepository.existsByJobAdCandidateIdAndOrgId(jobAdCandidateId, orgId);
+    }
+
+    @Override
+    public JobAdCandidateDto findById(Long jobAdCandidateId) {
+        JobAdCandidate jobAdCandidate = jobAdCandidateRepository.findById(jobAdCandidateId).orElse(null);
+        if(ObjectUtils.isEmpty(jobAdCandidate)){
+            return null;
+        }
+        return ObjectMapperUtils.convertToObject(jobAdCandidate, JobAdCandidateDto.class);
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {
@@ -724,4 +720,16 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         }
     }
 
+    private void checkAuthorizedChangeProcess(Long jobAdCandidateId, Long orgId, Long hrContactId) {
+        List<String> role = WebUtils.getCurrentRole();
+        boolean checkAuthorized;
+        if (role.contains(Constants.RoleCode.ORG_ADMIN)) {
+            checkAuthorized = jobAdCandidateRepository.existsByJobAdCandidateIdAndOrgId(jobAdCandidateId, orgId);
+        } else {
+            checkAuthorized = jobAdCandidateRepository.existsByJobAdCandidateIdAndHrContactId(jobAdCandidateId, hrContactId);
+        }
+        if (!checkAuthorized) {
+            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+        }
+    }
 }

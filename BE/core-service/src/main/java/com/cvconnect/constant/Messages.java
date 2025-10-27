@@ -99,6 +99,7 @@ public class Messages {
     public static final String QUANTITY_MIN_LENGTH = "job.ad.quantity.min.length";
     public static final String JOB_AD_REQUIRED = "job.ad.required";
     public static final String ELIMINATE_REASON_REQUIRE = "eliminate.reason.require";
+    public static final String COMMENTS_NOT_BLANK = "comments.not.blank";
 
 
     /*

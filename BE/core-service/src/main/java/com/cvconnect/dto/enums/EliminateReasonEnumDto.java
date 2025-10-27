@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EliminateReasonEnumDto {
+    private String name;
     private String description;
 }

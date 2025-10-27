@@ -15,5 +15,8 @@ public interface JobAdCandidateService {
     void eliminateCandidate(EliminateCandidateRequest request);
     void changeOnboardDate(ChangeOnboardDateRequest request);
     void markOnboard(MarkOnboardRequest request);
+    Boolean existsByJobAdCandidateIdAndHrContactId(Long jobAdCandidateId, Long hrContactId);
+    Boolean existsByJobAdCandidateIdAndOrgId(Long jobAdCandidateId, Long orgId);
+    JobAdCandidateDto findById(Long jobAdCandidateId);
 
 }

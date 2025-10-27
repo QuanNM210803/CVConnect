@@ -45,6 +45,7 @@ public enum EliminateReasonEnum {
             return null;
         }
         return EliminateReasonEnumDto.builder()
+                .name(eliminateReason.name())
                 .description(eliminateReason.getDescription())
                 .build();
     }
