@@ -18,5 +18,6 @@ public interface EmailTemplateService {
     List<EmailTemplateDto> getByOrgId(Long orgId);
     EmailTemplateDto getById(Long id);
     EmailTemplateDto previewEmail(Long id, DataReplacePlaceholder dataReplacePlaceholder);
+    EmailTemplateDto previewEmail(PreviewEmailWithoutTemplate request);
     String previewEmailDefault(PreviewEmailDefaultRequest request);
 }

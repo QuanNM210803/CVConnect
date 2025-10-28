@@ -21,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/org-member")
 public class OrgMemberController {
@@ -79,5 +81,12 @@ public class OrgMemberController {
     @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW')")
     public ResponseEntity<Response<OrgMemberDto>> getOrgMemberInfo(@PathVariable Long userId) {
         return ResponseUtils.success(orgMemberService.orgMemberInfo(userId));
+    }
+
+    @PostMapping("/internal/check-org-member")
+    @Operation(summary = "Internal check organization member by user ID")
+    @InternalRequest
+    public ResponseEntity<Response<Boolean>> checkOrgMember(@RequestBody List<Long> userIds) {
+        return ResponseUtils.success(orgMemberService.checkOrgMember(userIds));
     }
 }

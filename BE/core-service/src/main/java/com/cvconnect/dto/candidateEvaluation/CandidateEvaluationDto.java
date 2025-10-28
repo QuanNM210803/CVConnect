@@ -1,6 +1,5 @@
 package com.cvconnect.dto.candidateEvaluation;
 
-import com.cvconnect.dto.jobAdCandidate.JobAdProcessCandidateDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,5 +25,6 @@ public class CandidateEvaluationDto extends BaseDto<Instant> {
     private BigDecimal score;
 
     // attributes expansion
-    private JobAdProcessCandidateDto jobAdProcessCandidate;
+    private String evaluatorName;
+    private String evaluatorUsername;
 }

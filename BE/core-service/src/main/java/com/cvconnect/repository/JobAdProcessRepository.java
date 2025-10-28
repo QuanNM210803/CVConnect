@@ -11,4 +11,9 @@ import java.util.List;
 public interface JobAdProcessRepository extends JpaRepository<JobAdProcess, Long> {
     @Query("SELECT j FROM JobAdProcess j WHERE j.jobAdId = :jobAdId")
     List<JobAdProcess> findByJobAdId(Long jobAdId);
+
+    @Query("SELECT CASE WHEN COUNT(jap) > 0 THEN true ELSE false END FROM JobAdProcess jap " +
+           "join JobAd ja on ja.id = jap.jobAdId " +
+           "WHERE jap.id = :jobAdProcessId AND ja.orgId = :orgId")
+    Boolean existByJobAdProcessIdAndOrgId(Long jobAdProcessId, Long orgId);
 }

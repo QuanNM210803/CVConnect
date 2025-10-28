@@ -7,4 +7,5 @@ import nmquan.commonlib.dto.response.IDResponse;
 public interface JobAdService {
     IDResponse<Long> create(JobAdRequest request);
     JobAdDto findById(Long id);
+    JobAdDto findByJobAdProcessId(Long jobAdProcessId);
 }

@@ -88,4 +88,13 @@ public class RestTemplateClient {
         return response.getData();
     }
 
+    public Boolean checkOrgMember(List<Long> userIds) {
+        Response<Boolean> response = restTemplateService.postMethodRestTemplate(
+                SERVER_USER_SERVICE + "/org-member/internal/check-org-member",
+                new ParameterizedTypeReference<Response<Boolean>>() {},
+                userIds
+        );
+        return response.getData();
+    }
+
 }

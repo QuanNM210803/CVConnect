@@ -68,4 +68,21 @@ public class CandidateInfoApplyServiceImpl implements CandidateInfoApplyService 
                 .map(CandidateInfoApply::getId)
                 .toList();
     }
+
+    @Override
+    public Boolean validateCandidateInfoInProcess(List<Long> candidateInfoIds, Long jobAdProcessId) {
+        Long count = candidateInfoApplyRepository.countByCandidateInfoIdsAndJobAdProcessId(candidateInfoIds, jobAdProcessId);
+        return count != null && count.equals((long) candidateInfoIds.size());
+    }
+
+    @Override
+    public Map<Long, CandidateInfoApplyDto> getByIds(List<Long> candidateInfoIds) {
+        List<CandidateInfoApply> entities = candidateInfoApplyRepository.findAllById(candidateInfoIds);
+        if(ObjectUtils.isEmpty(entities)) {
+            return Map.of();
+        }
+        List<CandidateInfoApplyDto> dtos = ObjectMapperUtils.convertToList(entities, CandidateInfoApplyDto.class);
+        return dtos.stream()
+                .collect(Collectors.toMap(CandidateInfoApplyDto::getId, Function.identity()));
+    }
 }

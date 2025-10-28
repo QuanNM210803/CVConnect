@@ -19,7 +19,6 @@ import java.util.List;
 public class ChangeCandidateProcessRequest {
     @NotNull(message = Messages.PROCESS_TYPE_REQUIRE)
     private Long toJobAdProcessCandidateId;
-    private String note;
     private Instant onboardDate;
     private boolean isSendEmail;
 

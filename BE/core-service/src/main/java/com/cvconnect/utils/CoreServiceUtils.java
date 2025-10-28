@@ -2,6 +2,7 @@ package com.cvconnect.utils;
 
 import com.cvconnect.enums.CoreErrorCode;
 import nmquan.commonlib.exception.AppException;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 public class CoreServiceUtils {
@@ -18,6 +19,15 @@ public class CoreServiceUtils {
         if (contentType == null ||
                 !(contentType.equals("application/pdf") ||  contentType.equals("application/msword") || contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))) {
             throw new AppException(CoreErrorCode.DOCUMENT_FILE_INVALID);
+        }
+    }
+
+    public static void validateManualEmail(String subject, String template) {
+        if (ObjectUtils.isEmpty(subject)) {
+            throw new AppException(CoreErrorCode.EMAIL_SUBJECT_REQUIRED);
+        }
+        if (ObjectUtils.isEmpty(template)) {
+            throw new AppException(CoreErrorCode.EMAIL_TEMPLATE_REQUIRED);
         }
     }
 }

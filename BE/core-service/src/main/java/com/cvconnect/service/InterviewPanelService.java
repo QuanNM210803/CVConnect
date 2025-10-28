@@ -1,0 +1,9 @@
+package com.cvconnect.service;
+
+import com.cvconnect.dto.interviewPanel.InterviewPanelDto;
+
+import java.util.List;
+
+public interface InterviewPanelService {
+    void create(List<InterviewPanelDto> dtos);
+}

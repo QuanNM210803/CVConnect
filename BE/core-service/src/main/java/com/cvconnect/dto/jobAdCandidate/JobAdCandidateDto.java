@@ -1,5 +1,6 @@
 package com.cvconnect.dto.jobAdCandidate;
 
+import com.cvconnect.dto.enums.EliminateReasonEnumDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -35,6 +36,7 @@ public class JobAdCandidateDto extends BaseDto<Instant> {
     private Instant eliminateDate;
 
     // attribute expansion
+    private EliminateReasonEnumDto eliminateReason;
     private JobAdDto jobAd;
     private ProcessTypeDto currentRound;
     private List<JobAdProcessCandidateDto> jobAdProcessCandidates;

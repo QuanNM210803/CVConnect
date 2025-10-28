@@ -1,4 +1,4 @@
-package com.cvconnect.dto.jobAdCandidate;
+package com.cvconnect.dto.interviewPanel;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -14,15 +14,8 @@ import java.time.Instant;
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JobAdProcessCandidateDto extends BaseDto<Instant> {
-    private Long jobAdProcessId;
+public class InterviewPanelDto extends BaseDto<Instant> {
+    private Long calendarId;
 
-    private Long jobAdCandidateId;
-
-    private Instant actionDate;
-
-    private Boolean isCurrentProcess;
-
-    // attribute expansion
-    private String processName;
+    private Long interviewerId;
 }

@@ -27,7 +27,7 @@ public class JobAdProcessCandidateServiceImpl implements JobAdProcessCandidateSe
     @Override
     public List<JobAdProcessCandidateDto> findByJobAdCandidateId(Long jobAdCandidateId) {
         List<JobAdProcessCandidate> entities = jobAdProcessCandidateRepository.findByJobAdCandidateId(jobAdCandidateId);
-        if(!ObjectUtils.isEmpty(entities)){
+        if(ObjectUtils.isEmpty(entities)){
             return List.of();
         }
         return ObjectMapperUtils.convertToList(entities, JobAdProcessCandidateDto.class);

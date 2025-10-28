@@ -327,6 +327,10 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                             .id(first.getJobAdCandidateId())
                             .candidateStatus(first.getCandidateStatus())
                             .applyDate(first.getApplyDate())
+                            .onboardDate(first.getOnboardDate())
+                            .eliminateReason(EliminateReasonEnum.getEliminateReasonEnumDto(first.getEliminateReasonType()))
+                            .eliminateReasonDetail(first.getEliminateReasonDetail())
+                            .eliminateDate(first.getEliminateDate())
                             .jobAd(JobAdDto.builder()
                                     .id(first.getJobAdId())
                                     .title(first.getJobAdTitle())
@@ -439,7 +443,6 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             dto.setIsCurrentProcess(isCurrent);
             if (isCurrent) {
                 dto.setActionDate(now);
-                dto.setNote(request.getNote());
             }
         }
         jobAdProcessCandidateService.create(dtos);
@@ -461,7 +464,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 template = emailTemplateDto.getBody();
                 placeholders = emailTemplateDto.getPlaceholderCodes();
             } else {
-                this.validateManualEmail(request.getSubject(), request.getTemplate());
+                CoreServiceUtils.validateManualEmail(request.getSubject(), request.getTemplate());
                 subject = request.getSubject();
                 template = request.getTemplate();
                 placeholders = request.getPlaceholders();
@@ -538,7 +541,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 template = emailTemplateDto.getBody();
                 placeholders = emailTemplateDto.getPlaceholderCodes();
             } else {
-                this.validateManualEmail(request.getSubject(), request.getTemplate());
+                CoreServiceUtils.validateManualEmail(request.getSubject(), request.getTemplate());
                 subject = request.getSubject();
                 template = request.getTemplate();
                 placeholders = request.getPlaceholders();
@@ -709,15 +712,6 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             throw new AppException(CoreErrorCode.JOB_AD_STOP_RECRUITMENT);
         }
         return jobAdDto;
-    }
-
-    private void validateManualEmail(String subject, String template) {
-        if (ObjectUtils.isEmpty(subject)) {
-            throw new AppException(CoreErrorCode.EMAIL_SUBJECT_REQUIRED);
-        }
-        if (ObjectUtils.isEmpty(template)) {
-            throw new AppException(CoreErrorCode.EMAIL_TEMPLATE_REQUIRED);
-        }
     }
 
     private void checkAuthorizedChangeProcess(Long jobAdCandidateId, Long orgId, Long hrContactId) {

@@ -57,6 +57,17 @@ public class Messages {
     public static final String CANDIDATE_ALREADY_ONBOARDED = "candidate.already.onboarded";
     public static final String CANDIDATE_NOT_IN_ONBOARD_PROCESS = "candidate.not.in.onboard.process";
     public static final String ONBOARD_STATUS_REQUIRED = "onboard.status.required";
+    public static final String CALENDAR_TYPE_NOT_NULL = "calendar.type.not.null";
+    public static final String DATE_NOT_NULL = "date.not.null";
+    public static final String TIME_FROM_NOT_NULL = "time.from.not.null";
+    public static final String DURATION_MINUTES_NOT_NULL = "duration.minutes.not.null";
+    public static final String PARTICIPANT_IDS_NOT_NULL = "participant.ids.not.null";
+    public static final String CANDIDATE_INFO_IDS_NOT_NULL = "candidate.info.ids.not.null";
+    public static final String MEETING_ADDRESS_NOT_NULL = "meeting.address.not.null";
+    public static final String MEETING_LINK_NOT_NULL = "meeting.link.not.null";
+    public static final String DATE_BEFORE_TODAY = "date.before.today";
+    public static final String DURATION_MINUTES_INVALID = "duration.minutes.invalid";
+    public static final String CANDIDATE_INFO_EXISTS_NOT_IN_PROCESS = "candidate.info.exists.not.in.process";
 
     /*
     * Validation Messages

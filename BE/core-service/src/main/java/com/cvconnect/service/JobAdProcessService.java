@@ -8,4 +8,5 @@ public interface JobAdProcessService {
     void create(List<JobAdProcessDto> dtos);
     List<JobAdProcessDto> getByJobAdId(Long jobAdId);
     JobAdProcessDto getById(Long id);
+    Boolean existByJobAdProcessIdAndOrgId(Long jobAdProcessId, Long orgId);
 }

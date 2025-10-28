@@ -337,4 +337,10 @@ public class OrgMemberServiceImpl implements OrgMemberService {
 
         return orgMemberDto;
     }
+
+    @Override
+    public Boolean checkOrgMember(List<Long> userIds) {
+        List<OrgMember> orgMembers = orgMemberRepository.findByUserIdInAndIsActiveTrue(userIds);
+        return orgMembers.size() == userIds.size();
+    }
 }

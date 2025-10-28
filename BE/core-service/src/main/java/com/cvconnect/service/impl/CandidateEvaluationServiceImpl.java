@@ -2,9 +2,12 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
+import com.cvconnect.dto.candidateEvaluation.CandidateEvaluationDetail;
 import com.cvconnect.dto.candidateEvaluation.CandidateEvaluationDto;
 import com.cvconnect.dto.candidateEvaluation.CandidateEvaluationProjection;
 import com.cvconnect.dto.candidateEvaluation.CandidateEvaluationRequest;
+import com.cvconnect.dto.internal.response.UserDto;
+import com.cvconnect.dto.jobAd.JobAdProcessDto;
 import com.cvconnect.dto.jobAdCandidate.JobAdCandidateDto;
 import com.cvconnect.dto.jobAdCandidate.JobAdProcessCandidateDto;
 import com.cvconnect.entity.CandidateEvaluation;
@@ -19,7 +22,10 @@ import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CandidateEvaluationServiceImpl implements CandidateEvaluationService {
@@ -104,7 +110,7 @@ public class CandidateEvaluationServiceImpl implements CandidateEvaluationServic
     }
 
     @Override
-    public List<CandidateEvaluationDto> getByJobAdCandidate(Long jobAdCandidateId) {
+    public List<CandidateEvaluationDetail> getByJobAdCandidate(Long jobAdCandidateId) {
         Long orgId = restTemplateClient.validOrgMember();
         Long currentUserId = WebUtils.getCurrentUserId();
         List<String> role = WebUtils.getCurrentRole();
@@ -123,6 +129,47 @@ public class CandidateEvaluationServiceImpl implements CandidateEvaluationServic
         }
 
         List<CandidateEvaluationProjection> projections = candidateEvaluationRepository.getByJobAdCandidateId(jobAdCandidateId, evaluatorId);
-        return List.of();
+        List<Long> evaluatorIds = projections.stream()
+                .map(CandidateEvaluationProjection::getEvaluatorId)
+                .distinct()
+                .toList();
+        Map<Long, UserDto> evaluatorMap = restTemplateClient.getUsersByIds(evaluatorIds);
+
+        List<CandidateEvaluationDetail> result = projections.stream()
+                .collect(Collectors.groupingBy(CandidateEvaluationProjection::getJobAdProcessId))
+                .entrySet().stream()
+                .map(entry -> {
+                    Long processId = entry.getKey();
+                    List<CandidateEvaluationProjection> group = entry.getValue();
+
+                    JobAdProcessDto processDto = new JobAdProcessDto();
+                    processDto.setId(processId);
+                    processDto.setName(group.get(0).getJobAdProcessName());
+
+                    List<CandidateEvaluationDto> evaluations = group.stream().map(p -> {
+                        UserDto evaluator = evaluatorMap.get(p.getEvaluatorId());
+                        CandidateEvaluationDto dto = new CandidateEvaluationDto();
+                        dto.setId(p.getId());
+                        dto.setJobAdProcessCandidateId(p.getJobAdProcessCandidateId());
+                        dto.setEvaluatorId(p.getEvaluatorId());
+                        if(evaluator != null){
+                            dto.setEvaluatorName(evaluator.getFullName());
+                            dto.setEvaluatorUsername(evaluator.getUsername());
+                        }
+                        dto.setComments(p.getComments());
+                        dto.setScore(p.getScore());
+                        dto.setCreatedAt(p.getCreatedAt());
+                        dto.setUpdatedAt(p.getUpdatedAt());
+                        return dto;
+                    }).collect(Collectors.toList());
+
+                    CandidateEvaluationDetail detail = new CandidateEvaluationDetail();
+                    detail.setJobAdProcess(processDto);
+                    detail.setEvaluations(evaluations);
+                    return detail;
+                })
+                .toList();
+
+        return result;
     }
 }

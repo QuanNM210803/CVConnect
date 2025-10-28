@@ -8,6 +8,8 @@ import com.cvconnect.dto.orgMember.OrgMemberFilter;
 import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 
+import java.util.List;
+
 public interface OrgMemberService {
     OrgMemberDto getOrgMember(Long userId);
     OrgMemberDto createOrgMember(OrgMemberDto orgMemberDto);
@@ -19,5 +21,6 @@ public interface OrgMemberService {
     void assignRoleOrgMember(AssignRoleRequest request);
     void changeStatusActive(ChangeStatusActiveRequest request);
     OrgMemberDto orgMemberInfo(Long userId);
+    Boolean checkOrgMember(List<Long> userIds);
 
 }

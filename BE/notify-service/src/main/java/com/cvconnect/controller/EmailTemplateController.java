@@ -97,6 +97,12 @@ public class EmailTemplateController {
         return ResponseUtils.success(emailTemplateService.previewEmail(id, dataReplacePlaceholder));
     }
 
+    @PostMapping("/preview-email-without-template")
+    @Operation(summary = "Preview Email Template")
+    public ResponseEntity<Response<EmailTemplateDto>> previewEmail(@Valid @RequestBody PreviewEmailWithoutTemplate request) {
+        return ResponseUtils.success(emailTemplateService.previewEmail(request));
+    }
+
     @PostMapping("/preview-email-default")
     @Operation(summary = "Preview Email Default Template")
     public ResponseEntity<Response<String>> previewEmailDefault(@RequestBody PreviewEmailDefaultRequest request) {

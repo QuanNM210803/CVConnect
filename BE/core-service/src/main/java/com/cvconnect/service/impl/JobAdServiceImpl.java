@@ -160,6 +160,15 @@ public class JobAdServiceImpl implements JobAdService {
         return ObjectMapperUtils.convertToObject(jobAd, JobAdDto.class);
     }
 
+    @Override
+    public JobAdDto findByJobAdProcessId(Long jobAdProcessId) {
+        JobAd jobAd = jobAdRepository.findById(jobAdProcessId);
+        if(ObjectUtils.isEmpty(jobAd)){
+            return null;
+        }
+        return ObjectMapperUtils.convertToObject(jobAd, JobAdDto.class);
+    }
+
     private void validateCreate(JobAdRequest request) {
         // validate orgId, positionId
         boolean exists = jobAdRepository.existsByOrgIdAndPositionId(request.getOrgId(), request.getPositionId());

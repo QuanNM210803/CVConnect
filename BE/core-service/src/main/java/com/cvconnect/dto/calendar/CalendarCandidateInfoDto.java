@@ -1,4 +1,4 @@
-package com.cvconnect.dto.jobAdCandidate;
+package com.cvconnect.dto.calendar;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -8,21 +8,22 @@ import lombok.experimental.SuperBuilder;
 import nmquan.commonlib.dto.BaseDto;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JobAdProcessCandidateDto extends BaseDto<Instant> {
-    private Long jobAdProcessId;
+public class CalendarCandidateInfoDto extends BaseDto<Instant> {
+    private Long calendarId;
 
-    private Long jobAdCandidateId;
+    private Long candidateInfoId;
 
-    private Instant actionDate;
+    private LocalDate date;
 
-    private Boolean isCurrentProcess;
+    private LocalTime timeFrom;
 
-    // attribute expansion
-    private String processName;
+    private LocalTime timeTo;
 }

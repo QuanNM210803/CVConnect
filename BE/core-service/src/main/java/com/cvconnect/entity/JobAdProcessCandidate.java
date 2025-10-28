@@ -29,7 +29,4 @@ public class JobAdProcessCandidate extends BaseEntity {
     @Column(name = "is_current_process")
     private Boolean isCurrentProcess;
 
-    @Column(name = "note", length = Integer.MAX_VALUE)
-    private String note;
-
 }

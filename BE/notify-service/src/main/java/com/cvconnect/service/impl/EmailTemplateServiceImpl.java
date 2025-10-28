@@ -206,6 +206,15 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     }
 
     @Override
+    public EmailTemplateDto previewEmail(PreviewEmailWithoutTemplate request) {
+        String bodyPreview = restTemplateClient.previewEmail(request.getBody(), request.getPlaceholderCodes(), request.getDataReplacePlaceholder(), false);
+        EmailTemplateDto emailTemplateDto = new EmailTemplateDto();
+        emailTemplateDto.setSubject(request.getSubject());
+        emailTemplateDto.setBodyPreview(bodyPreview);
+        return emailTemplateDto;
+    }
+
+    @Override
     public String previewEmailDefault(PreviewEmailDefaultRequest request) {
         return restTemplateClient.previewEmail(request.getBody(), request.getPlaceholders(), null, true);
     }

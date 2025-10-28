@@ -1,5 +1,6 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.dto.candidateEvaluation.CandidateEvaluationDetail;
 import com.cvconnect.dto.candidateEvaluation.CandidateEvaluationDto;
 import com.cvconnect.dto.candidateEvaluation.CandidateEvaluationRequest;
 import com.cvconnect.entity.CandidateEvaluation;
@@ -44,7 +45,7 @@ public class CandidateEvaluationController {
     @GetMapping("/get-by-job-ad-candidate/{jobAdCandidateId}")
     @Operation(summary = "Create a new candidate evaluation")
     @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:VIEW')")
-    public ResponseEntity<Response<List<CandidateEvaluationDto>>> getByJobAdCandidate(@PathVariable Long jobAdCandidateId) {
+    public ResponseEntity<Response<List<CandidateEvaluationDetail>>> getByJobAdCandidate(@PathVariable Long jobAdCandidateId) {
         return ResponseUtils.success(candidateEvaluationService.getByJobAdCandidate(jobAdCandidateId));
     }
 }

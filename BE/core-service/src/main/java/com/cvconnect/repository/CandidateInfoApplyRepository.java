@@ -8,10 +8,20 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface CandidateInfoApplyRepository extends JpaRepository<CandidateInfoApply, Long> {
 
     @Query("SELECT c FROM CandidateInfoApply c " +
             "WHERE :#{#request.candidateId} IS NULL OR c.candidateId = :#{#request.candidateId} ")
     Page<CandidateInfoApply> filter(CandidateInfoApplyFilterRequest request, Pageable pageable);
+
+    @Query("SELECT COUNT(distinct c) FROM CandidateInfoApply c " +
+            "join JobAdCandidate jac on jac.candidateInfoId = c.id " +
+            "join JobAdProcessCandidate japc on japc.jobAdCandidateId = jac.id " +
+            "WHERE c.id IN :candidateInfoIds " +
+            "AND japc.jobAdProcessId = :jobAdProcessId " +
+            "and japc.isCurrentProcess = true")
+    Long countByCandidateInfoIdsAndJobAdProcessId(List<Long> candidateInfoIds, Long jobAdProcessId);
 }

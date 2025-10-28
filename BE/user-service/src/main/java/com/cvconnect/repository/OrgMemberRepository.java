@@ -77,4 +77,7 @@ public interface OrgMemberRepository extends JpaRepository<OrgMember, Long> {
 
     @Query("select om from OrgMember om where om.userId = :userId and om.orgId = :orgId")
     OrgMember findByUserIdAndOrgId(Long userId, Long orgId);
+
+    @Query("select om from OrgMember om where om.userId in :userIds and om.isActive = true")
+    List<OrgMember> findByUserIdInAndIsActiveTrue(List<Long> userIds);
 }

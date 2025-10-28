@@ -61,4 +61,9 @@ public class JobAdProcessServiceImpl implements JobAdProcessService {
         }
         return jobAdProcessDto;
     }
+
+    @Override
+    public Boolean existByJobAdProcessIdAndOrgId(Long jobAdProcessId, Long orgId) {
+        return jobAdProcessRepository.existByJobAdProcessIdAndOrgId(jobAdProcessId, orgId);
+    }
 }

@@ -13,6 +13,10 @@ public interface JobAdCandidateProjection {
     Long getJobAdCandidateId();
     String getCandidateStatus();
     Instant getApplyDate();
+    Instant getOnboardDate();
+    String getEliminateReasonType();
+    String getEliminateReasonDetail();
+    Instant getEliminateDate();
     Long getJobAdProcessCandidateId();
     Instant getActionDate();
     Boolean getIsCurrentProcess();

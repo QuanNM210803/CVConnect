@@ -22,6 +22,10 @@ public class CalendarCandidateInfo extends BaseEntity {
     private Long candidateInfoId;
 
     @NotNull
+    @Column(name = "date", nullable = false)
+    private LocalTime date;
+
+    @NotNull
     @Column(name = "time_from", nullable = false)
     private LocalTime timeFrom;
 
