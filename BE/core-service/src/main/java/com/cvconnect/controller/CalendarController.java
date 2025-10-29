@@ -1,5 +1,7 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.dto.calendar.CalendarFitterRequest;
+import com.cvconnect.dto.calendar.CalendarFitterViewCandidateResponse;
 import com.cvconnect.dto.calendar.CalendarRequest;
 import com.cvconnect.service.CalendarService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,10 +14,9 @@ import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("calendar")
@@ -30,5 +31,12 @@ public class CalendarController {
     @PreAuthorize("hasAnyAuthority('ORG_CALENDAR:ADD')")
     public ResponseEntity<Response<IDResponse<Long>>> createCalendar(@Valid @RequestBody CalendarRequest request) {
         return ResponseUtils.success(calendarService.createCalendar(request), localizationUtils.getLocalizedMessage(MessageConstants.CREATE_SUCCESSFULLY));
+    }
+
+    @GetMapping("/filter-view-candidate")
+    @Operation(summary = "Filter View Candidate Calendars", description = "Filter calendars for viewing by candidates")
+    @PreAuthorize("hasAnyAuthority('ORG_CALENDAR:VIEW')")
+    public ResponseEntity<Response<List<CalendarFitterViewCandidateResponse>>> filterViewCandidateCalendars(@Valid @ModelAttribute CalendarFitterRequest request) {
+        return ResponseUtils.success(calendarService.filterViewCandidateCalendars(request));
     }
 }

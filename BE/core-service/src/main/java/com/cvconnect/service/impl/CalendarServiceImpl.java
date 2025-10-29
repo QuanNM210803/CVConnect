@@ -4,6 +4,8 @@ import com.cvconnect.common.ReplacePlaceholder;
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.calendar.CalendarCandidateInfoDto;
+import com.cvconnect.dto.calendar.CalendarFitterRequest;
+import com.cvconnect.dto.calendar.CalendarFitterViewCandidateResponse;
 import com.cvconnect.dto.calendar.CalendarRequest;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.common.DataReplacePlaceholder;
@@ -179,6 +181,11 @@ public class CalendarServiceImpl implements CalendarService {
         return IDResponse.<Long>builder()
                 .id(calendar.getId())
                 .build();
+    }
+
+    @Override
+    public List<CalendarFitterViewCandidateResponse> filterViewCandidateCalendars(CalendarFitterRequest request) {
+        return List.of();
     }
 
     private void validateCreateCalendar(CalendarRequest request, Long orgId) {

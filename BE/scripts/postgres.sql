@@ -821,9 +821,9 @@
 --
 --     FOREIGN KEY (job_ad_process_candidate_id) REFERENCES job_ad_process_candidate (id) ON DELETE CASCADE
 -- );
-
-alter table job_ad_process_candidate
-drop column note;
-
-alter table calendar_candidate_info
-add column date DATE NOT NULL;
+--
+-- alter table job_ad_process_candidate
+-- drop column note;
+--
+-- alter table calendar_candidate_info
+-- add column date DATE NOT NULL;
