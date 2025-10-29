@@ -119,6 +119,7 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
                japc.id as jobAdProcessCandidateId,
                japc.actionDate as actionDate,
                japc.isCurrentProcess as isCurrentProcess,
+               japc.jobAdProcessId as jobAdProcessId,
                jap.name as processName
         from JobAdCandidate as jac
         join JobAd as ja on ja.id = jac.jobAdId

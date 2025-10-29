@@ -13,4 +13,5 @@ public interface CandidateInfoApplyService {
     List<Long> create(List<CandidateInfoApplyDto> dtos);
     Boolean validateCandidateInfoInProcess(List<Long> candidateInfoIds, Long jobAdProcessId);
     Map<Long, CandidateInfoApplyDto> getByIds(List<Long> candidateInfoIds);
+    List<CandidateInfoApplyDto> getByCalendarId(Long calendarId);
 }

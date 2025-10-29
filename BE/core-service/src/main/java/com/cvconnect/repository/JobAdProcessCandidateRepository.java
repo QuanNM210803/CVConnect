@@ -1,5 +1,6 @@
 package com.cvconnect.repository;
 
+import com.cvconnect.dto.jobAdCandidate.JobAdProcessCandidateDto;
 import com.cvconnect.entity.JobAdProcessCandidate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -40,4 +41,10 @@ public interface JobAdProcessCandidateRepository extends JpaRepository<JobAdProc
             and pt.code = :processTypeCode
     """)
     Boolean validateCurrentProcessTypeIs(Long jobAdCandidateId, String processTypeCode);
+
+    @Query("select new com.cvconnect.dto.jobAdCandidate.JobAdProcessCandidateDto(jap.id, jac.id, japc.actionDate, japc.isCurrentProcess, jap.name) from JobAdProcessCandidate japc " +
+            "join JobAdCandidate jac on jac.id = japc.jobAdCandidateId " +
+            "join JobAdProcess jap on jap.id = japc.jobAdProcessId " +
+            "where jac.jobAdId = :jobAdId and jac.candidateInfoId = :candidateInfoId and japc.isCurrentProcess = true")
+    JobAdProcessCandidateDto getCurrentProcess(Long jobAdId, Long candidateInfoId);
 }

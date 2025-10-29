@@ -1,5 +1,6 @@
 package com.cvconnect.service;
 
+import com.cvconnect.dto.calendar.CalendarDetailInViewCandidate;
 import com.cvconnect.dto.calendar.CalendarFitterRequest;
 import com.cvconnect.dto.calendar.CalendarFitterViewCandidateResponse;
 import com.cvconnect.dto.calendar.CalendarRequest;
@@ -10,4 +11,5 @@ import java.util.List;
 public interface CalendarService {
     IDResponse<Long> createCalendar(CalendarRequest request);
     List<CalendarFitterViewCandidateResponse> filterViewCandidateCalendars(CalendarFitterRequest request);
+    CalendarDetailInViewCandidate detailInViewCandidate(Long calendarCandidateInfoId);
 }

@@ -79,4 +79,12 @@ public class JobAdCandidateController {
         jobAdCandidateService.markOnboard(request);
         return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
     }
+
+    @PostMapping("/send-email")
+    @Operation(summary = "Send email to candidate")
+    @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:UPDATE')")
+    public ResponseEntity<Response<Void>> sendEmailToCandidate(@Valid @RequestBody SendEmailToCandidateRequest request) {
+        jobAdCandidateService.sendEmailToCandidate(request);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(Messages.SEND_EMAIL_SUCCESS));
+    }
 }

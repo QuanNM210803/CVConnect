@@ -19,4 +19,6 @@ public class CalendarFitterRequest {
     private Instant dateTo;
     private ParticipationType participationType;
     private Long jobAdCandidateId;
+
+    // man hinh lich trong ung vien chi cho loc theo participationType va jobAdCandidateId
 }

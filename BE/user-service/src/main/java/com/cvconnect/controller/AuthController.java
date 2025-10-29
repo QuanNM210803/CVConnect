@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.ErrorCode;
+import nmquan.commonlib.utils.JwtUtils;
 import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +78,16 @@ public class AuthController {
     @PostMapping("/verify")
     @Operation(summary = "Verify Token API")
     public ResponseEntity<Response<VerifyResponse>> verify(@RequestBody VerifyRequest verifyRequest) {
+        return ResponseUtils.success(authService.verify(verifyRequest));
+    }
+
+    // public API
+    @PostMapping("/verify-token")
+    @Operation(summary = "Verify Token API")
+    public ResponseEntity<Response<VerifyResponse>> verifyToken(HttpServletRequest httpServletRequest) {
+        String token = JwtUtils.getToken(httpServletRequest);
+        VerifyRequest verifyRequest = new VerifyRequest();
+        verifyRequest.setToken(token);
         return ResponseUtils.success(authService.verify(verifyRequest));
     }
 

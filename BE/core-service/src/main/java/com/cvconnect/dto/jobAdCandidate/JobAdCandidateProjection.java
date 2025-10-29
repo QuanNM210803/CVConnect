@@ -20,5 +20,6 @@ public interface JobAdCandidateProjection {
     Long getJobAdProcessCandidateId();
     Instant getActionDate();
     Boolean getIsCurrentProcess();
+    Long getJobAdProcessId();
     String getProcessName();
 }

@@ -34,8 +34,8 @@ public class JobAdProcessCandidateServiceImpl implements JobAdProcessCandidateSe
     }
 
     @Override
-    public JobAdProcessCandidateDto findById(Long jobAdCandidateId) {
-        JobAdProcessCandidate entity = jobAdProcessCandidateRepository.findById(jobAdCandidateId).orElse(null);
+    public JobAdProcessCandidateDto findById(Long jobAdProcessCandidateId) {
+        JobAdProcessCandidate entity = jobAdProcessCandidateRepository.findById(jobAdProcessCandidateId).orElse(null);
         if(ObjectUtils.isEmpty(entity)){
             return null;
         }
@@ -50,5 +50,10 @@ public class JobAdProcessCandidateServiceImpl implements JobAdProcessCandidateSe
     @Override
     public Boolean validateCurrentProcessTypeIs(Long jobAdCandidateId, String processTypeCode) {
         return jobAdProcessCandidateRepository.validateCurrentProcessTypeIs(jobAdCandidateId, processTypeCode);
+    }
+
+    @Override
+    public JobAdProcessCandidateDto getCurrentProcess(Long jobAdId, Long candidateInfoId) {
+        return jobAdProcessCandidateRepository.getCurrentProcess(jobAdId, candidateInfoId);
     }
 }

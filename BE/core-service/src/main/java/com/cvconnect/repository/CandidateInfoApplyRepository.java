@@ -24,4 +24,9 @@ public interface CandidateInfoApplyRepository extends JpaRepository<CandidateInf
             "AND japc.jobAdProcessId = :jobAdProcessId " +
             "and japc.isCurrentProcess = true")
     Long countByCandidateInfoIdsAndJobAdProcessId(List<Long> candidateInfoIds, Long jobAdProcessId);
+
+    @Query("SELECT c FROM CandidateInfoApply c " +
+            "join CalendarCandidateInfo cci on cci.candidateInfoId = c.id " +
+            "WHERE cci.calendarId = :calendarId")
+    List<CandidateInfoApply> findByCalendarId(Long calendarId);
 }

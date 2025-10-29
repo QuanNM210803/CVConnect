@@ -85,4 +85,13 @@ public class CandidateInfoApplyServiceImpl implements CandidateInfoApplyService 
         return dtos.stream()
                 .collect(Collectors.toMap(CandidateInfoApplyDto::getId, Function.identity()));
     }
+
+    @Override
+    public List<CandidateInfoApplyDto> getByCalendarId(Long calendarId) {
+        List<CandidateInfoApply> entities = candidateInfoApplyRepository.findByCalendarId(calendarId);
+        if(ObjectUtils.isEmpty(entities)) {
+            return List.of();
+        }
+        return ObjectMapperUtils.convertToList(entities, CandidateInfoApplyDto.class);
+    }
 }

@@ -827,3 +827,9 @@
 --
 -- alter table calendar_candidate_info
 -- add column date DATE NOT NULL;
+
+alter table calendar_candidate_info
+add unique (calendar_id, candidate_info_id);
+
+alter table interview_panel
+add unique (calendar_id, interviewer_id);

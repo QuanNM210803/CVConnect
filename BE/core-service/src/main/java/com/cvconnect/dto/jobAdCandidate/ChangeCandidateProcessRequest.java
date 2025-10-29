@@ -20,7 +20,7 @@ public class ChangeCandidateProcessRequest {
     @NotNull(message = Messages.PROCESS_TYPE_REQUIRE)
     private Long toJobAdProcessCandidateId;
     private Instant onboardDate;
-    private boolean isSendEmail;
+    private boolean sendEmail;
 
     private Long emailTemplateId;
 

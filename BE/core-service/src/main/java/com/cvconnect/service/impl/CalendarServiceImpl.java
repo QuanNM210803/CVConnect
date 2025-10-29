@@ -3,17 +3,18 @@ package com.cvconnect.service.impl;
 import com.cvconnect.common.ReplacePlaceholder;
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
-import com.cvconnect.dto.calendar.CalendarCandidateInfoDto;
-import com.cvconnect.dto.calendar.CalendarFitterRequest;
-import com.cvconnect.dto.calendar.CalendarFitterViewCandidateResponse;
-import com.cvconnect.dto.calendar.CalendarRequest;
+import com.cvconnect.dto.calendar.*;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.common.DataReplacePlaceholder;
+import com.cvconnect.dto.enums.CalendarTypeDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.interviewPanel.InterviewPanelDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
+import com.cvconnect.dto.jobAd.JobAdProcessDto;
+import com.cvconnect.dto.org.OrgAddressDto;
 import com.cvconnect.entity.Calendar;
+import com.cvconnect.enums.CalendarType;
 import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.enums.ProcessTypeEnum;
 import com.cvconnect.repository.CalendarRepository;
@@ -34,10 +35,9 @@ import org.springframework.util.ObjectUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CalendarServiceImpl implements CalendarService {
@@ -59,6 +59,10 @@ public class CalendarServiceImpl implements CalendarService {
     private ReplacePlaceholder replacePlaceholder;
     @Autowired
     private JobAdService jobAdService;
+    @Autowired
+    private JobAdCandidateService jobAdCandidateService;
+    @Autowired
+    private OrgAddressService orgAddressService;
 
     @Override
     @Transactional
@@ -185,7 +189,143 @@ public class CalendarServiceImpl implements CalendarService {
 
     @Override
     public List<CalendarFitterViewCandidateResponse> filterViewCandidateCalendars(CalendarFitterRequest request) {
-        return List.of();
+        if(request.getJobAdCandidateId() == null){
+            throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+        Long orgId = restTemplateClient.validOrgMember();
+        Long currentUserId = WebUtils.getCurrentUserId();
+        Boolean existsByJobAdCandidateIdAndOrgId = jobAdCandidateService.existsByJobAdCandidateIdAndOrgId(request.getJobAdCandidateId(), orgId);
+        if(!existsByJobAdCandidateIdAndOrgId){
+            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+        }
+        List<String> roles = WebUtils.getCurrentRole();
+        Long creatorId = null;
+        Long participantId = null;
+        Long participantIdAuth = null;
+
+        if (!roles.contains(Constants.RoleCode.ORG_ADMIN)) {
+            boolean isContactPerson = jobAdCandidateService
+                    .existsByJobAdCandidateIdAndHrContactId(request.getJobAdCandidateId(), currentUserId);
+            if (!isContactPerson) {
+                participantIdAuth = currentUserId;
+            }
+        }
+        switch (request.getParticipationType()) {
+            case CREATED_BY_ME -> creatorId = currentUserId;
+            case JOINED_BY_ME -> participantId = currentUserId;
+        }
+
+        List<CalendarFilterViewCandidateProjection> projections = calendarRepository
+                .filterViewCandidateCalendars(request, creatorId, participantId, participantIdAuth);
+
+        Set<Long> creatorIds = projections.stream()
+                .map(CalendarFilterViewCandidateProjection::getCreatorId)
+                .collect(Collectors.toSet());
+        Map<Long, UserDto> creators = restTemplateClient.getUsersByIds(new ArrayList<>(creatorIds));
+
+        Map<LocalDate, List<CalendarFilterViewCandidateProjection>> groupedByDate = projections.stream()
+                .collect(Collectors.groupingBy(CalendarFilterViewCandidateProjection::getDate));
+
+        List<CalendarFitterViewCandidateResponse> responses = groupedByDate.entrySet().stream()
+                .map(entry -> {
+                    LocalDate date = entry.getKey();
+                    List<CalendarFilterViewCandidateProjection> items = entry.getValue();
+
+                    List<CalendarViewCandidateDetail> details = items.stream()
+                            .map(p -> {
+                                CalendarViewCandidateDetail detail = new CalendarViewCandidateDetail();
+                                detail.setCalendarId(p.getCalendarId());
+                                detail.setCalendarCandidateInfoId(p.getCalendarCandidateInfoId());
+                                detail.setTimeFrom(p.getTimeFrom());
+                                detail.setTimeTo(p.getTimeTo());
+
+                                JobAdProcessDto jobAdProcess = new JobAdProcessDto();
+                                jobAdProcess.setId(p.getJobAdProcessId());
+                                jobAdProcess.setName(p.getJobAdProcessName());
+                                detail.setJobAdProcess(jobAdProcess);
+
+                                detail.setCreator(creators.get(p.getCreatorId()));
+
+                                CalendarTypeDto calendarType = CalendarType.getCalendarTypeDto(p.getCalendarType());
+                                detail.setCalendarType(calendarType);
+
+                                return detail;
+                            })
+                            .toList();
+
+                    CalendarFitterViewCandidateResponse response = new CalendarFitterViewCandidateResponse();
+                    response.setDate(date);
+                    response.setLabelDate(date.format(DateTimeFormatter.ofPattern("dd 'Tháng' MM, yyyy")));
+                    response.setNumOfCalendars((long) details.size());
+                    response.setCalendars(details);
+
+                    return response;
+                })
+                .sorted(Comparator.comparing(CalendarFitterViewCandidateResponse::getDate))
+                .toList();
+
+        return responses;
+    }
+
+    @Override
+    public CalendarDetailInViewCandidate detailInViewCandidate(Long calendarCandidateInfoId) {
+        Long orgId = restTemplateClient.validOrgMember();
+        Long userId = null;
+        List<String> roles = WebUtils.getCurrentRole();
+        if(!roles.contains(Constants.RoleCode.ORG_ADMIN)){
+            userId = WebUtils.getCurrentUserId();
+        }
+
+        CalendarDetailInViewCandidateProjection projection = calendarRepository.detailInViewCandidate(calendarCandidateInfoId, orgId, userId);
+        if(projection == null){
+            throw new AppException(CoreErrorCode.CALENDAR_NOT_FOUND);
+        }
+
+        CalendarDetailInViewCandidate detail = new CalendarDetailInViewCandidate();
+
+        // job ad
+        JobAdDto jobAd = new JobAdDto();
+        jobAd.setId(projection.getJobAdId());
+        jobAd.setTitle(projection.getJobAdTitle());
+        detail.setJobAd(jobAd);
+
+        // job ad process
+        JobAdProcessDto jobAdProcess = new JobAdProcessDto();
+        jobAdProcess.setId(projection.getJobAdProcessId());
+        jobAdProcess.setName(projection.getJobAdProcessName());
+        detail.setJobAdProcess(jobAdProcess);
+
+        // creator
+        UserDto creator = restTemplateClient.getUser(projection.getCreatorId());
+        detail.setCreator(creator);
+
+        // calendar type
+        CalendarTypeDto calendarType = CalendarType.getCalendarTypeDto(projection.getCalendarType());
+        detail.setCalendarType(calendarType);
+
+        // date, timeFrom, timeTo
+        detail.setDate(projection.getDate());
+        detail.setTimeFrom(projection.getTimeFrom());
+        detail.setTimeTo(projection.getTimeTo());
+
+        // location
+        if(projection.getLocationId() != null){
+            OrgAddressDto location = orgAddressService.getById(projection.getLocationId());
+            detail.setLocation(location);
+        }
+
+        // meeting link
+        detail.setMeetingLink(projection.getMeetingLink());
+
+        // candidates
+        List<CandidateInfoApplyDto> candidates = candidateInfoApplyService.getByCalendarId(projection.getCalendarId());
+        detail.setCandidates(candidates);
+
+        // participants
+        List<UserDto> participants = interviewPanelService.getByCalendarId(projection.getCalendarId());
+        detail.setParticipants(participants);
+
+        return detail;
     }
 
     private void validateCreateCalendar(CalendarRequest request, Long orgId) {

@@ -68,6 +68,7 @@ public class Messages {
     public static final String DATE_BEFORE_TODAY = "date.before.today";
     public static final String DURATION_MINUTES_INVALID = "duration.minutes.invalid";
     public static final String CANDIDATE_INFO_EXISTS_NOT_IN_PROCESS = "candidate.info.exists.not.in.process";
+    public static final String CALENDAR_NOT_FOUND = "calendar.not.found";
 
     /*
     * Validation Messages
@@ -119,6 +120,7 @@ public class Messages {
     public static final String UPLOAD_FILE_SUCCESS = "upload.file.success";
     public static final String APPLY_SUCCESS = "apply.success";
     public static final String CHANGE_CANDIDATE_PROCESS_SUCCESS = "change.candidate.process.success";
+    public static final String SEND_EMAIL_SUCCESS = "send.email.success";
 
     /*
     * Notification Messages

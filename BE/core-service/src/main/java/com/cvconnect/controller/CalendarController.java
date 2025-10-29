@@ -1,5 +1,6 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.dto.calendar.CalendarDetailInViewCandidate;
 import com.cvconnect.dto.calendar.CalendarFitterRequest;
 import com.cvconnect.dto.calendar.CalendarFitterViewCandidateResponse;
 import com.cvconnect.dto.calendar.CalendarRequest;
@@ -38,5 +39,12 @@ public class CalendarController {
     @PreAuthorize("hasAnyAuthority('ORG_CALENDAR:VIEW')")
     public ResponseEntity<Response<List<CalendarFitterViewCandidateResponse>>> filterViewCandidateCalendars(@Valid @ModelAttribute CalendarFitterRequest request) {
         return ResponseUtils.success(calendarService.filterViewCandidateCalendars(request));
+    }
+
+    @GetMapping("/detail-in-view-candidate/{calendarCandidateInfoId}")
+    @Operation(summary = "Detail in View Candidate Calendars", description = "Get detailed calendars for viewing by candidates")
+    @PreAuthorize("hasAnyAuthority('ORG_CALENDAR:VIEW')")
+    public ResponseEntity<Response<CalendarDetailInViewCandidate>> detailInViewCandidate(@PathVariable Long calendarCandidateInfoId) {
+        return ResponseUtils.success(calendarService.detailInViewCandidate(calendarCandidateInfoId));
     }
 }
