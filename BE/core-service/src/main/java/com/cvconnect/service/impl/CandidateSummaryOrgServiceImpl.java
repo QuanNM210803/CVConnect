@@ -42,7 +42,7 @@ public class CandidateSummaryOrgServiceImpl implements CandidateSummaryOrgServic
 
         boolean checkAuthority = jobAdCandidateService.checkCandidateInfoInOrg(request.getCandidateInfoId(), orgId, hrContactId);
         if(!checkAuthority){
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
 
         CandidateSummaryOrg candidateSummaryOrg = candidateSummaryOrgRepository.findByCandidateInfoIdAndOrgId(request.getCandidateInfoId(), orgId);

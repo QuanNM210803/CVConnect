@@ -833,6 +833,6 @@
 --
 -- alter table interview_panel
 -- add unique (calendar_id, interviewer_id);
-
-alter table job_ad
-add column key_code_internal VARCHAR(100);
+--
+-- alter table job_ad
+-- add column key_code_internal VARCHAR(100);

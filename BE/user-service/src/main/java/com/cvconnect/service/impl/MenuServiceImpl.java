@@ -28,7 +28,7 @@ public class MenuServiceImpl implements MenuService {
         Long userId = WebUtils.getCurrentUserId();
         RoleUserDto roleUserDto = roleUserService.findByUserIdAndRoleId(userId, roleId);
         if (roleUserDto == null) {
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         List<MenuProjection> projections = menuRepository.findMenusByRoleId(roleId);
         return this.buildMenuTree(projections, true);

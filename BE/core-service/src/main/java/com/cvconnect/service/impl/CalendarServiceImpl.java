@@ -196,7 +196,7 @@ public class CalendarServiceImpl implements CalendarService {
         Long currentUserId = WebUtils.getCurrentUserId();
         Boolean existsByJobAdCandidateIdAndOrgId = jobAdCandidateService.existsByJobAdCandidateIdAndOrgId(request.getJobAdCandidateId(), orgId);
         if(!existsByJobAdCandidateIdAndOrgId){
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         List<String> roles = WebUtils.getCurrentRole();
         Long creatorId = null;
@@ -332,7 +332,7 @@ public class CalendarServiceImpl implements CalendarService {
         // validate jobAdProcessId
         Boolean exists = jobAdProcessService.existByJobAdProcessIdAndOrgId(request.getJobAdProcessId(), orgId);
         if (!exists) {
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
 
         // validate calendarType
@@ -353,7 +353,7 @@ public class CalendarServiceImpl implements CalendarService {
         // validate participantIds
         Boolean isValidParticipants = restTemplateClient.checkOrgMember(request.getParticipantIds());
         if(!isValidParticipants) {
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
 
         // validate candidateInfoIds

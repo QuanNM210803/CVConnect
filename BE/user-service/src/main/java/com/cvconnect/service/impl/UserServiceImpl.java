@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
     public UserDto getMyInfo(Long roleId) {
         Long userId = WebUtils.getCurrentUserId();
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new AppException(CommonErrorCode.UNAUTHENTICATED)
+                () -> new AppException(CommonErrorCode.DATA_NOT_FOUND)
         );
         UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
         UserDetailDto<?> userDetailDto = this.getUserDetail(userId, roleId);

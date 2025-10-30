@@ -93,7 +93,7 @@ public class OrgAddressServiceImpl implements OrgAddressService {
 
         // check access: case reqIds contain id org other
         if(!new HashSet<>(dbIds).containsAll(reqIds)){
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         
         // delete address not in reqIds

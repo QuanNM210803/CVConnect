@@ -80,7 +80,7 @@ public class EmailServiceImpl implements EmailService {
         }
         String currentEmail = WebUtils.getCurrentEmail();
         if(!emailLog.getSender().equals(currentEmail)){
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         emailLog.setStatus(SendEmailStatus.SENDING);
         emailLogService.save(emailLog);

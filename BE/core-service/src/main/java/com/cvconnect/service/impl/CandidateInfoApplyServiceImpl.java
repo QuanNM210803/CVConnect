@@ -108,7 +108,7 @@ public class CandidateInfoApplyServiceImpl implements CandidateInfoApplyService 
         Long orgId = restTemplateClient.validOrgMember();
         Boolean exists = jobAdProcessService.existByJobAdProcessIdAndOrgId(jobAdProcessId, orgId);
         if(!exists) {
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         List<CandidateInfoApply> entities = candidateInfoApplyRepository.findCandidateInCurrentProcess(jobAdProcessId);
         List<CandidateInfoApplyDto> dtos = ObjectMapperUtils.convertToList(entities, CandidateInfoApplyDto.class);

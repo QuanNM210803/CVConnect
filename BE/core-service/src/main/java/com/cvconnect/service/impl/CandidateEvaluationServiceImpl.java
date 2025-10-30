@@ -76,7 +76,7 @@ public class CandidateEvaluationServiceImpl implements CandidateEvaluationServic
             }
         }
         if (!checkAuthorized) {
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
 
         CandidateEvaluation candidateEvaluation = new CandidateEvaluation();
@@ -99,7 +99,7 @@ public class CandidateEvaluationServiceImpl implements CandidateEvaluationServic
                 () -> new AppException(CommonErrorCode.DATA_NOT_FOUND)
         );
         if(!candidateEvaluation.getEvaluatorId().equals(currentUserId)){
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         candidateEvaluation.setComments(request.getComments());
         candidateEvaluation.setScore(request.getScore());
@@ -119,7 +119,7 @@ public class CandidateEvaluationServiceImpl implements CandidateEvaluationServic
         if (role.contains(Constants.RoleCode.ORG_ADMIN)) {
             Boolean checkAuthorized = jobAdCandidateService.existsByJobAdCandidateIdAndOrgId(jobAdCandidateId, orgId);
             if (!checkAuthorized) {
-                throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+                throw new AppException(CommonErrorCode.ACCESS_DENIED);
             }
         } else {
             Boolean checkHr = jobAdCandidateService.existsByJobAdCandidateIdAndHrContactId(jobAdCandidateId, currentUserId);

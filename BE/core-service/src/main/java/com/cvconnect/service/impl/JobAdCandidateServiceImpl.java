@@ -491,6 +491,9 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                     .hrEmail(hrContact.getEmail())
                     .hrPhone(hrContact.getPhoneNumber())
                     .build();
+            if(request.getOnboardDate() != null){
+                dataReplacePlaceholder.setExamStartTime(request.getOnboardDate());
+            }
             String body = replacePlaceholder.replacePlaceholder(template, placeholders, dataReplacePlaceholder);
 
             // send email
@@ -679,7 +682,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
         }
         if(!jobAd.getOrgId().equals(orgId)){
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         boolean existsCandidateInfo = jobAdCandidateRepository.existsByJobAdIdAndCandidateInfoId(request.getJobAdId(), request.getCandidateInfoId());
         if(!existsCandidateInfo){
@@ -797,7 +800,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             checkAuthorized = jobAdCandidateRepository.existsByJobAdCandidateIdAndHrContactId(jobAdCandidateId, hrContactId);
         }
         if (!checkAuthorized) {
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
     }
 }

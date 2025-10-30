@@ -52,7 +52,7 @@ public class PositionServiceImpl implements PositionService {
     public IDResponse<Long> create(PositionRequest request) {
         DepartmentDto departmentDto = departmentService.detail(request.getDepartmentId());
         if(Objects.isNull(departmentDto)){
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         boolean existsByCode = positionRepository.existsByCodeAndDepartmentId(request.getCode(), request.getDepartmentId());
         if(existsByCode){
@@ -76,7 +76,7 @@ public class PositionServiceImpl implements PositionService {
         Long orgId = restTemplateClient.validOrgMember();
         List<Position> positions = positionRepository.findByIdsAndOrgId(request.getIds(), orgId);
         if(positions.size() != request.getIds().size()){
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         positions.forEach(position -> position.setIsActive(request.getActive()));
         positionRepository.saveAll(positions);
@@ -88,7 +88,7 @@ public class PositionServiceImpl implements PositionService {
         Long orgId = restTemplateClient.validOrgMember();
         List<Position> positions = positionRepository.findByIdsAndOrgId(ids, orgId);
         if(positions.size() != ids.size()){
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         positionRepository.deleteAll(positions);
     }
@@ -129,7 +129,7 @@ public class PositionServiceImpl implements PositionService {
         Long orgId = restTemplateClient.validOrgMember();
         DepartmentDto departmentDto = departmentService.detail(request.getDepartmentId());
         if(Objects.isNull(departmentDto)){
-            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         Position position = positionRepository.findByIdAndOrgId(request.getId(), orgId);
         if(Objects.isNull(position)){
