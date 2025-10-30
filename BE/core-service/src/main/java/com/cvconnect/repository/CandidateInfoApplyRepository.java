@@ -29,4 +29,19 @@ public interface CandidateInfoApplyRepository extends JpaRepository<CandidateInf
             "join CalendarCandidateInfo cci on cci.candidateInfoId = c.id " +
             "WHERE cci.calendarId = :calendarId")
     List<CandidateInfoApply> findByCalendarId(Long calendarId);
+
+    @Query("SELECT distinct c FROM CandidateInfoApply c " +
+            "join JobAdCandidate jac on jac.candidateInfoId = c.id " +
+            "join JobAdProcessCandidate japc on japc.jobAdCandidateId = jac.id " +
+            "WHERE japc.jobAdProcessId = :jobAdProcessId " +
+            "and japc.isCurrentProcess = true")
+    List<CandidateInfoApply> findCandidateInCurrentProcess(Long jobAdProcessId);
+
+    @Query("""
+        select distinct cci.candidateInfoId from CalendarCandidateInfo cci
+        join Calendar c on c.id = cci.calendarId
+        join JobAdProcess jap on jap.id = c.jobAdProcessId
+        where jap.id = :jobAdProcessId and cci.candidateInfoId in :candidateInfoIds
+    """)
+    List<Long> getCandidateInfoHasSchedule(Long jobAdProcessId, List<Long> candidateInfoIds);
 }

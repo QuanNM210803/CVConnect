@@ -23,6 +23,10 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
             "WHERE jc.jobAdId = :jobAdId AND cia.candidateId = :candidateId")
     boolean existsByJobAdIdAndCandidateId(Long jobAdId, Long candidateId);
 
+    @Query("SELECT CASE WHEN COUNT(jc) > 0 THEN true ELSE false END " +
+            "FROM JobAdCandidate jc " +
+            "WHERE jc.jobAdId = :jobAdId AND jc.candidateInfoId = :candidateInfoId")
+    boolean existsByJobAdIdAndCandidateInfoId(Long jobAdId, Long candidateInfoId);
 
     @Query(value = """
         select cia.id as id, cia.fullName as fullName, cia.email as email, cia.phone as phone, l.id as levelId, l.name as levelName,
@@ -106,7 +110,7 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
     CandidateInfoApplyProjection getCandidateInfoDetailProjection(Long candidateInfoId, Long orgId, Long participantId);
 
     @Query(value = """
-        select ja.id as jobAdId, ja.title as jobAdTitle, ja.hrContactId as hrContactId,
+        select ja.id as jobAdId, ja.title as jobAdTitle, ja.hrContactId as hrContactId, ja.keyCodeInternal as keyCodeInternal,
                p.id as positionId, p.name as positionName,
                d.id as departmentId, d.name as departmentName,
                jac.id as jobAdCandidateId,

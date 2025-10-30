@@ -22,4 +22,5 @@ public interface JobAdCandidateProjection {
     Boolean getIsCurrentProcess();
     Long getJobAdProcessId();
     String getProcessName();
+    String getKeyCodeInternal();
 }

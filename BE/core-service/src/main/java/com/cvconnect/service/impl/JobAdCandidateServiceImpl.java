@@ -336,11 +336,12 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                     .title(first.getJobAdTitle())
                                     .hrContactId(first.getHrContactId())
                                     .hrContactName(hrContacts.get(first.getHrContactId()) != null ?
-                                            hrContacts.get(first.getHrContactId()).getUsername() : null)
+                                            hrContacts.get(first.getHrContactId()).getFullName() : null)
                                     .positionId(first.getPositionId())
                                     .positionName(first.getPositionName())
                                     .departmentId(first.getDepartmentId())
                                     .departmentName(first.getDepartmentName())
+                                    .keyCodeInternal(first.getKeyCodeInternal())
                                     .build())
                             .build();
 
@@ -680,7 +681,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         if(!jobAd.getOrgId().equals(orgId)){
             throw new AppException(CommonErrorCode.UNAUTHENTICATED);
         }
-        boolean existsCandidateInfo = jobAdCandidateRepository.existsByJobAdIdAndCandidateId(request.getJobAdId(), request.getCandidateInfoId());
+        boolean existsCandidateInfo = jobAdCandidateRepository.existsByJobAdIdAndCandidateInfoId(request.getJobAdId(), request.getCandidateInfoId());
         if(!existsCandidateInfo){
             throw new AppException(CoreErrorCode.CANDIDATE_INFO_APPLY_NOT_FOUND);
         }

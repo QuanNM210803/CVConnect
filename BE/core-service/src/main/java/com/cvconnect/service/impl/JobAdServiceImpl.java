@@ -27,6 +27,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -88,6 +89,9 @@ public class JobAdServiceImpl implements JobAdService {
         jobAd.setEmailTemplateId(request.getEmailTemplateId());
         jobAd.setIsRemote(request.isHasRemote());
         jobAd.setIsAllLevel(request.getIsAllLevel());
+        if(!request.isPublic()){
+            jobAd.setKeyCodeInternal(UUID.randomUUID().toString());
+        }
         jobAdRepository.save(jobAd);
 
         if(!ObjectUtils.isEmpty(request.getCareerIds())){
@@ -167,6 +171,11 @@ public class JobAdServiceImpl implements JobAdService {
             return null;
         }
         return ObjectMapperUtils.convertToObject(jobAd, JobAdDto.class);
+    }
+
+    @Override
+    public List<JobAdProcessDto> getProcessByJobAdId(Long jobAdId) {
+        return jobAdProcessService.getByJobAdId(jobAdId);
     }
 
     private void validateCreate(JobAdRequest request) {

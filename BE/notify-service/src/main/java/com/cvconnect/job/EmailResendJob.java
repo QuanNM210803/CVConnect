@@ -51,6 +51,7 @@ public class EmailResendJob implements RunningJob {
                     .sender(emailLog.getSender())
                     .recipients(List.of(emailLog.getRecipients().split(",")))
                     .ccList(emailLog.getCcList() == null ? null : List.of(emailLog.getCcList().split(",")))
+                    .orgId(emailLog.getOrgId())
                     .subject(emailLog.getSubject())
                     .body(emailLog.getBody())
                     .template(emailLog.getTemplate())

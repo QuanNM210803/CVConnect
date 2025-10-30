@@ -100,4 +100,7 @@ public class JobAd extends BaseEntity {
 
     @Column(name = "is_all_level")
     private Boolean isAllLevel;
+
+    @Column(name = "key_code_internal")
+    private String keyCodeInternal;
 }

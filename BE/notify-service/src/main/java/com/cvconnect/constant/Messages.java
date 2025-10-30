@@ -8,6 +8,7 @@ public class Messages {
     public static final String PLACEHOLDER_NOT_FOUND = "placeholder.not.found";
     public static final String EMAIL_TEMPLATE_CODE_EXISTED = "email.template.code.existed";
     public static final String EMAIL_TEMPLATE_NOT_FOUND = "email.template.not.found";
+    public static final String EMAIL_LOG_NOT_FOUND = "email.log.not.found";
 
     /*
      * Validation messages
@@ -26,4 +27,5 @@ public class Messages {
     /*
      * Other messages
      * */
+    public static final String IN_PROCESSING_RESEND_EMAIL = "in.processing.resend.email";
 }

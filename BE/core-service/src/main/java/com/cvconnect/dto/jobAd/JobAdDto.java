@@ -59,6 +59,8 @@ public class JobAdDto extends BaseDto<Instant> {
 
     private Boolean isAllLevel;
 
+    private String keyCodeInternal;
+
     // attribute expansion
     private String hrContactName;
 

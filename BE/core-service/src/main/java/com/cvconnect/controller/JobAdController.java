@@ -1,5 +1,6 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.dto.jobAd.JobAdProcessDto;
 import com.cvconnect.dto.jobAd.JobAdRequest;
 import com.cvconnect.service.JobAdService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,10 +13,9 @@ import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/job-ad")
@@ -31,5 +31,12 @@ public class JobAdController {
     public ResponseEntity<Response<IDResponse<Long>>> createJobAd(@Valid @RequestBody JobAdRequest request) {
         return ResponseUtils.success(jobAdService.create(request),
                 localizationUtils.getLocalizedMessage(MessageConstants.CREATE_SUCCESSFULLY));
+    }
+
+    @GetMapping("/process/{jobAdId}")
+    @Operation(summary = "Get Job Ad by Job Ad Process ID")
+    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:VIEW')")
+    public ResponseEntity<Response<List<JobAdProcessDto>>> getProcessByJobAdId(@PathVariable Long jobAdId) {
+        return ResponseUtils.success(jobAdService.getProcessByJobAdId(jobAdId));
     }
 }

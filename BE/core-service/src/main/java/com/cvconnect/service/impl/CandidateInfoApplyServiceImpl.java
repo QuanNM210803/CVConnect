@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.attachFile.AttachFileDto;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyFilterRequest;
@@ -7,7 +8,10 @@ import com.cvconnect.entity.CandidateInfoApply;
 import com.cvconnect.repository.CandidateInfoApplyRepository;
 import com.cvconnect.service.AttachFileService;
 import com.cvconnect.service.CandidateInfoApplyService;
+import com.cvconnect.service.JobAdProcessService;
 import nmquan.commonlib.dto.response.FilterResponse;
+import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
 import nmquan.commonlib.utils.WebUtils;
@@ -27,6 +31,10 @@ public class CandidateInfoApplyServiceImpl implements CandidateInfoApplyService 
     private CandidateInfoApplyRepository candidateInfoApplyRepository;
     @Autowired
     private AttachFileService attachFileService;
+    @Autowired
+    private RestTemplateClient restTemplateClient;
+    @Autowired
+    private JobAdProcessService jobAdProcessService;
 
     @Override
     public FilterResponse<CandidateInfoApplyDto> filter(CandidateInfoApplyFilterRequest request) {
@@ -93,5 +101,29 @@ public class CandidateInfoApplyServiceImpl implements CandidateInfoApplyService 
             return List.of();
         }
         return ObjectMapperUtils.convertToList(entities, CandidateInfoApplyDto.class);
+    }
+
+    @Override
+    public List<CandidateInfoApplyDto> getCandidateInCurrentProcess(Long jobAdProcessId) {
+        Long orgId = restTemplateClient.validOrgMember();
+        Boolean exists = jobAdProcessService.existByJobAdProcessIdAndOrgId(jobAdProcessId, orgId);
+        if(!exists) {
+            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+        }
+        List<CandidateInfoApply> entities = candidateInfoApplyRepository.findCandidateInCurrentProcess(jobAdProcessId);
+        List<CandidateInfoApplyDto> dtos = ObjectMapperUtils.convertToList(entities, CandidateInfoApplyDto.class);
+
+        if(ObjectUtils.isEmpty(dtos)) {
+            return List.of();
+        }
+
+        List<Long> candidateInfoIds = dtos.stream()
+                .map(CandidateInfoApplyDto::getId)
+                .toList();
+        List<Long> candidateInfoHasSchedule = candidateInfoApplyRepository.getCandidateInfoHasSchedule(jobAdProcessId, candidateInfoIds);
+        for (CandidateInfoApplyDto dto : dtos) {
+            dto.setHasSchedule(candidateInfoHasSchedule.contains(dto.getId()));
+        }
+        return dtos;
     }
 }

@@ -1,5 +1,6 @@
 package com.cvconnect.service.impl;
 
+import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.EmailConfigDto;
 import com.cvconnect.dto.EmailLogDto;
 import com.cvconnect.enums.NotifyErrorCode;
@@ -10,13 +11,18 @@ import com.cvconnect.service.EmailService;
 import jakarta.mail.*;
 import nmquan.commonlib.dto.SendEmailDto;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.utils.ObjectMapperUtils;
+import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -26,6 +32,8 @@ public class EmailServiceImpl implements EmailService {
     private EmailLogService emailLogService;
     @Autowired
     private EmailAsyncServiceImpl emailAsyncServiceImpl;
+    @Autowired
+    private RestTemplateClient restTemplateClient;
 
     private static final int BATCH_SIZE = 30;
 
@@ -61,6 +69,38 @@ public class EmailServiceImpl implements EmailService {
         Session session = this.getSession(sendEmailDto.getOrgId());
         // Send email async
         emailAsyncServiceImpl.resend(sendEmailDto, session, emailLogId);
+    }
+
+    @Override
+    @Transactional
+    public void resendEmailClient(Long emailLogId) {
+        EmailLogDto emailLog = emailLogService.findById(emailLogId);
+        if(emailLog == null){
+            throw new AppException(NotifyErrorCode.EMAIL_LOG_NOT_FOUND);
+        }
+        String currentEmail = WebUtils.getCurrentEmail();
+        if(!emailLog.getSender().equals(currentEmail)){
+            throw new AppException(CommonErrorCode.UNAUTHENTICATED);
+        }
+        emailLog.setStatus(SendEmailStatus.SENDING);
+        emailLogService.save(emailLog);
+        SendEmailDto sendEmailDto = SendEmailDto.builder()
+                .sender(emailLog.getSender())
+                .recipients(List.of(emailLog.getRecipients().split(",")))
+                .ccList(emailLog.getCcList() == null ? null : List.of(emailLog.getCcList().split(",")))
+                .orgId(emailLog.getOrgId())
+                .subject(emailLog.getSubject())
+                .body(emailLog.getBody())
+                .template(emailLog.getTemplate())
+                .build();
+        if(emailLog.getTemplateVariables() != null){
+            Map<String, String> templateVariables = ObjectMapperUtils.convertToMap(emailLog.getTemplateVariables())
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+            sendEmailDto.setTemplateVariables(templateVariables);
+        }
+        this.resendEmail(sendEmailDto, emailLogId);
     }
 
     private Session getSession(Long orgId) {

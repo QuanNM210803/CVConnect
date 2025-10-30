@@ -35,4 +35,6 @@ public class CandidateInfoApplyDto extends BaseDto<Instant> {
     private CandidateSummaryOrgDto candidateSummaryOrg;
 
     private String avatarUrl;
+
+    private Boolean hasSchedule;
 }
