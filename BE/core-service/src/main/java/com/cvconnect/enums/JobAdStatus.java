@@ -8,7 +8,6 @@ import java.util.List;
 
 @Getter
 public enum JobAdStatus {
-    DRAFT("Nháp", 0),
     OPEN("Đang tuyển", 1),
     PAUSE("Tạm dừng tuyển", 1),
     CLOSED("Đã đóng", 2);

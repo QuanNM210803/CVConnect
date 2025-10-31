@@ -341,6 +341,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                     .positionName(first.getPositionName())
                                     .departmentId(first.getDepartmentId())
                                     .departmentName(first.getDepartmentName())
+                                    .departmentCode(first.getDepartmentCode())
                                     .keyCodeInternal(first.getKeyCodeInternal())
                                     .build())
                             .build();

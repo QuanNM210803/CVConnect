@@ -67,4 +67,5 @@ public class JobAdDto extends BaseDto<Instant> {
     private String positionName;
     private Long departmentId;
     private String departmentName;
+    private String departmentCode;
 }

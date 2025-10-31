@@ -1,11 +1,14 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.dto.jobAd.JobAdOrgFilterRequest;
+import com.cvconnect.dto.jobAd.JobAdOrgFilterResponse;
 import com.cvconnect.dto.jobAd.JobAdProcessDto;
 import com.cvconnect.dto.jobAd.JobAdRequest;
 import com.cvconnect.service.JobAdService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import nmquan.commonlib.constant.MessageConstants;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.LocalizationUtils;
@@ -38,5 +41,12 @@ public class JobAdController {
     @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:VIEW')")
     public ResponseEntity<Response<List<JobAdProcessDto>>> getProcessByJobAdId(@PathVariable Long jobAdId) {
         return ResponseUtils.success(jobAdService.getProcessByJobAdId(jobAdId));
+    }
+
+    @GetMapping("/org/filter")
+    @Operation(summary = "Filter Job Ads for Organization")
+    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:VIEW')")
+    public ResponseEntity<Response<FilterResponse<JobAdOrgFilterResponse>>> filterJobAdsForOrg(@Valid @ModelAttribute JobAdOrgFilterRequest request) {
+        return ResponseUtils.success(jobAdService.filterJobAdsForOrg(request));
     }
 }

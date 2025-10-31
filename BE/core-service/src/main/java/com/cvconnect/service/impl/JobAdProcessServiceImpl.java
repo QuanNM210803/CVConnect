@@ -1,6 +1,7 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.dto.jobAd.JobAdProcessDto;
+import com.cvconnect.dto.jobAdCandidate.JobAdProcessProjection;
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.cvconnect.entity.JobAdProcess;
 import com.cvconnect.repository.JobAdProcessRepository;
@@ -65,5 +66,28 @@ public class JobAdProcessServiceImpl implements JobAdProcessService {
     @Override
     public Boolean existByJobAdProcessIdAndOrgId(Long jobAdProcessId, Long orgId) {
         return jobAdProcessRepository.existByJobAdProcessIdAndOrgId(jobAdProcessId, orgId);
+    }
+
+    @Override
+    public Map<Long, List<JobAdProcessDto>> getJobAdProcessByJobAdIds(List<Long> jobAdIds) {
+        List<JobAdProcessProjection> projections = jobAdProcessRepository.findJobAdProcessByJobAdIds(jobAdIds);
+        if(ObjectUtils.isEmpty(projections)){
+            return Map.of();
+        }
+        return projections.stream()
+                .collect(Collectors.groupingBy(
+                        JobAdProcessProjection::getJobAdId,
+                        Collectors.mapping(projection -> {
+                            JobAdProcessDto dto = new JobAdProcessDto();
+                            dto.setId(projection.getId());
+                            dto.setName(projection.getProcessName());
+                            dto.setSortOrder(projection.getSortOrder());
+                            dto.setNumberOfApplicants(
+                                    projection.getNumberOfApplicants() == null ? 0 : projection.getNumberOfApplicants()
+                            );
+                            return dto;
+                        }, Collectors.toList())
+                ));
+
     }
 }

@@ -3,10 +3,13 @@ package com.cvconnect.service.impl;
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.common.NotificationDto;
+import com.cvconnect.dto.department.DepartmentDto;
 import com.cvconnect.dto.internal.response.EmailConfigDto;
+import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.*;
 import com.cvconnect.dto.jobAdLevel.JobAdLevelDto;
 import com.cvconnect.dto.level.LevelDto;
+import com.cvconnect.dto.position.PositionDto;
 import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.org.OrgAddressDto;
@@ -15,19 +18,21 @@ import com.cvconnect.entity.JobAd;
 import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdRepository;
 import com.cvconnect.service.*;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.KafkaUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
+import nmquan.commonlib.utils.PageUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -178,6 +183,64 @@ public class JobAdServiceImpl implements JobAdService {
         return jobAdProcessService.getByJobAdId(jobAdId);
     }
 
+    @Override
+    public FilterResponse<JobAdOrgFilterResponse> filterJobAdsForOrg(JobAdOrgFilterRequest request) {
+        Long orgId = restTemplateClient.validOrgMember();
+        request.setOrgId(orgId);
+
+        Long participantId = null;
+        List<String> roles = WebUtils.getCurrentRole();
+        if(!roles.contains(Constants.RoleCode.ORG_ADMIN)){
+            participantId = WebUtils.getCurrentUserId();
+        }
+
+        Page<JobAdOrgFilterProjection> page = jobAdRepository.filterJobAdsForOrg(request, request.getPageable(), participantId);
+
+        Set<Long> hrContactIds = page.getContent().stream()
+                .map(JobAdOrgFilterProjection::getHrContactId)
+                .collect(Collectors.toSet());
+        Map<Long, UserDto> hrContactMap = restTemplateClient.getUsersByIds(new ArrayList<>(hrContactIds));
+
+        List<Long> jobAdIds = page.getContent().stream()
+                .map(JobAdOrgFilterProjection::getId)
+                .toList();
+        Map<Long, List<JobAdProcessDto>> jobAdProcessMap = jobAdProcessService.getJobAdProcessByJobAdIds(jobAdIds);
+
+        List<JobAdOrgFilterResponse> dtos = page.getContent().stream()
+                .map(projection -> {
+                    JobAdOrgFilterResponse dto = new JobAdOrgFilterResponse();
+                    dto.setId(projection.getId());
+                    dto.setTitle(projection.getTitle());
+
+                    PositionDto position = PositionDto.builder()
+                            .id(projection.getPositionId())
+                            .name(projection.getPositionName())
+                            .build();
+                    dto.setPosition(position);
+
+                    DepartmentDto department = DepartmentDto.builder()
+                            .id(projection.getDepartmentId())
+                            .name(projection.getDepartmentName())
+                            .build();
+                    dto.setDepartment(department);
+
+                    dto.setDueDate(projection.getDueDate());
+                    dto.setQuantity(projection.getQuantity());
+                    dto.setHrContact(hrContactMap.get(projection.getHrContactId()));
+                    dto.setJobAdStatus(JobAdStatus.getJobAdStatusDto(projection.getJobAdStatus()));
+                    dto.setIsPublic(projection.getIsPublic());
+                    dto.setKeyCodeInternal(projection.getKeyCodeInternal());
+                    dto.setCreatedBy(projection.getCreatedBy());
+                    dto.setCreatedAt(projection.getCreatedAt());
+                    dto.setUpdatedBy(projection.getUpdatedBy());
+                    dto.setUpdatedAt(projection.getUpdatedAt());
+                    dto.setJobAdProcess(jobAdProcessMap.get(projection.getId()));
+                    return dto;
+                })
+                .toList();
+        return PageUtils.toFilterResponse(page, dtos);
+    }
+
     private void validateCreate(JobAdRequest request) {
         // validate orgId, positionId
         boolean exists = jobAdRepository.existsByOrgIdAndPositionId(request.getOrgId(), request.getPositionId());
@@ -219,7 +282,7 @@ public class JobAdServiceImpl implements JobAdService {
         }
 
         // validate jobAdStatus: DRAFT or OPEN
-        if(!JobAdStatus.DRAFT.equals(request.getJobAdStatus()) && !JobAdStatus.OPEN.equals(request.getJobAdStatus())){
+        if(!JobAdStatus.OPEN.equals(request.getJobAdStatus())){
             throw new AppException(CoreErrorCode.JOB_AD_STATUS_INVALID);
         }
 

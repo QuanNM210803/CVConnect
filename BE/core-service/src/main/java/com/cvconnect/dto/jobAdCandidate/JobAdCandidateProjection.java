@@ -10,6 +10,7 @@ public interface JobAdCandidateProjection {
     String getPositionName();
     Long getDepartmentId();
     String getDepartmentName();
+    String getDepartmentCode();
     Long getJobAdCandidateId();
     String getCandidateStatus();
     Instant getApplyDate();

@@ -112,7 +112,7 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
     @Query(value = """
         select ja.id as jobAdId, ja.title as jobAdTitle, ja.hrContactId as hrContactId, ja.keyCodeInternal as keyCodeInternal,
                p.id as positionId, p.name as positionName,
-               d.id as departmentId, d.name as departmentName,
+               d.id as departmentId, d.name as departmentName, d.code as departmentCode,
                jac.id as jobAdCandidateId,
                jac.candidateStatus as candidateStatus,
                jac.applyDate as applyDate,

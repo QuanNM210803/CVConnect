@@ -23,4 +23,5 @@ public class JobAdProcessDto extends BaseDto<Instant> {
 
     // attribute expansion
     private ProcessTypeDto processType;
+    private Long numberOfApplicants;
 }
