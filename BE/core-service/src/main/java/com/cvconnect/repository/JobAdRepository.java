@@ -87,4 +87,9 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
     """
     )
     Page<JobAdOrgFilterProjection> filterJobAdsForOrg(JobAdOrgFilterRequest request, Pageable pageable, Long participantId);
+
+    @Query("select distinct ja from JobAd ja " +
+            "join JobAdProcess jap on jap.jobAdId = ja.id " +
+            "where jap.id = :jobAdProcessId")
+    JobAd findByJobAdProcessId(Long jobAdProcessId);
 }

@@ -244,7 +244,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                 .id(projection.getJobAdId())
                                 .title(projection.getJobAdTitle())
                                 .hrContactName(hrContacts.get(projection.getHrContactId()) != null ?
-                                        hrContacts.get(projection.getHrContactId()).getUsername() : null)
+                                        hrContacts.get(projection.getHrContactId()).getFullName() : null)
                                 .build())
                         .currentRound(ProcessTypeDto.builder()
                                 .id(projection.getProcessTypeId())

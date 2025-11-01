@@ -171,7 +171,7 @@ public class JobAdServiceImpl implements JobAdService {
 
     @Override
     public JobAdDto findByJobAdProcessId(Long jobAdProcessId) {
-        JobAd jobAd = jobAdRepository.findById(jobAdProcessId);
+        JobAd jobAd = jobAdRepository.findByJobAdProcessId(jobAdProcessId);
         if(ObjectUtils.isEmpty(jobAd)){
             return null;
         }

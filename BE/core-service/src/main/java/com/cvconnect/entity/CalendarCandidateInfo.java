@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nmquan.commonlib.model.BaseEntity;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Getter
@@ -23,7 +24,7 @@ public class CalendarCandidateInfo extends BaseEntity {
 
     @NotNull
     @Column(name = "date", nullable = false)
-    private LocalTime date;
+    private LocalDate date;
 
     @NotNull
     @Column(name = "time_from", nullable = false)
