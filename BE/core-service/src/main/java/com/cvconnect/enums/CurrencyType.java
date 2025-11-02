@@ -9,15 +9,16 @@ import java.util.List;
 @Getter
 public enum CurrencyType {
     VND("Việt Nam Đồng"),
-    USD("Đô la Mỹ"),
-    EUR("Euro"),
-    JPY("Yên Nhật"),
-    GBP("Bảng Anh"),
-    AUD("Đô la Úc"),
-    CHF("Franc Thụy Sĩ"),
-    CNY("Nhân dân tệ Trung Quốc"),
-    INR("Rupi Ấn Độ"),
-    SGD("Đô la Singapore"),;
+//    USD("Đô la Mỹ"),
+//    EUR("Euro"),
+//    JPY("Yên Nhật"),
+//    GBP("Bảng Anh"),
+//    AUD("Đô la Úc"),
+//    CHF("Franc Thụy Sĩ"),
+//    CNY("Nhân dân tệ Trung Quốc"),
+//    INR("Rupi Ấn Độ"),
+//    SGD("Đô la Singapore"),
+    ;
 
     private final String description;
 

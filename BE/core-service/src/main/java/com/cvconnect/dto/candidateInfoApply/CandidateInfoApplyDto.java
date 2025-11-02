@@ -2,6 +2,7 @@ package com.cvconnect.dto.candidateInfoApply;
 
 import com.cvconnect.dto.attachFile.AttachFileDto;
 import com.cvconnect.dto.candidateSummaryOrg.CandidateSummaryOrgDto;
+import com.cvconnect.dto.enums.CandidateStatusDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,4 +38,8 @@ public class CandidateInfoApplyDto extends BaseDto<Instant> {
     private String avatarUrl;
 
     private Boolean hasSchedule;
+
+    private CandidateStatusDto candidateStatus;
+    private Instant applyDate;
+    private Instant onboardDate;
 }

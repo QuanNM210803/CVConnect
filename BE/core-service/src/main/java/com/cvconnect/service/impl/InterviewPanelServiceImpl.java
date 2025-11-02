@@ -39,4 +39,9 @@ public class InterviewPanelServiceImpl implements InterviewPanelService {
         return userMap.values().stream()
                 .toList();
     }
+
+    @Override
+    public Boolean existByJobAdIdAndUserId(Long jobAdId, Long interviewerId) {
+        return interviewPanelRepository.existsByJobAdIdAndInterviewerId(jobAdId, interviewerId);
+    }
 }

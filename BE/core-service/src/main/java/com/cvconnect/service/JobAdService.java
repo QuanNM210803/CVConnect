@@ -15,4 +15,5 @@ public interface JobAdService {
     void updateJobAdStatus(JobAdStatusRequest request);
     void updatePublicStatus(JobAdPublicStatusRequest request);
     JobAdOrgDetailResponse getJobAdOrgDetail(Long jobAdId);
+    IDResponse<Long> update(JobAdUpdateRequest request);
 }

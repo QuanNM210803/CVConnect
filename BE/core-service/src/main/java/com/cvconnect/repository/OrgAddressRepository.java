@@ -20,4 +20,11 @@ public interface OrgAddressRepository extends JpaRepository<OrganizationAddress,
     @Modifying
     @Query("DELETE FROM OrganizationAddress oa WHERE oa.id IN :ids")
     void deleteByIds(List<Long> ids);
+
+    @Query("SELECT DISTINCT oa FROM OrganizationAddress oa " +
+            "JOIN JobAdWorkLocation jawl ON jawl.workLocationId = oa.id " +
+            "WHERE jawl.jobAdId = :jobAdId")
+    List<OrganizationAddress> findByJobAdId(Long jobAdId);
+
+
 }

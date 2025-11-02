@@ -30,6 +30,7 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
     @Query(value = """
         SELECT distinct
             ja.id as id,
+            ja.code as code,
             ja.title AS title,
             p.id AS positionId,
             p.name AS positionName,
@@ -92,4 +93,15 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
             "join JobAdProcess jap on jap.jobAdId = ja.id " +
             "where jap.id = :jobAdProcessId")
     JobAd findByJobAdProcessId(Long jobAdProcessId);
+
+    @Query("""
+        SELECT ja
+        FROM JobAd ja
+        JOIN JobAdProcess jap ON jap.jobAdId = ja.id
+        LEFT JOIN Calendar c ON c.jobAdProcessId = jap.id
+        LEFT JOIN InterviewPanel ip ON ip.calendarId = c.id
+        WHERE ja.orgId = :orgId and ja.id = :jobAdId
+        AND (:participantId IS NULL OR ja.hrContactId = :participantId OR (ip.interviewerId IS NOT NULL AND ip.interviewerId = :participantId))
+    """)
+    JobAd getJobAdOrgDetailById(Long jobAdId, Long orgId, Long participantId);
 }

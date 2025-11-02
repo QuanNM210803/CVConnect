@@ -1,14 +1,22 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
+import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.attachFile.AttachFileDto;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyFilterRequest;
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyProjection;
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoFilterByJobAdProcess;
+import com.cvconnect.dto.candidateSummaryOrg.CandidateSummaryOrgDto;
+import com.cvconnect.dto.enums.CandidateStatusDto;
+import com.cvconnect.dto.jobAd.JobAdDto;
+import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.entity.CandidateInfoApply;
+import com.cvconnect.enums.CandidateStatus;
+import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.CandidateInfoApplyRepository;
-import com.cvconnect.service.AttachFileService;
-import com.cvconnect.service.CandidateInfoApplyService;
-import com.cvconnect.service.JobAdProcessService;
+import com.cvconnect.service.*;
+import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
@@ -17,6 +25,9 @@ import nmquan.commonlib.utils.PageUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -35,6 +46,10 @@ public class CandidateInfoApplyServiceImpl implements CandidateInfoApplyService 
     private RestTemplateClient restTemplateClient;
     @Autowired
     private JobAdProcessService jobAdProcessService;
+    @Autowired
+    private JobAdService jobAdService;
+    @Autowired
+    private InterviewPanelService interviewPanelService;
 
     @Override
     public FilterResponse<CandidateInfoApplyDto> filter(CandidateInfoApplyFilterRequest request) {
@@ -125,5 +140,64 @@ public class CandidateInfoApplyServiceImpl implements CandidateInfoApplyService 
             dto.setHasSchedule(candidateInfoHasSchedule.contains(dto.getId()));
         }
         return dtos;
+    }
+
+    @Override
+    public FilterResponse<CandidateInfoApplyDto> filterByJobAdProcess(CandidateInfoFilterByJobAdProcess request) {
+        Long orgId = restTemplateClient.validOrgMember();
+        request.setOrgId(orgId);
+
+        JobAdDto jobAdDto = jobAdService.findByJobAdProcessId(request.getJobAdProcessId());
+        if(ObjectUtils.isEmpty(jobAdDto)) {
+            throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+        if(!jobAdDto.getOrgId().equals(orgId)) {
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
+        }
+
+        Long currentUserId = WebUtils.getCurrentUserId();
+        List<String> roles = WebUtils.getCurrentRole();
+        if(!roles.contains(Constants.RoleCode.ORG_ADMIN)) {
+            Boolean hasInterviewPanel = interviewPanelService.existByJobAdIdAndUserId(jobAdDto.getId(), currentUserId);
+            if(!currentUserId.equals(jobAdDto.getHrContactId()) && !hasInterviewPanel) {
+                throw new AppException(CommonErrorCode.ACCESS_DENIED);
+            }
+        }
+
+        Pageable pageable = request.getPageable();
+        Sort sort = pageable.getSort();
+        if (sort.isSorted()) {
+            boolean hasCreatedAt = sort.stream().anyMatch(order -> order.getProperty().equalsIgnoreCase(CommonConstants.DEFAULT_SORT_BY));
+            if (hasCreatedAt) {
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "applyDate"));
+            }
+        }
+
+        Page<CandidateInfoApplyProjection> page = candidateInfoApplyRepository.filterByJobAdProcess(request, pageable);
+        List<CandidateInfoApplyDto> dtos = page.getContent().stream()
+                .map(projection -> {
+                    CandidateInfoApplyDto dto = new CandidateInfoApplyDto();
+                    dto.setId(projection.getId());
+                    dto.setFullName(projection.getFullName());
+                    dto.setEmail(projection.getEmail());
+                    dto.setPhone(projection.getPhone());
+
+                    CandidateSummaryOrgDto candidateSummaryOrgDto = new CandidateSummaryOrgDto();
+                    LevelDto levelDto = new LevelDto();
+                    levelDto.setId(projection.getLevelId());
+                    levelDto.setLevelName(projection.getLevelName());
+                    candidateSummaryOrgDto.setLevel(levelDto);
+                    dto.setCandidateSummaryOrg(candidateSummaryOrgDto);
+
+                    CandidateStatusDto candidateStatusDto = CandidateStatus.getCandidateStatusDto(projection.getCandidateStatus());
+                    dto.setCandidateStatus(candidateStatusDto);
+
+                    dto.setApplyDate(projection.getApplyDate());
+                    dto.setOnboardDate(projection.getOnboardDate());
+
+                    return dto;
+                }).toList();
+
+        return PageUtils.toFilterResponse(page, dtos);
     }
 }

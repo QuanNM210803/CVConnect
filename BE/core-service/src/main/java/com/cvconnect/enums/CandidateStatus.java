@@ -37,6 +37,7 @@ public enum CandidateStatus {
             return null;
         }
         return CandidateStatusDto.builder()
+                .name(candidateStatus.name())
                 .label(candidateStatus.getLabel())
                 .build();
     }

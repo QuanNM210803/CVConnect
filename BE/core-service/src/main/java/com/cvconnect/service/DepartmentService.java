@@ -16,4 +16,5 @@ public interface DepartmentService {
     void deleteByIds(List<Long> ids);
     IDResponse<Long> update(DepartmentRequest request);
     FilterResponse<DepartmentDto> filter(DepartmentFilterRequest request);
+    DepartmentDto findById(Long id);
 }

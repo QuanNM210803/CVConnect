@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -114,5 +115,14 @@ public class DepartmentServiceImpl implements DepartmentService {
         Page<Department> page = departmentRepository.filter(request, request.getPageable());
         List<DepartmentDto> data = ObjectMapperUtils.convertToList(page.getContent(), DepartmentDto.class);
         return PageUtils.toFilterResponse(page, data);
+    }
+
+    @Override
+    public DepartmentDto findById(Long id) {
+        Department department = departmentRepository.findById(id).orElse(null);
+        if(ObjectUtils.isEmpty(department)) {
+            return null;
+        }
+        return ObjectMapperUtils.convertToObject(department, DepartmentDto.class);
     }
 }

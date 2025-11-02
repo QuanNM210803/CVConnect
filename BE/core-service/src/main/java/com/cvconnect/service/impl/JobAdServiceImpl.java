@@ -4,6 +4,10 @@ import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.department.DepartmentDto;
+import com.cvconnect.dto.enums.CurrencyTypeDto;
+import com.cvconnect.dto.enums.JobAdStatusDto;
+import com.cvconnect.dto.enums.JobTypeDto;
+import com.cvconnect.dto.enums.SalaryTypeDto;
 import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.*;
@@ -58,6 +62,10 @@ public class JobAdServiceImpl implements JobAdService {
     private LevelService levelService;
     @Autowired
     private JobAdLevelService jobAdLevelService;
+    @Autowired
+    private PositionService positionService;
+    @Autowired
+    private DepartmentService departmentService;
 
     private static final String JOB_AD_CODE_PREFIX = "JD-";
 
@@ -210,6 +218,7 @@ public class JobAdServiceImpl implements JobAdService {
                 .map(projection -> {
                     JobAdOrgDetailResponse dto = new JobAdOrgDetailResponse();
                     dto.setId(projection.getId());
+                    dto.setCode(projection.getCode());
                     dto.setTitle(projection.getTitle());
 
                     PositionDto position = PositionDto.builder()
@@ -285,7 +294,139 @@ public class JobAdServiceImpl implements JobAdService {
 
     @Override
     public JobAdOrgDetailResponse getJobAdOrgDetail(Long jobAdId) {
-        return null;
+        Long orgId = restTemplateClient.validOrgMember();
+
+        Long participantId = null;
+        List<String> roles = WebUtils.getCurrentRole();
+        if(!roles.contains(Constants.RoleCode.ORG_ADMIN)){
+            participantId = WebUtils.getCurrentUserId();
+        }
+
+        JobAd jobAd = jobAdRepository.getJobAdOrgDetailById(jobAdId, orgId, participantId);
+        if(ObjectUtils.isEmpty(jobAd)){
+            throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+
+        JobAdOrgDetailResponse dto = new JobAdOrgDetailResponse();
+        dto.setId(jobAd.getId());
+        dto.setCode(jobAd.getCode());
+        dto.setTitle(jobAd.getTitle());
+
+        PositionDto position = positionService.findById(jobAd.getPositionId());
+        dto.setPosition(position);
+
+        if(!ObjectUtils.isEmpty(position) && !ObjectUtils.isEmpty(position.getDepartmentId())){
+            DepartmentDto department = departmentService.findById(position.getDepartmentId());
+            dto.setDepartment(department);
+        }
+        dto.setDueDate(jobAd.getDueDate());
+        dto.setQuantity(jobAd.getQuantity());
+
+        UserDto hrContact = restTemplateClient.getUser(jobAd.getHrContactId());
+        dto.setHrContact(hrContact);
+
+        JobAdStatusDto jobAdStatus = JobAdStatus.getJobAdStatusDto(jobAd.getJobAdStatus());
+        dto.setJobAdStatus(jobAdStatus);
+
+        dto.setIsPublic(jobAd.getIsPublic());
+        dto.setKeyCodeInternal(jobAd.getKeyCodeInternal());
+        dto.setCreatedBy(jobAd.getCreatedBy());
+        dto.setCreatedAt(jobAd.getCreatedAt());
+        dto.setUpdatedBy(jobAd.getUpdatedBy());
+        dto.setUpdatedAt(jobAd.getUpdatedAt());
+
+        Map<Long, List<JobAdProcessDto>> jobAdProcessMap = jobAdProcessService.getJobAdProcessByJobAdIds(List.of(jobAdId));
+        dto.setJobAdProcess(jobAdProcessMap.get(jobAdId));
+
+        JobTypeDto jobType = JobType.getJobTypeDto(jobAd.getJobType());
+        dto.setJobType(jobType);
+
+        SalaryTypeDto salaryType = SalaryType.getSalaryTypeDto(jobAd.getSalaryType());
+        dto.setSalaryType(salaryType);
+        dto.setSalaryFrom(jobAd.getSalaryFrom());
+        dto.setSalaryTo(jobAd.getSalaryTo());
+
+        CurrencyTypeDto currencyType = CurrencyType.getCurrencyTypeDto(jobAd.getCurrencyType());
+        dto.setCurrencyType(currencyType);
+
+        dto.setIsRemote(jobAd.getIsRemote());
+        List<OrgAddressDto> workLocations = orgAddressService.getByJobAdId(jobAdId);
+        dto.setWorkLocations(workLocations);
+
+        dto.setIsAllLevel(jobAd.getIsAllLevel());
+        List<LevelDto> levels = levelService.getLevelsByJobAdId(jobAdId);
+        dto.setLevels(levels);
+
+        dto.setKeyword(jobAd.getKeyword());
+        dto.setDescription(jobAd.getDescription());
+        dto.setRequirement(jobAd.getRequirement());
+        dto.setBenefit(jobAd.getBenefit());
+
+        dto.setIsAutoSendEmail(jobAd.getIsAutoSendEmail());
+        dto.setEmailTemplateId(jobAd.getEmailTemplateId());
+
+        return dto;
+    }
+
+    @Override
+    @Transactional
+    public IDResponse<Long> update(JobAdUpdateRequest request) {
+        Long orgId = restTemplateClient.validOrgMember();
+
+        JobAd jobAd = jobAdRepository.findById(request.getId());
+        if(ObjectUtils.isEmpty(jobAd) || !jobAd.getOrgId().equals(orgId)){
+            throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+
+        // validate dueDate
+        if(!request.getDueDate().equals(jobAd.getDueDate())){
+            if(request.getDueDate().isBefore(Instant.now())) {
+                throw new AppException(CoreErrorCode.DUE_DATE_MUST_BE_IN_FUTURE);
+            }
+        }
+
+        // update fields
+        jobAd.setTitle(request.getTitle());
+        jobAd.setDueDate(request.getDueDate());
+        jobAd.setQuantity(request.getQuantity());
+        jobAd.setKeyword(request.getKeyword());
+        jobAd.setDescription(request.getDescription());
+        jobAd.setRequirement(request.getRequirement());
+        jobAd.setBenefit(request.getBenefit());
+
+        if(request.getIsAutoSendEmail() == null){
+            throw new AppException(CoreErrorCode.IS_AUTO_SEND_EMAIL_REQUIRED);
+        }
+        if(!request.getIsAutoSendEmail()){
+            jobAd.setIsAutoSendEmail(Boolean.FALSE);
+            jobAd.setEmailTemplateId(null);
+        } else {
+            if(request.getEmailTemplateId() == null){
+                throw new AppException(CoreErrorCode.EMAIL_TEMPLATE_ID_REQUIRED);
+            }
+
+            EmailConfigDto emailConfigDto = restTemplateClient.getEmailConfigByOrg();
+            if(ObjectUtils.isEmpty(emailConfigDto)){
+                throw new AppException(CoreErrorCode.EMAIL_CONFIG_NOT_FOUND);
+            }
+
+            List<EmailTemplateDto> response = restTemplateClient.getEmailTemplateByOrgId(orgId);
+            boolean existsEmailTemplate = response.stream()
+                    .anyMatch(dto ->
+                            dto.getId().equals(request.getEmailTemplateId()) && dto.getIsActive()
+                    );
+            if(!existsEmailTemplate){
+                throw new AppException(CoreErrorCode.EMAIL_TEMPLATE_NOT_FOUND);
+            }
+
+            jobAd.setIsAutoSendEmail(Boolean.TRUE);
+            jobAd.setEmailTemplateId(request.getEmailTemplateId());
+        }
+
+        jobAdRepository.save(jobAd);
+        return IDResponse.<Long>builder()
+                .id(jobAd.getId())
+                .build();
     }
 
     private void validateCreate(JobAdRequest request) {

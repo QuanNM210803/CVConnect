@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface LevelRepository extends JpaRepository<Level, Long> {
 
@@ -26,4 +28,9 @@ public interface LevelRepository extends JpaRepository<Level, Long> {
 
     boolean existsByCode(@NotNull String code);
     Level findByCode(@NotNull String code);
+
+    @Query("SELECT DISTINCT l FROM Level l " +
+            "JOIN JobAdLevel jal ON jal.levelId = l.id " +
+            "WHERE jal.jobAdId = :jobAdId")
+    List<Level> findByJobAdId(Long jobAdId);
 }

@@ -69,6 +69,7 @@ public class Messages {
     public static final String CANDIDATE_INFO_EXISTS_NOT_IN_PROCESS = "candidate.info.exists.not.in.process";
     public static final String CALENDAR_NOT_FOUND = "calendar.not.found";
     public static final String JOB_AD_STATUS_CANNOT_REVERT = "job.ad.status.cannot.revert";
+    public static final String IS_AUTO_SEND_EMAIL_REQUIRED = "is.auto.send.email.required";
 
     /*
     * Validation Messages

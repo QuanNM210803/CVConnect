@@ -15,4 +15,5 @@ public interface LevelService {
     IDResponse<Long> update(LevelRequest request);
     void deleteByIds(List<Long> ids);
     List<LevelDto> getByIds(List<Long> ids);
+    List<LevelDto> getLevelsByJobAdId(Long jobAdId);
 }

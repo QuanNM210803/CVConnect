@@ -101,4 +101,13 @@ public class LevelServiceImpl implements LevelService {
         return ObjectMapperUtils.convertToList(levels, LevelDto.class);
     }
 
+    @Override
+    public List<LevelDto> getLevelsByJobAdId(Long jobAdId) {
+        List<Level> levels = levelRepository.findByJobAdId(jobAdId);
+        if(levels.isEmpty()) {
+            return List.of();
+        }
+        return ObjectMapperUtils.convertToList(levels, LevelDto.class);
+    }
+
 }

@@ -2,6 +2,7 @@ package com.cvconnect.service;
 
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyFilterRequest;
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoFilterByJobAdProcess;
 import nmquan.commonlib.dto.response.FilterResponse;
 
 import java.util.List;
@@ -15,4 +16,5 @@ public interface CandidateInfoApplyService {
     Map<Long, CandidateInfoApplyDto> getByIds(List<Long> candidateInfoIds);
     List<CandidateInfoApplyDto> getByCalendarId(Long calendarId);
     List<CandidateInfoApplyDto> getCandidateInCurrentProcess(Long jobAdProcessId);
+    FilterResponse<CandidateInfoApplyDto> filterByJobAdProcess(CandidateInfoFilterByJobAdProcess request);
 }

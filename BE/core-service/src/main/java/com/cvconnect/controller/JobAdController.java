@@ -49,7 +49,7 @@ public class JobAdController {
 
     @PutMapping("/update-status/{jobAdId}")
     @Operation(summary = "Update Job Ad Status")
-    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:EDIT')")
+    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:UPDATE')")
     public ResponseEntity<Response<Void>> updateJobAdStatus(@PathVariable Long jobAdId, @Valid @RequestBody JobAdStatusRequest request) {
         request.setJobAdId(jobAdId);
         jobAdService.updateJobAdStatus(request);
@@ -58,7 +58,7 @@ public class JobAdController {
 
     @PutMapping("/update-public/{jobAdId}")
     @Operation(summary = "Update Job Ad Public Status")
-    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:EDIT')")
+    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:UPDATE')")
     public ResponseEntity<Response<Void>> updatePublicStatus(@PathVariable Long jobAdId, @Valid @RequestBody JobAdPublicStatusRequest request) {
         request.setJobAdId(jobAdId);
         jobAdService.updatePublicStatus(request);
@@ -70,5 +70,13 @@ public class JobAdController {
     @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:VIEW')")
     public ResponseEntity<Response<JobAdOrgDetailResponse>> getJobAdOrgDetail(@PathVariable Long jobAdId) {
         return ResponseUtils.success(jobAdService.getJobAdOrgDetail(jobAdId));
+    }
+
+    @PutMapping("/update/{jobAdId}")
+    @Operation(summary = "Update Job Ad")
+    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:UPDATE')")
+    public ResponseEntity<Response<IDResponse<Long>>> updateJobAd(@PathVariable Long jobAdId, @Valid @RequestBody JobAdUpdateRequest request) {
+        request.setId(jobAdId);
+        return ResponseUtils.success(jobAdService.update(request), localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
     }
 }

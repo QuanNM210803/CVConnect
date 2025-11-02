@@ -11,4 +11,5 @@ public interface OrgAddressService {
     List<OrgAddressDto> getAll();
     OrgAddressDto getById(Long id);
     void save(List<OrgAddressRequest> requests);
+    List<OrgAddressDto> getByJobAdId(Long jobAdId);
 }

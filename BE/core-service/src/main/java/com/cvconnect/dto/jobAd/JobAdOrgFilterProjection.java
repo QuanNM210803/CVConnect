@@ -5,6 +5,7 @@ import nmquan.commonlib.dto.BaseRepositoryDto;
 import java.time.Instant;
 
 public interface JobAdOrgFilterProjection extends BaseRepositoryDto {
+    String getCode();
     String getTitle();
     Long getPositionId();
     String getPositionName();

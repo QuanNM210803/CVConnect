@@ -2,6 +2,7 @@ package com.cvconnect.controller;
 
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyFilterRequest;
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoFilterByJobAdProcess;
 import com.cvconnect.service.CandidateInfoApplyService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -33,5 +34,14 @@ public class CandidateInfoApplyController {
     @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:VIEW')")
     public ResponseEntity<Response<List<CandidateInfoApplyDto>>> getCandidateInCurrentProcess(@PathVariable Long jobAdProcessId) {
         return ResponseUtils.success(candidateInfoApplyService.getCandidateInCurrentProcess(jobAdProcessId));
+    }
+
+    @GetMapping("/filter-by-job-ad-process/{jobAdProcessId}")
+    @Operation(summary = "Filter Candidate Info Apply by Job Ad Process ID")
+    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:VIEW')")
+    public ResponseEntity<Response<FilterResponse<CandidateInfoApplyDto>>> filterByJobAdProcess(@PathVariable Long jobAdProcessId,
+                                                                                                @Valid @ModelAttribute CandidateInfoFilterByJobAdProcess request) {
+        request.setJobAdProcessId(jobAdProcessId);
+        return ResponseUtils.success(candidateInfoApplyService.filterByJobAdProcess(request));
     }
 }
