@@ -83,7 +83,7 @@ public class JobAdProcessServiceImpl implements JobAdProcessService {
                             dto.setName(projection.getProcessName());
                             dto.setSortOrder(projection.getSortOrder());
                             dto.setNumberOfApplicants(
-                                    projection.getNumberOfApplicants() == null ? 0 : projection.getNumberOfApplicants()
+                                    projection.getNumberOfApplicants() == null ? 0L : projection.getNumberOfApplicants()
                             );
                             return dto;
                         }, Collectors.toList())

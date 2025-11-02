@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JobAdOrgFilterResponse {
+public class JobAdOrgDetailResponse {
     private Long id;
     private String title;
     private PositionDto position;

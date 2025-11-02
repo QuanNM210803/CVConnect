@@ -11,5 +11,8 @@ public interface JobAdService {
     JobAdDto findById(Long id);
     JobAdDto findByJobAdProcessId(Long jobAdProcessId);
     List<JobAdProcessDto> getProcessByJobAdId(Long jobAdId);
-    FilterResponse<JobAdOrgFilterResponse> filterJobAdsForOrg(JobAdOrgFilterRequest request);
+    FilterResponse<JobAdOrgDetailResponse> filterJobAdsForOrg(JobAdOrgFilterRequest request);
+    void updateJobAdStatus(JobAdStatusRequest request);
+    void updatePublicStatus(JobAdPublicStatusRequest request);
+    JobAdOrgDetailResponse getJobAdOrgDetail(Long jobAdId);
 }

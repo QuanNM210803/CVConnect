@@ -1,9 +1,6 @@
 package com.cvconnect.controller;
 
-import com.cvconnect.dto.jobAd.JobAdOrgFilterRequest;
-import com.cvconnect.dto.jobAd.JobAdOrgFilterResponse;
-import com.cvconnect.dto.jobAd.JobAdProcessDto;
-import com.cvconnect.dto.jobAd.JobAdRequest;
+import com.cvconnect.dto.jobAd.*;
 import com.cvconnect.service.JobAdService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -46,7 +43,32 @@ public class JobAdController {
     @GetMapping("/org/filter")
     @Operation(summary = "Filter Job Ads for Organization")
     @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:VIEW')")
-    public ResponseEntity<Response<FilterResponse<JobAdOrgFilterResponse>>> filterJobAdsForOrg(@Valid @ModelAttribute JobAdOrgFilterRequest request) {
+    public ResponseEntity<Response<FilterResponse<JobAdOrgDetailResponse>>> filterJobAdsForOrg(@Valid @ModelAttribute JobAdOrgFilterRequest request) {
         return ResponseUtils.success(jobAdService.filterJobAdsForOrg(request));
+    }
+
+    @PutMapping("/update-status/{jobAdId}")
+    @Operation(summary = "Update Job Ad Status")
+    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:EDIT')")
+    public ResponseEntity<Response<Void>> updateJobAdStatus(@PathVariable Long jobAdId, @Valid @RequestBody JobAdStatusRequest request) {
+        request.setJobAdId(jobAdId);
+        jobAdService.updateJobAdStatus(request);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @PutMapping("/update-public/{jobAdId}")
+    @Operation(summary = "Update Job Ad Public Status")
+    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:EDIT')")
+    public ResponseEntity<Response<Void>> updatePublicStatus(@PathVariable Long jobAdId, @Valid @RequestBody JobAdPublicStatusRequest request) {
+        request.setJobAdId(jobAdId);
+        jobAdService.updatePublicStatus(request);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @GetMapping("/org/detail/{jobAdId}")
+    @Operation(summary = "Get Job Ad by ID for Organization")
+    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:VIEW')")
+    public ResponseEntity<Response<JobAdOrgDetailResponse>> getJobAdOrgDetail(@PathVariable Long jobAdId) {
+        return ResponseUtils.success(jobAdService.getJobAdOrgDetail(jobAdId));
     }
 }

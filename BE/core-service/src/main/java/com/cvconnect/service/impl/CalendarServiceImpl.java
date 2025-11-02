@@ -210,9 +210,11 @@ public class CalendarServiceImpl implements CalendarService {
                 participantIdAuth = currentUserId;
             }
         }
-        switch (request.getParticipationType()) {
-            case CREATED_BY_ME -> creatorId = currentUserId;
-            case JOINED_BY_ME -> participantId = currentUserId;
+        if(!ObjectUtils.isEmpty(request.getParticipationType())){
+            switch (request.getParticipationType()) {
+                case CREATED_BY_ME -> creatorId = currentUserId;
+                case JOINED_BY_ME -> participantId = currentUserId;
+            }
         }
 
         List<CalendarFilterViewCandidateProjection> projections = calendarRepository
@@ -261,7 +263,6 @@ public class CalendarServiceImpl implements CalendarService {
 
                     return response;
                 })
-                .sorted(Comparator.comparing(CalendarFitterViewCandidateResponse::getDate))
                 .toList();
 
         return responses;

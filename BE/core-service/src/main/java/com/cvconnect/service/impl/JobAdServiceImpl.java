@@ -184,7 +184,7 @@ public class JobAdServiceImpl implements JobAdService {
     }
 
     @Override
-    public FilterResponse<JobAdOrgFilterResponse> filterJobAdsForOrg(JobAdOrgFilterRequest request) {
+    public FilterResponse<JobAdOrgDetailResponse> filterJobAdsForOrg(JobAdOrgFilterRequest request) {
         Long orgId = restTemplateClient.validOrgMember();
         request.setOrgId(orgId);
 
@@ -206,9 +206,9 @@ public class JobAdServiceImpl implements JobAdService {
                 .toList();
         Map<Long, List<JobAdProcessDto>> jobAdProcessMap = jobAdProcessService.getJobAdProcessByJobAdIds(jobAdIds);
 
-        List<JobAdOrgFilterResponse> dtos = page.getContent().stream()
+        List<JobAdOrgDetailResponse> dtos = page.getContent().stream()
                 .map(projection -> {
-                    JobAdOrgFilterResponse dto = new JobAdOrgFilterResponse();
+                    JobAdOrgDetailResponse dto = new JobAdOrgDetailResponse();
                     dto.setId(projection.getId());
                     dto.setTitle(projection.getTitle());
 
@@ -239,6 +239,53 @@ public class JobAdServiceImpl implements JobAdService {
                 })
                 .toList();
         return PageUtils.toFilterResponse(page, dtos);
+    }
+
+    @Override
+    @Transactional
+    public void updateJobAdStatus(JobAdStatusRequest request) {
+        Long orgId = restTemplateClient.validOrgMember();
+        Long currentUserId = WebUtils.getCurrentUserId();
+        JobAd jobAd = jobAdRepository.findById(request.getJobAdId());
+        if(ObjectUtils.isEmpty(jobAd) || !jobAd.getOrgId().equals(orgId) || !jobAd.getHrContactId().equals(currentUserId)){
+            throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+
+        JobAdStatus currentStatus = JobAdStatus.getJobAdStatus(jobAd.getJobAdStatus());
+        JobAdStatus newStatus = request.getStatus();
+        if(currentStatus == newStatus){
+            return;
+        }
+        if(newStatus.getLevel() < currentStatus.getLevel()){
+            throw new AppException(CoreErrorCode.JOB_AD_STATUS_CANNOT_REVERT);
+        }
+        jobAd.setJobAdStatus(newStatus.name());
+        jobAdRepository.save(jobAd);
+    }
+
+    @Override
+    @Transactional
+    public void updatePublicStatus(JobAdPublicStatusRequest request) {
+        Long orgId = restTemplateClient.validOrgMember();
+        Long currentUserId = WebUtils.getCurrentUserId();
+        JobAd jobAd = jobAdRepository.findById(request.getJobAdId());
+        if(ObjectUtils.isEmpty(jobAd) || !jobAd.getOrgId().equals(orgId) || !jobAd.getHrContactId().equals(currentUserId)){
+            throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+
+        if(jobAd.getIsPublic().equals(request.getIsPublic())){
+            return;
+        }
+        jobAd.setIsPublic(request.getIsPublic());
+        if(!request.getIsPublic() && ObjectUtils.isEmpty(jobAd.getKeyCodeInternal())){
+            jobAd.setKeyCodeInternal(UUID.randomUUID().toString());
+        }
+        jobAdRepository.save(jobAd);
+    }
+
+    @Override
+    public JobAdOrgDetailResponse getJobAdOrgDetail(Long jobAdId) {
+        return null;
     }
 
     private void validateCreate(JobAdRequest request) {

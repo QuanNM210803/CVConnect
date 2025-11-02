@@ -65,10 +65,10 @@ public class Messages {
     public static final String CANDIDATE_INFO_IDS_NOT_NULL = "candidate.info.ids.not.null";
     public static final String MEETING_ADDRESS_NOT_NULL = "meeting.address.not.null";
     public static final String MEETING_LINK_NOT_NULL = "meeting.link.not.null";
-    public static final String DATE_BEFORE_TODAY = "date.before.today";
     public static final String DURATION_MINUTES_INVALID = "duration.minutes.invalid";
     public static final String CANDIDATE_INFO_EXISTS_NOT_IN_PROCESS = "candidate.info.exists.not.in.process";
     public static final String CALENDAR_NOT_FOUND = "calendar.not.found";
+    public static final String JOB_AD_STATUS_CANNOT_REVERT = "job.ad.status.cannot.revert";
 
     /*
     * Validation Messages
@@ -112,6 +112,8 @@ public class Messages {
     public static final String JOB_AD_REQUIRED = "job.ad.required";
     public static final String ELIMINATE_REASON_REQUIRE = "eliminate.reason.require";
     public static final String COMMENTS_NOT_BLANK = "comments.not.blank";
+    public static final String DATE_BEFORE_TODAY = "date.before.today";
+    public static final String JOB_AD_STATUS_NOT_NULL = "job.ad.status.not.null";
 
 
     /*
