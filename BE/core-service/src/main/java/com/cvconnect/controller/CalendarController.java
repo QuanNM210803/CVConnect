@@ -1,9 +1,6 @@
 package com.cvconnect.controller;
 
-import com.cvconnect.dto.calendar.CalendarDetailInViewCandidate;
-import com.cvconnect.dto.calendar.CalendarFitterRequest;
-import com.cvconnect.dto.calendar.CalendarFitterViewCandidateResponse;
-import com.cvconnect.dto.calendar.CalendarRequest;
+import com.cvconnect.dto.calendar.*;
 import com.cvconnect.service.CalendarService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -37,14 +34,28 @@ public class CalendarController {
     @GetMapping("/filter-view-candidate")
     @Operation(summary = "Filter View Candidate Calendars", description = "Filter calendars for viewing by candidates")
     @PreAuthorize("hasAnyAuthority('ORG_CALENDAR:VIEW')")
-    public ResponseEntity<Response<List<CalendarFitterViewCandidateResponse>>> filterViewCandidateCalendars(@Valid @ModelAttribute CalendarFitterRequest request) {
+    public ResponseEntity<Response<List<CalendarFitterViewCandidateResponse>>> filterViewCandidateCalendars(@Valid @ModelAttribute CalendarFilterRequest request) {
         return ResponseUtils.success(calendarService.filterViewCandidateCalendars(request));
     }
 
     @GetMapping("/detail-in-view-candidate/{calendarCandidateInfoId}")
     @Operation(summary = "Detail in View Candidate Calendars", description = "Get detailed calendars for viewing by candidates")
     @PreAuthorize("hasAnyAuthority('ORG_CALENDAR:VIEW')")
-    public ResponseEntity<Response<CalendarDetailInViewCandidate>> detailInViewCandidate(@PathVariable Long calendarCandidateInfoId) {
+    public ResponseEntity<Response<CalendarDetail>> detailInViewCandidate(@PathVariable Long calendarCandidateInfoId) {
         return ResponseUtils.success(calendarService.detailInViewCandidate(calendarCandidateInfoId));
+    }
+
+    @GetMapping("/filter-view-general")
+    @Operation(summary = "Filter View General Calendars", description = "Filter calendars for general viewing")
+    @PreAuthorize("hasAnyAuthority('ORG_CALENDAR:VIEW')")
+    public ResponseEntity<Response<List<CalendarFilterResponse>>> filterViewGeneral(@Valid @ModelAttribute CalendarFilterRequest request) {
+        return ResponseUtils.success(calendarService.filterViewGeneral(request));
+    }
+
+    @PostMapping("/detail-in-view-general")
+    @Operation(summary = "Detail in View General Calendars", description = "Get detailed calendars for general viewing")
+    @PreAuthorize("hasAnyAuthority('ORG_CALENDAR:VIEW')")
+    public ResponseEntity<Response<CalendarDetail>> detailInViewGeneral(@Valid @RequestBody CalendarDetailInViewGeneralRequest request) {
+        return ResponseUtils.success(calendarService.detailInViewGeneral(request));
     }
 }

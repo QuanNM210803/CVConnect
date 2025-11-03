@@ -11,6 +11,7 @@ public class Constants {
     public static final int MAX_INDUSTRY_PER_ORG = 5;
     public static final String ONLINE = "ONLINE";
     public static final String OFFLINE = "OFFLINE";
+    public static final String CALENDAR_DATE_VIEW_FORMAT = "dd 'Tháng' MM, yyyy";
 
     public static class RoleCode {
         private RoleCode() {}

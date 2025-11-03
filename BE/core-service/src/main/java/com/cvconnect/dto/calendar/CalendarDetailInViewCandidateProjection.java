@@ -16,4 +16,9 @@ public interface CalendarDetailInViewCandidateProjection {
     Long getLocationId();
     String getMeetingLink();
     Long getCalendarId();
+
+    Long getCandidateInfoId();
+    Boolean getJoinSameTime();
+    String getFullName();
+    Long getHrContactId();
 }

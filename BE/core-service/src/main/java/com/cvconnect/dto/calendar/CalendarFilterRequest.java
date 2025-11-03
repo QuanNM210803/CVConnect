@@ -14,9 +14,10 @@ import java.time.Instant;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CalendarFitterRequest {
+public class CalendarFilterRequest {
     private Instant dateFrom;
     private Instant dateTo;
+    private Long jobAdId;
     private ParticipationType participationType;
     private Long jobAdCandidateId;
 
