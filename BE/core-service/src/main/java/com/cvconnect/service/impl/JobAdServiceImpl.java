@@ -257,8 +257,14 @@ public class JobAdServiceImpl implements JobAdService {
         Long orgId = restTemplateClient.validOrgMember();
         Long currentUserId = WebUtils.getCurrentUserId();
         JobAd jobAd = jobAdRepository.findById(request.getJobAdId());
-        if(ObjectUtils.isEmpty(jobAd) || !jobAd.getOrgId().equals(orgId) || !jobAd.getHrContactId().equals(currentUserId)){
+        if(ObjectUtils.isEmpty(jobAd) || !jobAd.getOrgId().equals(orgId)){
             throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+        List<String> roles = WebUtils.getCurrentRole();
+        if(!roles.contains(Constants.RoleCode.ORG_ADMIN)){
+            if(!jobAd.getHrContactId().equals(currentUserId)) {
+                throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+            }
         }
 
         JobAdStatus currentStatus = JobAdStatus.getJobAdStatus(jobAd.getJobAdStatus());
@@ -279,8 +285,14 @@ public class JobAdServiceImpl implements JobAdService {
         Long orgId = restTemplateClient.validOrgMember();
         Long currentUserId = WebUtils.getCurrentUserId();
         JobAd jobAd = jobAdRepository.findById(request.getJobAdId());
-        if(ObjectUtils.isEmpty(jobAd) || !jobAd.getOrgId().equals(orgId) || !jobAd.getHrContactId().equals(currentUserId)){
+        if(ObjectUtils.isEmpty(jobAd) || !jobAd.getOrgId().equals(orgId)){
             throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+        List<String> roles = WebUtils.getCurrentRole();
+        if(!roles.contains(Constants.RoleCode.ORG_ADMIN)){
+            if(!jobAd.getHrContactId().equals(currentUserId)) {
+                throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+            }
         }
 
         if(jobAd.getIsPublic().equals(request.getIsPublic())){

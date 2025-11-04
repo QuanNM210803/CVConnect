@@ -20,4 +20,13 @@ public class CalendarCandidateInfoServiceImpl implements CalendarCandidateInfoSe
         List<CalendarCandidateInfo> entities = ObjectMapperUtils.convertToList(dtos, CalendarCandidateInfo.class);
         calendarCandidateInfoRepository.saveAll(entities);
     }
+
+    @Override
+    public CalendarCandidateInfoDto getByCalendarIdAndCandidateInfoId(Long calendarId, Long candidateInfoId) {
+        CalendarCandidateInfo entity = calendarCandidateInfoRepository.findByCalendarIdAndCandidateInfoId(calendarId, candidateInfoId);
+        if (entity == null) {
+            return null;
+        }
+        return ObjectMapperUtils.convertToObject(entity, CalendarCandidateInfoDto.class);
+    }
 }

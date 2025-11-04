@@ -34,7 +34,7 @@ public interface CalendarRepository extends JpaRepository<Calendar, Long> {
     @Query("""
         select distinct ja.id as jobAdId, ja.title as jobAdTitle, jap.id as jobAdProcessId, jap.name as jobAdProcessName,
             c.creatorId as creatorId, c.calendarType as calendarType, cci.date as date, cci.timeFrom as timeFrom, cci.timeTo as timeTo,
-            c.orgAddressId as locationId, c.meetingLink as meetingLink, c.id as calendarId
+            c.orgAddressId as locationId, c.meetingLink as meetingLink, c.id as calendarId, c.joinSameTime as joinSameTime, cci.candidateInfoId as candidateInfoId
         from CalendarCandidateInfo cci
         join Calendar c on c.id = cci.calendarId
         join JobAdProcess jap on jap.id = c.jobAdProcessId
@@ -69,4 +69,22 @@ public interface CalendarRepository extends JpaRepository<Calendar, Long> {
         order by date asc, timeFrom asc, timeTo asc
     """)
     List<CalendarDetailInViewCandidateProjection> filterViewGeneral(CalendarFilterRequest request, Long orgId, Long creatorId, Long participantId, Long participantIdAuth, Long currentUserId);
+
+    @Query("""
+        select case when count(*) > 0 then true else false end
+        from JobAd ja
+        join JobAdProcess jap on jap.jobAdId = ja.id
+        join Calendar c on c.jobAdProcessId = jap.id
+        where ja.orgId = :orgId and c.id = :calendarId
+    """)
+    boolean existsByIdAndOrgId(Long calendarId, Long orgId);
+
+    @Query("""
+        select case when count(*) > 0 then true else false end
+        from JobAd ja
+        join JobAdProcess jap on jap.jobAdId = ja.id
+        join Calendar c on c.jobAdProcessId = jap.id
+        where ja.hrContactId = :hrContactId and c.id = :calendarId
+    """)
+    boolean existsByCalendarIdAndHrContactId(Long calendarId, Long hrContactId);
 }

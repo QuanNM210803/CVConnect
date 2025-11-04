@@ -321,7 +321,15 @@ public class CalendarServiceImpl implements CalendarService {
 
         // candidates
         List<CandidateInfoApplyDto> candidates = candidateInfoApplyService.getByCalendarId(projection.getCalendarId());
-        detail.setCandidates(candidates);
+        if(projection.getJoinSameTime()){
+            detail.setCandidates(candidates);
+        } else {
+            CandidateInfoApplyDto candidate = candidates.stream()
+                    .filter(c -> Objects.equals(c.getId(), projection.getCandidateInfoId()))
+                    .findFirst()
+                    .orElseThrow(() -> new AppException(CoreErrorCode.CANDIDATE_INFO_APPLY_NOT_FOUND));
+            detail.setCandidates(List.of(candidate));
+        }
 
         // participants
         List<UserDto> participants = interviewPanelService.getByCalendarId(projection.getCalendarId());
@@ -452,7 +460,78 @@ public class CalendarServiceImpl implements CalendarService {
 
     @Override
     public CalendarDetail detailInViewGeneral(CalendarDetailInViewGeneralRequest request) {
-        return null;
+        Long orgId = restTemplateClient.validOrgMember();
+        Long currentUserId = WebUtils.getCurrentUserId();
+
+        boolean checkOrgCalendar = calendarRepository.existsByIdAndOrgId(request.getCalendarId(), orgId);
+        if(!checkOrgCalendar){
+            throw new AppException(CoreErrorCode.CALENDAR_NOT_FOUND);
+        }
+
+        List<String> roles = WebUtils.getCurrentRole();
+        boolean isOrgAdmin = roles.contains(Constants.RoleCode.ORG_ADMIN);
+        boolean isHrContact = calendarRepository.existsByCalendarIdAndHrContactId(request.getCalendarId(), currentUserId);
+
+        List<UserDto> participants = interviewPanelService.getByCalendarId(request.getCalendarId());
+        if(!isOrgAdmin && !isHrContact){
+            boolean isParticipant = participants.stream()
+                    .anyMatch(p -> Objects.equals(p.getId(), currentUserId));
+            if(!isParticipant){
+                throw new AppException(CommonErrorCode.ACCESS_DENIED);
+            }
+        }
+
+        Calendar calendar = calendarRepository.findById(request.getCalendarId()).orElseThrow(
+                () -> new AppException(CoreErrorCode.CALENDAR_NOT_FOUND)
+        );
+        if(!calendar.getJoinSameTime()){
+            if(request.getCandidateInfoId() == null){
+                throw new AppException(CoreErrorCode.CANDIDATE_INFO_APPLY_NOT_FOUND);
+            }
+        }
+
+        JobAdProcessDto jobAdProcess = jobAdProcessService.getById(calendar.getJobAdProcessId());
+        JobAdDto jobAd = jobAdService.findById(jobAdProcess.getJobAdId());
+        UserDto creator = restTemplateClient.getUser(calendar.getCreatorId());
+        CalendarTypeDto calendarType = CalendarType.getCalendarTypeDto(calendar.getCalendarType());
+
+        CalendarDetail detail = new CalendarDetail();
+        detail.setJobAd(jobAd);
+        detail.setJobAdProcess(jobAdProcess);
+        detail.setCreator(creator);
+        detail.setCalendarType(calendarType);
+        if (Objects.equals(calendarType.getType(), Constants.OFFLINE)){
+            OrgAddressDto location = orgAddressService.getById(calendar.getOrgAddressId());
+            detail.setLocation(location);
+        } else if(Objects.equals(calendarType.getType(), Constants.ONLINE)){
+            detail.setMeetingLink(calendar.getMeetingLink());
+        }
+        detail.setParticipants(participants);
+
+        if(calendar.getJoinSameTime()){
+            List<CandidateInfoApplyDto> candidates = candidateInfoApplyService.getByCalendarId(calendar.getId());
+            detail.setCandidates(candidates);
+            detail.setDate(calendar.getDate());
+            detail.setTimeFrom(calendar.getTimeFrom());
+
+            LocalDateTime startDateTime = LocalDateTime.of(calendar.getDate(), calendar.getTimeFrom());
+            LocalDateTime endDateTime = startDateTime.plusMinutes(calendar.getDurationMinutes());
+            detail.setTimeTo(endDateTime.toLocalTime());
+        } else {
+            CandidateInfoApplyDto candidate = candidateInfoApplyService.getById(request.getCandidateInfoId());
+            detail.setCandidates(List.of(candidate));
+
+            CalendarCandidateInfoDto calendarCandidate = calendarCandidateInfoService
+                    .getByCalendarIdAndCandidateInfoId(calendar.getId(), request.getCandidateInfoId());
+            if(calendarCandidate == null){
+                throw new AppException(CoreErrorCode.CALENDAR_NOT_FOUND);
+            }
+            detail.setDate(calendarCandidate.getDate());
+            detail.setTimeFrom(calendarCandidate.getTimeFrom());
+            detail.setTimeTo(calendarCandidate.getTimeTo());
+        }
+
+        return detail;
     }
 
     private void validateCreateCalendar(CalendarRequest request, Long orgId) {

@@ -16,5 +16,5 @@ import lombok.NoArgsConstructor;
 public class CalendarDetailInViewGeneralRequest {
     @NotNull(message = Messages.CALENDAR_NOT_FOUND)
     private Long calendarId;
-    private Long candidateInfoIds;
+    private Long candidateInfoId;
 }
