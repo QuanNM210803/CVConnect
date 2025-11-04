@@ -14,8 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CalendarFitterViewCandidateResponse {
+public class CalendarFilterResponse {
     private LocalDate date;
     private String labelDate;
-    private List<CalendarViewCandidateDetail> calendars;
+    private List<CalendarFilterDetail> details;
 }

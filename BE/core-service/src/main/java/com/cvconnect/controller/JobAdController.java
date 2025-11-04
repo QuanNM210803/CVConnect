@@ -5,6 +5,7 @@ import com.cvconnect.service.JobAdService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import nmquan.commonlib.constant.MessageConstants;
+import nmquan.commonlib.dto.request.FilterRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
@@ -78,5 +79,12 @@ public class JobAdController {
     public ResponseEntity<Response<IDResponse<Long>>> updateJobAd(@PathVariable Long jobAdId, @Valid @RequestBody JobAdUpdateRequest request) {
         request.setId(jobAdId);
         return ResponseUtils.success(jobAdService.update(request), localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @GetMapping("/by-participant")
+    @Operation(summary = "Get Job Ads by Participant ID")
+    @PreAuthorize("hasAnyAuthority('ORG_JOB_AD:VIEW')")
+    public ResponseEntity<Response<FilterResponse<JobAdDto>>> getJobAdsByParticipantId(@Valid @ModelAttribute FilterRequest request) {
+        return ResponseUtils.success(jobAdService.getJobAdsByParticipantId(request));
     }
 }

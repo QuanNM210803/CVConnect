@@ -104,4 +104,15 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
         AND (:participantId IS NULL OR ja.hrContactId = :participantId OR (ip.interviewerId IS NOT NULL AND ip.interviewerId = :participantId))
     """)
     JobAd getJobAdOrgDetailById(Long jobAdId, Long orgId, Long participantId);
+
+    @Query("""
+        SELECT distinct ja
+        FROM JobAd ja
+        JOIN JobAdProcess jap ON jap.jobAdId = ja.id
+        LEFT JOIN Calendar c ON c.jobAdProcessId = jap.id
+        LEFT JOIN InterviewPanel ip ON ip.calendarId = c.id
+        WHERE ja.orgId = :orgId
+          AND (:participantId IS NULL OR ja.hrContactId = :participantId OR (ip.interviewerId IS NOT NULL AND ip.interviewerId = :participantId))
+    """)
+    Page<JobAd> getJobAdsByParticipantId(Long orgId, Long participantId, Pageable pageable);
 }

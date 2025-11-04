@@ -2,7 +2,7 @@ package com.cvconnect.repository;
 
 import com.cvconnect.dto.calendar.CalendarDetailInViewCandidateProjection;
 import com.cvconnect.dto.calendar.CalendarFilterViewCandidateProjection;
-import com.cvconnect.dto.calendar.CalendarFitterRequest;
+import com.cvconnect.dto.calendar.CalendarFilterRequest;
 import com.cvconnect.entity.Calendar;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,11 +25,11 @@ public interface CalendarRepository extends JpaRepository<Calendar, Long> {
         join InterviewPanel ip on ip.calendarId = c.id
         where jac.id = :#{#request.jobAdCandidateId}
         and (:creatorId is null or c.creatorId = :creatorId)
-        and (:participantId is null or ja.hrContactId = :participantId or ip.interviewerId = :participantId)
+        and (:participantId is null or ip.interviewerId = :participantId)
         and (:participantIdAuth is null or ip.interviewerId = :participantIdAuth)
-        order by date desc, timeFrom desc, timeTo asc
+        order by date asc, timeFrom asc, timeTo asc
     """)
-    List<CalendarFilterViewCandidateProjection> filterViewCandidateCalendars(CalendarFitterRequest request, Long creatorId, Long participantId, Long participantIdAuth);
+    List<CalendarFilterViewCandidateProjection> filterViewCandidateCalendars(CalendarFilterRequest request, Long creatorId, Long participantId, Long participantIdAuth);
 
     @Query("""
         select distinct ja.id as jobAdId, ja.title as jobAdTitle, jap.id as jobAdProcessId, jap.name as jobAdProcessName,
@@ -45,4 +45,28 @@ public interface CalendarRepository extends JpaRepository<Calendar, Long> {
         and (:userId is null or c.creatorId = :userId or ja.hrContactId = :userId or ip.interviewerId = :userId)
     """)
     CalendarDetailInViewCandidateProjection detailInViewCandidate(Long calendarCandidateInfoId, Long orgId, Long userId);
+
+    @Query("""
+        select distinct cci.date as date, c.id as calendarId, c.joinSameTime as joinSameTime,
+            cci.candidateInfoId as candidateInfoId, cia.fullName as fullName,
+            cci.timeFrom as timeFrom, cci.timeTo as timeTo,
+            ja.id as jobAdId, ja.title as jobAdTitle, ja.hrContactId as hrContactId,
+            c.calendarType as calendarType
+        from Calendar c
+        join CalendarCandidateInfo cci on cci.calendarId = c.id
+        join CandidateInfoApply cia on cia.id = cci.candidateInfoId
+        join JobAdProcess jap on jap.id = c.jobAdProcessId
+        join JobAd ja on ja.id = jap.jobAdId
+        join InterviewPanel ip on ip.calendarId = c.id
+        where
+        (:#{#request.jobAdId} is null or ja.id = :#{#request.jobAdId})
+        and (cci.date >= coalesce(:#{#request.dateFrom}, cci.date))
+        and (cci.date <= coalesce(:#{#request.dateTo}, cci.date))
+        and ja.orgId = :orgId
+        and (:creatorId is null or c.creatorId = :creatorId)
+        and (:participantId is null or ip.interviewerId = :participantId)
+        and (:participantIdAuth is null or ja.hrContactId = :currentUserId or ip.interviewerId = :participantIdAuth)
+        order by date asc, timeFrom asc, timeTo asc
+    """)
+    List<CalendarDetailInViewCandidateProjection> filterViewGeneral(CalendarFilterRequest request, Long orgId, Long creatorId, Long participantId, Long participantIdAuth, Long currentUserId);
 }

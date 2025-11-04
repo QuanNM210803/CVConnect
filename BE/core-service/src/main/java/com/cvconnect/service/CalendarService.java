@@ -1,15 +1,14 @@
 package com.cvconnect.service;
 
-import com.cvconnect.dto.calendar.CalendarDetailInViewCandidate;
-import com.cvconnect.dto.calendar.CalendarFitterRequest;
-import com.cvconnect.dto.calendar.CalendarFitterViewCandidateResponse;
-import com.cvconnect.dto.calendar.CalendarRequest;
+import com.cvconnect.dto.calendar.*;
 import nmquan.commonlib.dto.response.IDResponse;
 
 import java.util.List;
 
 public interface CalendarService {
     IDResponse<Long> createCalendar(CalendarRequest request);
-    List<CalendarFitterViewCandidateResponse> filterViewCandidateCalendars(CalendarFitterRequest request);
-    CalendarDetailInViewCandidate detailInViewCandidate(Long calendarCandidateInfoId);
+    List<CalendarFitterViewCandidateResponse> filterViewCandidateCalendars(CalendarFilterRequest request);
+    CalendarDetail detailInViewCandidate(Long calendarCandidateInfoId);
+    List<CalendarFilterResponse> filterViewGeneral(CalendarFilterRequest request);
+    CalendarDetail detailInViewGeneral(CalendarDetailInViewGeneralRequest request);
 }

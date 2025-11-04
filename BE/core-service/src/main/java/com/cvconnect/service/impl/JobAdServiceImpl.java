@@ -22,6 +22,7 @@ import com.cvconnect.entity.JobAd;
 import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdRepository;
 import com.cvconnect.service.*;
+import nmquan.commonlib.dto.request.FilterRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
@@ -427,6 +428,25 @@ public class JobAdServiceImpl implements JobAdService {
         return IDResponse.<Long>builder()
                 .id(jobAd.getId())
                 .build();
+    }
+
+    @Override
+    public FilterResponse<JobAdDto> getJobAdsByParticipantId(FilterRequest request) {
+        Long orgId = restTemplateClient.validOrgMember();
+        Long participantId = null;
+        List<String> roles = WebUtils.getCurrentRole();
+        if(!roles.contains(Constants.RoleCode.ORG_ADMIN)){
+            participantId = WebUtils.getCurrentUserId();
+        }
+        Page<JobAd> page = jobAdRepository.getJobAdsByParticipantId(orgId, participantId, request.getPageable());
+        List<JobAdDto> dtos = page.getContent().stream()
+                .map(jobAd -> JobAdDto.builder()
+                        .id(jobAd.getId())
+                        .code(jobAd.getCode())
+                        .title(jobAd.getTitle())
+                        .build())
+                .collect(Collectors.toList());
+        return PageUtils.toFilterResponse(page, dtos);
     }
 
     private void validateCreate(JobAdRequest request) {
