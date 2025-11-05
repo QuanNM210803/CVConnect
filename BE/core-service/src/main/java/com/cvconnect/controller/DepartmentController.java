@@ -67,7 +67,7 @@ public class DepartmentController {
     }
 
     @GetMapping("/filter")
-    @PreAuthorize("hasAnyAuthority('DEPARTMENT:VIEW')")
+    @PreAuthorize("hasAnyAuthority('DEPARTMENT:VIEW', 'ORGANIZATION')")
     @Operation(summary = "Filter departments")
     public ResponseEntity<Response<FilterResponse<DepartmentDto>>> filterDepartments(@Valid @ModelAttribute DepartmentFilterRequest request) {
         return ResponseUtils.success(departmentService.filter(request));

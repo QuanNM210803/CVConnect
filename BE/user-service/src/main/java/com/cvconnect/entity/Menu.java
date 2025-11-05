@@ -40,7 +40,4 @@ public class Menu extends BaseEntity {
 
     @Column(name = "for_member_type")
     private String forMemberType;
-
-    @Column(name = "is_show")
-    private Boolean isShow;
 }

@@ -48,7 +48,7 @@ public class UserController {
     // for org-member
     @GetMapping("/get-by-role-code-org/{roleCode}")
     @Operation(summary = "Get users by role code for organization members")
-    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW')")
+    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW', 'ORGANIZATION')")
     public ResponseEntity<Response<List<UserDto>>> getUsersByRoleCodeOrg(@PathVariable String roleCode) {
         return ResponseUtils.success(userService.getUsersByRoleCodeOrg(roleCode));
     }

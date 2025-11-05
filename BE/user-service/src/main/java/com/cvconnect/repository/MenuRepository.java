@@ -14,7 +14,7 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     @Query("SELECT m.id AS id, m.code AS menuCode, m.label AS menuLabel, " +
             "m.icon AS menuIcon, m.url AS menuUrl, m.parentId AS parentId, m.sortOrder AS menuSortOrder, " +
-            "m.forMemberType AS forMemberType, m.isShow AS isShow, rm.permission AS permission " +
+            "m.forMemberType AS forMemberType, rm.permission AS permission " +
             "FROM RoleMenu rm " +
             "JOIN Menu m ON m.id = rm.menuId " +
             "WHERE rm.roleId = :roleId AND rm.isActive = true AND m.isActive = true " +
@@ -23,7 +23,7 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     @Query("SELECT m.id AS id, m.code AS menuCode, m.label AS menuLabel, " +
             "m.icon AS menuIcon, m.url AS menuUrl, m.parentId AS parentId, m.sortOrder AS menuSortOrder," +
-            "m.forMemberType AS forMemberType, m.isShow AS isShow " +
+            "m.forMemberType AS forMemberType " +
             "FROM Menu m " +
             "WHERE m.isActive = true AND (m.forMemberType = :#{#memberType.name()} OR m.forMemberType IS NULL) " +
             "ORDER BY m.sortOrder ASC, m.id ASC")
@@ -32,7 +32,7 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     @Query("SELECT m.id AS id, m.code AS menuCode, m.label AS menuLabel, " +
             "m.icon AS menuIcon, m.url AS menuUrl, m.parentId AS parentId, m.sortOrder AS menuSortOrder," +
-            "m.forMemberType AS forMemberType, m.isShow AS isShow " +
+            "m.forMemberType AS forMemberType " +
             "FROM Menu m " +
             "WHERE m.id IN :ids AND m.isActive = true " +
             "ORDER BY m.sortOrder ASC, m.id ASC")

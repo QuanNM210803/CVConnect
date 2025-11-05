@@ -26,6 +26,7 @@ public class OrgAddressController {
 
     @GetMapping("/get-all")
     @Operation(summary = "Get all organization addresses")
+    @PreAuthorize("hasAnyAuthority('ORGANIZATION', 'ORG_ADDRESS:VIEW')")
     public ResponseEntity<Response<List<OrgAddressDto>>> getAllOrgAddresses() {
         return ResponseUtils.success(orgAddressService.getAll());
     }

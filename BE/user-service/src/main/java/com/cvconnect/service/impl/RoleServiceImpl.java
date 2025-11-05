@@ -254,11 +254,17 @@ public class RoleServiceImpl implements RoleService {
                 }
             }
             List<RoleMenuDto> roleMenuDtos = roleMenus.stream()
-                    .map(rm -> RoleMenuDto.builder()
-                            .roleId(role.getId())
-                            .menuId(rm.getMenuId())
-                            .permissions(rm.getPermissions())
-                            .build())
+                    .map(rm -> {
+                        if (rm.getPermissions() != null && rm.getPermissions().isEmpty()) {
+                            return null;
+                        }
+                        return RoleMenuDto.builder()
+                                .roleId(role.getId())
+                                .menuId(rm.getMenuId())
+                                .permissions(rm.getPermissions())
+                                .build();
+                    })
+                    .filter(Objects::nonNull)
                     .toList();
             roleMenuService.saveAll(roleMenuDtos);
         }

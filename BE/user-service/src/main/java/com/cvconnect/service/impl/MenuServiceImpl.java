@@ -55,9 +55,6 @@ public class MenuServiceImpl implements MenuService {
         }
         Map<Long, MenuMetadata> menuMap = new HashMap<>();
         for (MenuProjection p : projections) {
-            if(!p.getIsShow()){
-                continue;
-            }
             MenuMetadata menu = new MenuMetadata();
             menu.setId(p.getId());
             menu.setMenuCode(p.getMenuCode());
@@ -113,7 +110,6 @@ public class MenuServiceImpl implements MenuService {
                         .icon(projection.getMenuIcon())
                         .parentId(projection.getParentId())
                         .sortOrder(projection.getMenuSortOrder())
-                        .isShow(projection.getIsShow())
                         .forMemberType(projection.getForMemberType())
                         .build())
                 .toList();

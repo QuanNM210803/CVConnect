@@ -19,5 +19,4 @@ public class MenuDto {
     private Long parentId;
     private Integer sortOrder;
     private String forMemberType;
-    private Boolean isShow;
 }

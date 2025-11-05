@@ -31,10 +31,17 @@ public class JwtUtils {
     public String generateToken(UserDto user) {
         Map<String, Object> claims = new HashMap<>();
 
-        List<String> roles = roleService.getRoleUseByUserId(user.getId()).stream()
+        List<RoleDto> roleDtos = roleService.getRoleByUserId(user.getId());
+        List<String> memberTypes = roleDtos.stream()
+                .map(role -> role.getMemberType().name())
+                .distinct()
+                .toList();
+        List<String> roles = roleDtos.stream()
                 .map(RoleDto::getCode)
                 .toList();
-        claims.put("roles", roles);
+        List<String> allRoles = new ArrayList<>(roles);
+        allRoles.addAll(memberTypes);
+        claims.put("roles", allRoles);
 
         Map<String, List<String>> permissionMap = roleMenuService.getAuthorities(user.getId(), roles);
         claims.put("permissions", permissionMap);

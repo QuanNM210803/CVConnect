@@ -61,7 +61,7 @@ public class RoleController {
 
     @GetMapping("/get-member-type-organization")
     @Operation(summary = "Get role member type organization")
-    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW')")
+    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW', 'ORGANIZATION')")
     public ResponseEntity<Response<List<RoleDto>>> getRoleMemberTypeOrganization() {
         return ResponseUtils.success(roleService.getByMemberType(MemberType.ORGANIZATION));
     }
