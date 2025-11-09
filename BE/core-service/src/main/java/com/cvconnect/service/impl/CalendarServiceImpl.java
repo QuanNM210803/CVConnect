@@ -36,6 +36,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -357,6 +358,12 @@ public class CalendarServiceImpl implements CalendarService {
             }
         }
 
+        if(request.getDateFrom() != null){
+            request.setDateFrom(request.getDateFrom().plus(7, ChronoUnit.HOURS));
+        }
+        if(request.getDateTo() != null){
+            request.setDateTo(request.getDateTo().plus(7, ChronoUnit.HOURS));
+        }
         List<CalendarDetailInViewCandidateProjection> projections = calendarRepository
                 .filterViewGeneral(request, orgId, creatorId, participantId, participantIdAuth, currentUserId);
 

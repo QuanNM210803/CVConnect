@@ -66,8 +66,31 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/postgres.sql:/docker-entrypoint-initdb.d/postgres.sql:ro
 
+  elasticsearch:
+    image: elasticsearch:9.0.8
+    container_name: elastic-cvconnect
+    hostname: elastic
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+
+  kibana:
+      container_name: kibana-cvconnect
+      image: kibana:9.0.8
+      environment:
+        - ELASTICSEARCH_HOSTS=http://elastic-cvconnect:9200
+      depends_on:
+        - elasticsearch
+      ports:
+        - "5601:5601"
+
 volumes:
   mysql_data:
   redis_data:
   mongo_data:
   postgres_data:
+  es-data:

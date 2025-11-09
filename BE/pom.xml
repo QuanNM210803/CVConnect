@@ -37,6 +37,7 @@
         <shedlock-provider-jdbc-template.version>5.12.0</shedlock-provider-jdbc-template.version>
         <cloudinary.version>1.39.0</cloudinary.version>
         <commons-io.version>2.15.1</commons-io.version>
+        <spring-ai.version>1.0.1</spring-ai.version>
     </properties>
 
     <dependencyManagement>

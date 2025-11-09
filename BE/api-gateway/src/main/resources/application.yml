@@ -6,6 +6,8 @@ server:
   port_notify_service: ${PORT_NOTIFY_SERVICE:8081}
   host_core_service: ${HOST_CORE_SERVICE:localhost}
   port_core_service: ${PORT_CORE_SERVICE:8082}
+  host_search_service: ${HOST_SEARCH_SERVICE:localhost}
+  port_search_service: ${PORT_SEARCH_SERVICE:8083}
   host_socket: ${HOST_SOCKET:localhost}
   port_socket: ${PORT_SOCKET:9090}
 
@@ -36,6 +38,12 @@ spring:
             - Path=${app.api-prefix}/core/**
           filters:
             - StripPrefix=2
+        - id: search-service
+          uri: http://${server.host_search_service}:${server.port_search_service}
+          predicates:
+            - Path=${app.api-prefix}/search/**
+          filters:
+            - StripPrefix=2
         - id: socket
           uri: ws://${server.host_socket}:${server.port_socket}
           predicates:
@@ -51,6 +59,8 @@ springdoc:
         url: ${app.api-prefix}/notify/v3/api-docs
       - name: core-service
         url: ${app.api-prefix}/core/v3/api-docs
+      - name: search-service
+        url: ${app.api-prefix}/search/v3/api-docs
 
 logging:
   level:

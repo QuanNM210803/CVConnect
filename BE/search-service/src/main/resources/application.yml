@@ -1,23 +1,19 @@
 spring:
   application:
-    name: notify-service
+    name: search-service
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:3306/cvconnect-notify-service
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:h2:mem:searchdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: sa
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: none
-    show-sql: false
-  data:
-    mongodb:
-      host: ${DB_HOST:localhost}
-      port: 27017
-      database: cvconnect-notify-service
-      username: root
-      password: root
-      authentication-database: admin
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
   kafka:
     producer:
       bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
@@ -31,20 +27,22 @@ spring:
       bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      group-id: notify-service
-  thymeleaf:
-    prefix: classpath:/templates/
-    suffix: .html
-    mode: HTML
-    encoding: UTF-8
-    cache: false
+      group-id: search-service
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      embedding:
+        options:
+          model: text-embedding-3-small
 
 server:
-  port: 8081
-  port-socket: 9090
-  socket-context: /socket
+  port: 8083
   servlet:
-    context-path: /notify
+    context-path: /search
   user_service: http://${HOST_USER_SERVICE:localhost}:${PORT_USER_SERVICE:8080}/user
   notify_service: http://${HOST_NOTIFY_SERVICE:localhost}:${PORT_NOTIFY_SERVICE:8081}/notify
   core_service: http://${HOST_CORE_SERVICE:localhost}:${PORT_CORE_SERVICE:8082}/core
