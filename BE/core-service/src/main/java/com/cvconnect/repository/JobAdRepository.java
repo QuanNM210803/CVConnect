@@ -2,6 +2,7 @@ package com.cvconnect.repository;
 
 import com.cvconnect.dto.jobAd.JobAdOrgFilterProjection;
 import com.cvconnect.dto.jobAd.JobAdOrgFilterRequest;
+import com.cvconnect.dto.jobAd.JobAdOutsideFilterRequest;
 import com.cvconnect.entity.JobAd;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -115,4 +116,29 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
           AND (:participantId IS NULL OR ja.hrContactId = :participantId OR (ip.interviewerId IS NOT NULL AND ip.interviewerId = :participantId))
     """)
     Page<JobAd> getJobAdsByParticipantId(Long orgId, Long participantId, Pageable pageable);
+
+    @Query(value = """
+        select distinct ja
+        from job_ad ja
+        join Job_ad_career jac on jac.job_ad_id = ja.id
+        join job_ad_level jal on jal.job_ad_id = ja.id
+        join job_ad_work_location jawl on jawl.job_ad_id = ja.id
+        join organization_address oa on oa.id = jawl.work_location_id
+        join organization o on o.id = ja.org_id and o.is_active = true
+        where ja.is_public = true and ja.job_ad_status = 'OPEN'
+        and (:#{#request.careerIds} is null or jac.career_id in :#{#request.careerIds})
+        and (:#{#request.levelIds} is null or jal.level_id in :#{#request.levelIds})
+        and (:#{#request.jobAdLocation} is null or lower(oa.province) like lower(concat('%', :#{#request.jobAdLocation}, '%')))
+        and (:#{#request.isRemote} is null or ja.is_remote = :#{#request.isRemote})
+        and (:#{#request.salaryFrom} is null or ja.salary_from >= :#{#request.salaryFrom})
+        and (:#{#request.salaryTo} is null or ja.salary_to <= :#{#request.salaryTo})
+        and (:#{#request.negotiable} is null or ja.salary_type = 'NEGOTIABLE')
+        and (:#{#request.jobType} is null or ja.job_type = :#{#request.jobType.name()})
+        and (
+            (:#{#request.searchOrg} = true and lower(o.name) like lower(concat('%', :#{#request.keyword}, '%')))
+            or ts_rank(to_tsvector(ja.title || ' ' || replace(ja.keyword, ';', ' ')), plainto_tsquery(:#{#request.keyword})) > 0.05
+            or similarity(ja.title || ' ' || replace(ja.keyword, ';', ' '), :keyword) > 0.3
+        )
+    """, nativeQuery = true)
+    Page<JobAd> filterJobAdsForOutside(JobAdOutsideFilterRequest request, Pageable pageable);
 }

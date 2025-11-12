@@ -26,7 +26,8 @@ public class SecurityConfig {
 
     public static final String[] PUBLIC_URLS = {
             "/v3/api-docs", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html",
-            "/attach-file/internal/**", "/org/internal/**", "/industry/public/**", "/replace-placeholder/internal/**"
+            "/attach-file/internal/**", "/org/internal/**", "/industry/public/**", "/replace-placeholder/internal/**",
+            "/job-ad/outside/**"
     };
 
     @Bean

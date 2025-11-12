@@ -24,4 +24,5 @@ public class OrgAddressDto extends BaseDto<Instant> {
 
     // attribute expansion
     private String displayAddress;
+    private Long jobAdId;
 }

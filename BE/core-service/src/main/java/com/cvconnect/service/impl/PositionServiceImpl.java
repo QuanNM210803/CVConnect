@@ -30,8 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -164,6 +166,20 @@ public class PositionServiceImpl implements PositionService {
             return null;
         }
         return ObjectMapperUtils.convertToObject(position, PositionDto.class);
+    }
+
+    @Override
+    public Map<Long, PositionDto> getPositionMapByIds(List<Long> positionIds) {
+        if(ObjectUtils.isEmpty(positionIds)){
+            return Map.of();
+        }
+        List<Position> positions = positionRepository.findAllById(positionIds);
+        if(ObjectUtils.isEmpty(positions)){
+            return Map.of();
+        }
+        List<PositionDto> positionDtos = ObjectMapperUtils.convertToList(positions, PositionDto.class);
+        return positionDtos.stream()
+                .collect(Collectors.toMap(PositionDto::getId, Function.identity()));
     }
 
     private void savePositionProcesses(List<PositionProcessRequest> positionProcessRequests, Long positionId){

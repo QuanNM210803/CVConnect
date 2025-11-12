@@ -1,6 +1,7 @@
 package com.cvconnect.repository;
 
 import com.cvconnect.dto.level.LevelFilterRequest;
+import com.cvconnect.dto.level.LevelProjection;
 import com.cvconnect.entity.Level;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
@@ -33,4 +34,17 @@ public interface LevelRepository extends JpaRepository<Level, Long> {
             "JOIN JobAdLevel jal ON jal.levelId = l.id " +
             "WHERE jal.jobAdId = :jobAdId")
     List<Level> findByJobAdId(Long jobAdId);
+
+    @Query("""
+        select distinct
+            l.id as id,
+            l.code as code,
+            l.name as name,
+            l.isDefault as isDefault,
+            jal.jobAdId as jobAdId
+        from Level l
+        join JobAdLevel jal on jal.levelId = l.id
+        where jal.jobAdId in :jobAdIds
+    """)
+    List<LevelProjection> findLevelsByJobAdIds(List<Long> jobAdIds);
 }

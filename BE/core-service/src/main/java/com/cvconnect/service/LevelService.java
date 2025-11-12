@@ -7,6 +7,7 @@ import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 
 import java.util.List;
+import java.util.Map;
 
 public interface LevelService {
     LevelDto getById(Long id);
@@ -16,4 +17,5 @@ public interface LevelService {
     void deleteByIds(List<Long> ids);
     List<LevelDto> getByIds(List<Long> ids);
     List<LevelDto> getLevelsByJobAdId(Long jobAdId);
+    Map<Long, List<LevelDto>> getLevelsMapByJobAdIds(List<Long> jobAdIds);
 }

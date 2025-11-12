@@ -24,6 +24,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -230,5 +231,22 @@ public class OrgServiceImpl implements OrgService {
         return IDResponse.<Long>builder()
                 .id(orgId)
                 .build();
+    }
+
+    @Override
+    public Map<Long, OrgDto> getOrgMapByIds(List<Long> orgIds) {
+        List<Organization> orgs = orgRepository.findAllById(orgIds);
+        if(ObjectUtils.isEmpty(orgs)) {
+            return Map.of();
+        }
+        List<OrgDto> orgDtos = ObjectMapperUtils.convertToList(orgs, OrgDto.class);
+        for(OrgDto orgDto : orgDtos) {
+            if(orgDto.getLogoId() != null) {
+                AttachFileDto logoInfo = attachFileService.getAttachFiles(List.of(orgDto.getLogoId())).get(0);
+                orgDto.setLogoUrl(logoInfo.getSecureUrl());
+            }
+        }
+        return orgDtos.stream()
+                .collect(Collectors.toMap(OrgDto::getId, dto -> dto));
     }
 }

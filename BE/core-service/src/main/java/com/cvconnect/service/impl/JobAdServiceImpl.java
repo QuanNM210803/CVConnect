@@ -2,6 +2,8 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
+import com.cvconnect.dto.career.CareerDto;
+import com.cvconnect.dto.career.CareerFilterRequest;
 import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.department.DepartmentDto;
 import com.cvconnect.dto.enums.CurrencyTypeDto;
@@ -13,6 +15,8 @@ import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.*;
 import com.cvconnect.dto.jobAdLevel.JobAdLevelDto;
 import com.cvconnect.dto.level.LevelDto;
+import com.cvconnect.dto.level.LevelFilterRequest;
+import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.position.PositionDto;
 import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
@@ -67,6 +71,10 @@ public class JobAdServiceImpl implements JobAdService {
     private PositionService positionService;
     @Autowired
     private DepartmentService departmentService;
+    @Autowired
+    private CareerService careerService;
+    @Autowired
+    private OrgService orgService;
 
     private static final String JOB_AD_CODE_PREFIX = "JD-";
 
@@ -458,6 +466,86 @@ public class JobAdServiceImpl implements JobAdService {
                         .title(jobAd.getTitle())
                         .build())
                 .collect(Collectors.toList());
+        return PageUtils.toFilterResponse(page, dtos);
+    }
+
+    @Override
+    public JobAdOutsideDataFilter outsideDataFilter() {
+        List<JobTypeDto> jobTypeDtos = JobType.getAll();
+
+        CareerFilterRequest careerFilterRequest = new CareerFilterRequest();
+        careerFilterRequest.setPageSize(Integer.MAX_VALUE);
+        FilterResponse<CareerDto> careerDtos = careerService.filter(careerFilterRequest);
+        List<CareerDto> careers = careerDtos.getData();
+
+        LevelFilterRequest levelFilterRequest = new LevelFilterRequest();
+        levelFilterRequest.setPageSize(Integer.MAX_VALUE);
+        FilterResponse<LevelDto> levelDtos = levelService.filter(levelFilterRequest);
+        List<LevelDto> levels = levelDtos.getData();
+
+        return JobAdOutsideDataFilter.builder()
+                .careers(careers)
+                .levels(levels)
+                .jobTypes(jobTypeDtos)
+                .build();
+    }
+
+    @Override
+    public FilterResponse<JobAdOutsideDetailResponse> filterJobAdsForOutside(JobAdOutsideFilterRequest request) {
+        request.setPageSize(20); // default page size
+        Page<JobAd> page = jobAdRepository.filterJobAdsForOutside(request, request.getPageable());
+
+        List<Long> positionIds = page.getContent().stream()
+                .map(JobAd::getPositionId)
+                .distinct()
+                .toList();
+        Map<Long, PositionDto> positionMap = positionService.getPositionMapByIds(positionIds);
+
+        List<Long> jobAdIds = page.getContent().stream()
+                .map(JobAd::getId)
+                .toList();
+        Map<Long, List<OrgAddressDto>> jobAdWorkLocationMap = orgAddressService.getOrgAddressByJobAdIds(jobAdIds);
+        Map<Long, List<LevelDto>> jobAdLevelMap = levelService.getLevelsMapByJobAdIds(jobAdIds);
+
+        List<Long> orgIds = page.getContent().stream()
+                .map(JobAd::getOrgId)
+                .distinct()
+                .toList();
+        Map<Long, OrgDto> orgMap = orgService.getOrgMapByIds(orgIds);
+
+        List<JobAdOutsideDetailResponse> dtos = page.getContent().stream()
+                .map(jobAd -> {
+                    JobAdOutsideDetailResponse dto = new JobAdOutsideDetailResponse();
+                    dto.setId(jobAd.getId());
+                    dto.setTitle(jobAd.getTitle());
+                    dto.setPosition(positionMap.get(jobAd.getPositionId()));
+                    dto.setDueDate(jobAd.getDueDate());
+                    dto.setQuantity(jobAd.getQuantity());
+
+                    JobTypeDto jobType = JobType.getJobTypeDto(jobAd.getJobType());
+                    dto.setJobType(jobType);
+
+                    SalaryTypeDto salaryType = SalaryType.getSalaryTypeDto(jobAd.getSalaryType());
+                    dto.setSalaryType(salaryType);
+                    dto.setSalaryFrom(jobAd.getSalaryFrom());
+                    dto.setSalaryTo(jobAd.getSalaryTo());
+
+                    CurrencyTypeDto currencyType = CurrencyType.getCurrencyTypeDto(jobAd.getCurrencyType());
+                    dto.setCurrencyType(currencyType);
+
+                    dto.setIsRemote(jobAd.getIsRemote());
+                    dto.setWorkLocations(jobAdWorkLocationMap.get(jobAd.getId()));
+                    dto.setIsAllLevel(jobAd.getIsAllLevel());
+                    if(jobAd.getIsAllLevel() == null || !jobAd.getIsAllLevel()) {
+                        dto.setLevels(jobAdLevelMap.get(jobAd.getId()));
+                    }
+
+                    dto.setOrg(orgMap.get(jobAd.getOrgId()));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
         return PageUtils.toFilterResponse(page, dtos);
     }
 

@@ -1,5 +1,6 @@
 package com.cvconnect.repository;
 
+import com.cvconnect.dto.org.OrgAddressProjection;
 import com.cvconnect.entity.OrganizationAddress;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -25,6 +26,22 @@ public interface OrgAddressRepository extends JpaRepository<OrganizationAddress,
             "JOIN JobAdWorkLocation jawl ON jawl.workLocationId = oa.id " +
             "WHERE jawl.jobAdId = :jobAdId")
     List<OrganizationAddress> findByJobAdId(Long jobAdId);
+
+    @Query("""
+        SELECT distinct
+            oa.id AS id,
+            oa.orgId AS orgId,
+            oa.isHeadquarter AS isHeadquarter,
+            oa.province AS province,
+            oa.district AS district,
+            oa.ward AS ward,
+            oa.detailAddress AS detailAddress,
+            jawl.jobAdId AS jobAdId
+        FROM OrganizationAddress oa
+        JOIN JobAdWorkLocation jawl ON jawl.workLocationId = oa.id
+        WHERE jawl.jobAdId IN :jobAdIds
+    """)
+    List<OrgAddressProjection> findByJobAdIdIn(List<Long> jobAdIds);
 
 
 }

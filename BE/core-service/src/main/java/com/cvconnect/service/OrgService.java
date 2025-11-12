@@ -5,6 +5,9 @@ import com.cvconnect.dto.org.OrganizationRequest;
 import nmquan.commonlib.dto.response.IDResponse;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
+
 public interface OrgService {
     IDResponse<Long> createOrg(OrganizationRequest request, MultipartFile[] files);
     OrgDto findById(Long orgId);
@@ -12,5 +15,6 @@ public interface OrgService {
     IDResponse<Long> updateOrgInfo(OrganizationRequest request);
     IDResponse<Long> updateOrgLogo(MultipartFile file);
     IDResponse<Long> updateOrgCoverPhoto(MultipartFile file);
+    Map<Long, OrgDto> getOrgMapByIds(List<Long> orgIds);
 
 }

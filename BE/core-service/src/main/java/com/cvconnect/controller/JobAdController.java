@@ -87,4 +87,16 @@ public class JobAdController {
     public ResponseEntity<Response<FilterResponse<JobAdDto>>> getJobAdsByParticipantId(@Valid @ModelAttribute FilterRequest request) {
         return ResponseUtils.success(jobAdService.getJobAdsByParticipantId(request));
     }
+
+    @GetMapping("/outside/data-filter")
+    @Operation(summary = "Filter Job Ads for Outside Users")
+    public ResponseEntity<Response<JobAdOutsideDataFilter>> outsideDataFilter() {
+        return ResponseUtils.success(jobAdService.outsideDataFilter());
+    }
+
+    @GetMapping("/outside/filter")
+    @Operation(summary = "Filter Job Ads for Outside Users")
+    public ResponseEntity<Response<FilterResponse<JobAdOutsideDetailResponse>>> filterJobAdsForOutside(@Valid @ModelAttribute JobAdOutsideFilterRequest request) {
+        return ResponseUtils.success(jobAdService.filterJobAdsForOutside(request));
+    }
 }

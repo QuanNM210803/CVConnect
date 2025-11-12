@@ -2,6 +2,7 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.org.OrgAddressDto;
+import com.cvconnect.dto.org.OrgAddressProjection;
 import com.cvconnect.dto.org.OrgAddressRequest;
 import com.cvconnect.entity.OrganizationAddress;
 import com.cvconnect.repository.OrgAddressRepository;
@@ -14,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -131,6 +129,30 @@ public class OrgAddressServiceImpl implements OrgAddressService {
             dto.setDisplayAddress(this.buildDisplayAddress(dto));
         }
         return dtos;
+    }
+
+    @Override
+    public Map<Long, List<OrgAddressDto>> getOrgAddressByJobAdIds(List<Long> jobAdIds) {
+        List<OrgAddressProjection> projections = orgAddressRepository.findByJobAdIdIn(jobAdIds);
+        if(projections.isEmpty()){
+            return Map.of();
+        }
+        List<OrgAddressDto> dtos = projections.stream()
+                .map(proj -> {
+                    OrgAddressDto dto = new OrgAddressDto();
+                    dto.setId(proj.getId());
+                    dto.setOrgId(proj.getOrgId());
+                    dto.setIsHeadquarter(proj.getIsHeadquarter());
+                    dto.setProvince(proj.getProvince());
+                    dto.setDistrict(proj.getDistrict());
+                    dto.setWard(proj.getWard());
+                    dto.setDetailAddress(proj.getDetailAddress());
+                    dto.setJobAdId(proj.getJobAdId());
+                    dto.setDisplayAddress(this.buildDisplayAddress(dto));
+                    return dto;
+                }).toList();
+        return dtos.stream()
+                .collect(Collectors.groupingBy(OrgAddressDto::getJobAdId));
     }
 
     private String buildDisplayAddress(OrgAddressDto dto) {

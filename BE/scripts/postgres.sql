@@ -836,3 +836,5 @@
 --
 -- alter table job_ad
 -- add column key_code_internal VARCHAR(100);
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;

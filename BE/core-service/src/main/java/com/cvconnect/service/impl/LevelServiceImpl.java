@@ -2,6 +2,7 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.dto.level.LevelFilterRequest;
+import com.cvconnect.dto.level.LevelProjection;
 import com.cvconnect.dto.level.LevelRequest;
 import com.cvconnect.entity.Level;
 import com.cvconnect.enums.CoreErrorCode;
@@ -19,7 +20,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class LevelServiceImpl implements LevelService {
@@ -108,6 +111,22 @@ public class LevelServiceImpl implements LevelService {
             return List.of();
         }
         return ObjectMapperUtils.convertToList(levels, LevelDto.class);
+    }
+
+    @Override
+    public Map<Long, List<LevelDto>> getLevelsMapByJobAdIds(List<Long> jobAdIds) {
+        List<LevelProjection> projections = levelRepository.findLevelsByJobAdIds(jobAdIds);
+        List<LevelDto> dtos = projections.stream()
+                .map(p -> LevelDto.builder()
+                        .id(p.getId())
+                        .code(p.getCode())
+                        .name(p.getName())
+                        .isDefault(p.getIsDefault())
+                        .jobAdId(p.getJobAdId())
+                        .build()
+                ).collect(Collectors.toList());
+        return dtos.stream()
+                .collect(Collectors.groupingBy(LevelDto::getJobAdId));
     }
 
 }

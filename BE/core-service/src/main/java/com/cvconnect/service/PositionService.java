@@ -8,6 +8,7 @@ import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 
 import java.util.List;
+import java.util.Map;
 
 public interface PositionService {
     IDResponse<Long> create(PositionRequest request);
@@ -17,4 +18,5 @@ public interface PositionService {
     FilterResponse<PositionDto> filter(PositionFilterRequest request);
     IDResponse<Long> update(PositionRequest request);
     PositionDto findById(Long id);
+    Map<Long, PositionDto> getPositionMapByIds(List<Long> positionIds);
 }

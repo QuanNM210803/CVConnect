@@ -4,6 +4,7 @@ import com.cvconnect.dto.org.OrgAddressDto;
 import com.cvconnect.dto.org.OrgAddressRequest;
 
 import java.util.List;
+import java.util.Map;
 
 public interface OrgAddressService {
     void createAddresses(List<OrgAddressDto> addresses);
@@ -12,4 +13,5 @@ public interface OrgAddressService {
     OrgAddressDto getById(Long id);
     void save(List<OrgAddressRequest> requests);
     List<OrgAddressDto> getByJobAdId(Long jobAdId);
+    Map<Long, List<OrgAddressDto>> getOrgAddressByJobAdIds(List<Long> jobAdIds);
 }

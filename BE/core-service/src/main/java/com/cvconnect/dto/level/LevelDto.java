@@ -21,4 +21,5 @@ public class LevelDto extends BaseDto<Instant> {
 
     // attribute expansion
     private String levelName;
+    private Long jobAdId;
 }
