@@ -63,4 +63,10 @@ public class OrgController {
     public ResponseEntity<Response<IDResponse<Long>>> updateOrgCoverPhoto(@RequestPart("file") MultipartFile file) {
         return ResponseUtils.success(orgService.updateOrgCoverPhoto(file));
     }
+
+    @GetMapping("/outside/org-info/{orgId}")
+    @Operation(summary = "Get Organization info outside")
+    public ResponseEntity<Response<OrgDto>> getOrgInfoOutside(@PathVariable Long orgId) {
+        return ResponseUtils.success(orgService.getOrgInfoOutside(orgId));
+    }
 }

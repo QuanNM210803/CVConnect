@@ -30,4 +30,13 @@ public class CoreServiceUtils {
             throw new AppException(CoreErrorCode.EMAIL_TEMPLATE_REQUIRED);
         }
     }
+
+    public static String toSnakeCase(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        return input.replaceAll("([a-z])([A-Z]+)", "$1_$2")
+                .toLowerCase();
+    }
+
 }

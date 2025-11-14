@@ -155,6 +155,19 @@ public class OrgAddressServiceImpl implements OrgAddressService {
                 .collect(Collectors.groupingBy(OrgAddressDto::getJobAdId));
     }
 
+    @Override
+    public List<OrgAddressDto> getByOrgId(Long orgId) {
+        List<OrganizationAddress> entities = orgAddressRepository.findByOrgId(orgId);
+        if(entities.isEmpty()){
+            return List.of();
+        }
+        List<OrgAddressDto> dtos = ObjectMapperUtils.convertToList(entities, OrgAddressDto.class);
+        for (OrgAddressDto dto : dtos) {
+            dto.setDisplayAddress(this.buildDisplayAddress(dto));
+        }
+        return dtos;
+    }
+
     private String buildDisplayAddress(OrgAddressDto dto) {
         StringJoiner addressJoiner = new StringJoiner(", ");
         if (dto.getDetailAddress() != null && !dto.getDetailAddress().isEmpty()) {

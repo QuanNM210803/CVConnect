@@ -96,7 +96,7 @@ public class JobAdController {
 
     @GetMapping("/outside/filter")
     @Operation(summary = "Filter Job Ads for Outside Users")
-    public ResponseEntity<Response<FilterResponse<JobAdOutsideDetailResponse>>> filterJobAdsForOutside(@Valid @ModelAttribute JobAdOutsideFilterRequest request) {
+    public ResponseEntity<Response<JobAdOutsideFilterResponse<JobAdOutsideDetailResponse>>> filterJobAdsForOutside(@Valid @ModelAttribute JobAdOutsideFilterRequest request) {
         return ResponseUtils.success(jobAdService.filterJobAdsForOutside(request));
     }
 }

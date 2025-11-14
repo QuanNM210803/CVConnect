@@ -17,15 +17,20 @@ import com.cvconnect.dto.jobAdLevel.JobAdLevelDto;
 import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.dto.level.LevelFilterRequest;
 import com.cvconnect.dto.org.OrgDto;
+import com.cvconnect.dto.org.WorkingLocationDto;
 import com.cvconnect.dto.position.PositionDto;
 import com.cvconnect.dto.positionProcess.PositionProcessRequest;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.org.OrgAddressDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
+import com.cvconnect.dto.searchHistoryOutside.SearchHistoryOutsideDto;
 import com.cvconnect.entity.JobAd;
 import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdRepository;
 import com.cvconnect.service.*;
+import com.cvconnect.utils.CoreServiceUtils;
+import nmquan.commonlib.constant.CommonConstants;
+import nmquan.commonlib.dto.PageInfo;
 import nmquan.commonlib.dto.request.FilterRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
@@ -36,11 +41,15 @@ import nmquan.commonlib.utils.PageUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -75,6 +84,8 @@ public class JobAdServiceImpl implements JobAdService {
     private CareerService careerService;
     @Autowired
     private OrgService orgService;
+    @Autowired
+    private SearchHistoryOutsideService searchHistoryOutsideService;
 
     private static final String JOB_AD_CODE_PREFIX = "JD-";
 
@@ -491,47 +502,75 @@ public class JobAdServiceImpl implements JobAdService {
     }
 
     @Override
-    public FilterResponse<JobAdOutsideDetailResponse> filterJobAdsForOutside(JobAdOutsideFilterRequest request) {
+    public JobAdOutsideFilterResponse<JobAdOutsideDetailResponse> filterJobAdsForOutside(JobAdOutsideFilterRequest request) {
         request.setPageSize(20); // default page size
-        Page<JobAd> page = jobAdRepository.filterJobAdsForOutside(request, request.getPageable());
+        request.setSortBy(CoreServiceUtils.toSnakeCase(request.getSortBy()));
 
-        List<Long> positionIds = page.getContent().stream()
-                .map(JobAd::getPositionId)
+        Long userId = WebUtils.getCurrentUserId();
+        if(userId != null){
+            if(!ObjectUtils.isEmpty(request.getKeyword())){
+                SearchHistoryOutsideDto dto = SearchHistoryOutsideDto.builder()
+                        .userId(userId)
+                        .keyword(request.getKeyword())
+                        .build();
+                searchHistoryOutsideService.create(dto);
+            }
+        }
+
+        Pageable pageable = request.getPageable();
+        List<JobAdProjection> jobAdProjections = jobAdRepository.filterJobAdsForOutsideFunction(
+                request.getKeyword(),
+                request.getCareerIds() != null ? request.getCareerIds().toArray(new Long[0]) : null,
+                request.getLevelIds() != null ? request.getLevelIds().toArray(new Long[0]) : null,
+                request.getJobAdLocation(),
+                request.getIsRemote(),
+                request.getSalaryFrom() != null ? Math.toIntExact(request.getSalaryFrom()) : null,
+                request.getSalaryTo() != null ? Math.toIntExact(request.getSalaryTo()) : null,
+                request.getNegotiable(),
+                request.getJobType() != null ? request.getJobType().name() : null,
+                request.isSearchOrg(),
+                request.getOrgId(),
+                pageable.getPageSize(),
+                (int) pageable.getOffset(),
+                pageable.getSort().iterator().next().getProperty(),
+                pageable.getSort().iterator().next().getDirection().name()
+        );
+
+        List<JobAdDto> jobAdDtos = ObjectMapperUtils.convertToList(jobAdProjections, JobAdDto.class);
+        List<Long> positionIds = jobAdDtos.stream()
+                .map(JobAdDto::getPositionId)
                 .distinct()
                 .toList();
         Map<Long, PositionDto> positionMap = positionService.getPositionMapByIds(positionIds);
 
-        List<Long> jobAdIds = page.getContent().stream()
-                .map(JobAd::getId)
+        List<Long> jobAdIds = jobAdDtos.stream()
+                .map(JobAdDto::getId)
                 .toList();
         Map<Long, List<OrgAddressDto>> jobAdWorkLocationMap = orgAddressService.getOrgAddressByJobAdIds(jobAdIds);
         Map<Long, List<LevelDto>> jobAdLevelMap = levelService.getLevelsMapByJobAdIds(jobAdIds);
 
-        List<Long> orgIds = page.getContent().stream()
-                .map(JobAd::getOrgId)
+        List<Long> orgIds = jobAdDtos.stream()
+                .map(JobAdDto::getOrgId)
                 .distinct()
                 .toList();
         Map<Long, OrgDto> orgMap = orgService.getOrgMapByIds(orgIds);
 
-        List<JobAdOutsideDetailResponse> dtos = page.getContent().stream()
+        List<JobAdOutsideDetailResponse> dtos = jobAdDtos.stream()
                 .map(jobAd -> {
                     JobAdOutsideDetailResponse dto = new JobAdOutsideDetailResponse();
                     dto.setId(jobAd.getId());
                     dto.setTitle(jobAd.getTitle());
                     dto.setPosition(positionMap.get(jobAd.getPositionId()));
                     dto.setDueDate(jobAd.getDueDate());
+                    dto.setDueDateStr(this.convertDueDateToString(jobAd.getDueDate()));
                     dto.setQuantity(jobAd.getQuantity());
 
-                    JobTypeDto jobType = JobType.getJobTypeDto(jobAd.getJobType());
-                    dto.setJobType(jobType);
-
-                    SalaryTypeDto salaryType = SalaryType.getSalaryTypeDto(jobAd.getSalaryType());
-                    dto.setSalaryType(salaryType);
-                    dto.setSalaryFrom(jobAd.getSalaryFrom());
-                    dto.setSalaryTo(jobAd.getSalaryTo());
-
-                    CurrencyTypeDto currencyType = CurrencyType.getCurrencyTypeDto(jobAd.getCurrencyType());
-                    dto.setCurrencyType(currencyType);
+                    if(jobAd.getSalaryFrom() != null && jobAd.getSalaryTo() != null){
+                        dto.setSalaryStr(this.convertSalaryToString(jobAd.getSalaryFrom(), jobAd.getSalaryTo()));
+                    } else {
+                        SalaryType salaryType = SalaryType.valueOf(jobAd.getSalaryType());
+                        dto.setSalaryStr(salaryType.getDescription());
+                    }
 
                     dto.setIsRemote(jobAd.getIsRemote());
                     dto.setWorkLocations(jobAdWorkLocationMap.get(jobAd.getId()));
@@ -542,11 +581,87 @@ public class JobAdServiceImpl implements JobAdService {
 
                     dto.setOrg(orgMap.get(jobAd.getOrgId()));
 
+                    dto.setCreatedAt(jobAd.getCreatedAt());
+                    dto.setKeyword(jobAd.getKeyword());
+
+                    List<String> tags = new ArrayList<>();
+                    JobType jobType = JobType.getJobType(jobAd.getJobType());
+                    tags.add(jobType.getDescription());
+                    if(jobAd.getIsRemote() != null && jobAd.getIsRemote()){
+                        tags.add("Remote");
+                    }
+                    if (!ObjectUtils.isEmpty(jobAd.getKeyword())) {
+                        String[] keywords = jobAd.getKeyword().split(";");
+                        Arrays.stream(keywords)
+                                .filter(k -> !k.isBlank())
+                                .limit(2)
+                                .map(String::trim)
+                                .forEach(tags::add);
+                    }
+                    dto.setTags(tags);
+
                     return dto;
                 })
                 .collect(Collectors.toList());
 
-        return PageUtils.toFilterResponse(page, dtos);
+        FilterResponse<JobAdOutsideDetailResponse> response = new FilterResponse<>();
+        response.setData(dtos);
+        response.setPageInfo(PageInfo.builder()
+                        .pageIndex(pageable.getPageNumber())
+                        .pageSize(dtos.size())
+                .build());
+
+        // count working location
+        List<Object[]> locationData = jobAdRepository.getWorkingLocationByFilterFunction(
+                request.getKeyword(),
+                request.getCareerIds() != null ? request.getCareerIds().toArray(new Long[0]) : null,
+                request.getLevelIds() != null ? request.getLevelIds().toArray(new Long[0]) : null,
+                request.getJobAdLocation(),
+                request.getIsRemote(),
+                request.getSalaryFrom() != null ? Math.toIntExact(request.getSalaryFrom()) : null,
+                request.getSalaryTo() != null ? Math.toIntExact(request.getSalaryTo()) : null,
+                request.getNegotiable(),
+                request.getJobType() != null ? request.getJobType().name() : null,
+                request.isSearchOrg(),
+                request.getOrgId()
+        );
+        Set<Long> remoteJobIds = new HashSet<>();
+        Map<String, Set<Long>> provinceToJobIds = new HashMap<>();
+
+        for (Object[] row : locationData) {
+            Long jobId = ((Number) row[0]).longValue();
+            Boolean isRemote = (Boolean) row[1];
+            String province = (String) row[2];
+
+            if (Boolean.TRUE.equals(isRemote)) {
+                remoteJobIds.add(jobId);
+            }
+
+            if (province != null && !province.isBlank()) {
+                provinceToJobIds.computeIfAbsent(province.trim(), k -> new HashSet<>()).add(jobId);
+            }
+        }
+
+        List<WorkingLocationDto> locations = provinceToJobIds.entrySet().stream()
+                .map(e -> WorkingLocationDto.builder()
+                        .province(e.getKey())
+                        .jobAdCount((long) e.getValue().size())
+                        .build())
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (!remoteJobIds.isEmpty()) {
+            locations.add(WorkingLocationDto.builder()
+                    .province("Remote")
+                    .jobAdCount((long) remoteJobIds.size())
+                    .build());
+        }
+
+        locations.sort(Comparator.comparing(WorkingLocationDto::getJobAdCount).reversed());
+
+        return JobAdOutsideFilterResponse.<JobAdOutsideDetailResponse>builder()
+                .data(response)
+                .locations(locations)
+                .build();
     }
 
     private void validateCreate(JobAdRequest request) {
@@ -640,4 +755,39 @@ public class JobAdServiceImpl implements JobAdService {
             request.setIsAllLevel(Boolean.FALSE);
         }
     }
+
+    private String convertDueDateToString(Instant dueDate) {
+        LocalDate today = LocalDate.now(ZoneId.systemDefault());
+        LocalDate due = dueDate.atZone(ZoneId.systemDefault()).toLocalDate();
+
+        long daysDiff = ChronoUnit.DAYS.between(today, due);
+
+        if (daysDiff > 1) {
+            return "Còn " + daysDiff + " ngày";
+        } else if (daysDiff == 1) {
+            return "Còn 1 ngày";
+        } else if (daysDiff == 0) {
+            return "Hôm nay hết hạn";
+        } else {
+            return "Đã hết hạn";
+        }
+    }
+
+    private String convertSalaryToString(Integer salaryFrom, Integer salaryTo) {
+        String fromStr = convertOneSalary(salaryFrom);
+        String toStr = convertOneSalary(salaryTo);
+        if (salaryFrom != null && salaryTo != null) {
+            return fromStr + " - " + toStr + " triệu";
+        }
+        return fromStr;
+    }
+
+    private String convertOneSalary(Integer salary) {
+        double million = salary / 1_000_000.0;
+        if (million == (long) million) {
+            return String.format("%d", (long) million);
+        }
+        return String.format("%.1f", million);
+    }
+
 }

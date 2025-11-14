@@ -20,5 +20,5 @@ public interface JobAdService {
     IDResponse<Long> update(JobAdUpdateRequest request);
     FilterResponse<JobAdDto> getJobAdsByParticipantId(FilterRequest request);
     JobAdOutsideDataFilter outsideDataFilter();
-    FilterResponse<JobAdOutsideDetailResponse> filterJobAdsForOutside(JobAdOutsideFilterRequest request);
+    JobAdOutsideFilterResponse<JobAdOutsideDetailResponse> filterJobAdsForOutside(JobAdOutsideFilterRequest request);
 }

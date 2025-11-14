@@ -249,4 +249,29 @@ public class OrgServiceImpl implements OrgService {
         return orgDtos.stream()
                 .collect(Collectors.toMap(OrgDto::getId, dto -> dto));
     }
+
+    @Override
+    public OrgDto getOrgInfoOutside(Long orgId) {
+        Organization org = orgRepository.findById(orgId).orElse(null);
+        if(ObjectUtils.isEmpty(org)) {
+            throw new AppException(CoreErrorCode.ORG_NOT_FOUND);
+        }
+
+        OrgDto orgDto = ObjectMapperUtils.convertToObject(org, OrgDto.class);
+        if(org.getLogoId() != null) {
+            AttachFileDto logoInfo = attachFileService.getAttachFiles(List.of(org.getLogoId())).get(0);
+            orgDto.setLogoUrl(logoInfo.getSecureUrl());
+        }
+        if(org.getCoverPhotoId() != null) {
+            AttachFileDto coverPhotoInfo = attachFileService.getAttachFiles(List.of(org.getCoverPhotoId())).get(0);
+            orgDto.setCoverPhotoUrl(coverPhotoInfo.getSecureUrl());
+        }
+
+        List<IndustryDto> industryDtos = industryService.getIndustriesByOrgId(orgId);
+        orgDto.setIndustryList(industryDtos);
+
+        List<OrgAddressDto> addressDtos = orgAddressService.getByOrgId(orgId);
+        orgDto.setAddresses(addressDtos);
+        return orgDto;
+    }
 }

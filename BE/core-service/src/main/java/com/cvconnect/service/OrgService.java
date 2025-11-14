@@ -16,5 +16,6 @@ public interface OrgService {
     IDResponse<Long> updateOrgLogo(MultipartFile file);
     IDResponse<Long> updateOrgCoverPhoto(MultipartFile file);
     Map<Long, OrgDto> getOrgMapByIds(List<Long> orgIds);
+    OrgDto getOrgInfoOutside(Long orgId);
 
 }

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import nmquan.commonlib.dto.request.FilterRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -33,4 +34,5 @@ public class JobAdOutsideFilterRequest extends FilterRequest {
     private JobType jobType;
 
     private boolean isSearchOrg;
+    private Long orgId;
 }

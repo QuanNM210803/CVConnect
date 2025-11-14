@@ -17,6 +17,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -29,6 +30,7 @@ public class JobAdOutsideDetailResponse {
     private String title;
     private PositionDto position;
     private Instant dueDate;
+    private String dueDateStr;
     private Integer quantity;
 
     private JobTypeDto jobType;
@@ -36,6 +38,7 @@ public class JobAdOutsideDetailResponse {
     private SalaryTypeDto salaryType;
     private Integer salaryFrom;
     private Integer salaryTo;
+    private String salaryStr;
     private CurrencyTypeDto currencyType;
 
     private Boolean isRemote;
@@ -44,5 +47,9 @@ public class JobAdOutsideDetailResponse {
     private List<LevelDto> levels;
 
     private OrgDto org;
+
+    private Instant createdAt;
+    private String keyword;
+    private List<String> tags = new ArrayList<>();
 
 }

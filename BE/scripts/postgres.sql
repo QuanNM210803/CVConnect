@@ -838,3 +838,226 @@
 -- add column key_code_internal VARCHAR(100);
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE OR REPLACE FUNCTION FUNC_FILTER_JOB_AD_OUTSIDE(
+    p_keyword text DEFAULT NULL,
+    p_career_ids bigint[] DEFAULT NULL,
+    p_level_ids bigint[] DEFAULT NULL,
+    p_job_ad_location text DEFAULT NULL,
+    p_is_remote boolean DEFAULT NULL,
+    p_salary_from int DEFAULT NULL,
+    p_salary_to int DEFAULT NULL,
+    p_negotiable boolean DEFAULT NULL,
+    p_job_type text DEFAULT NULL,
+    p_search_org boolean DEFAULT NULL,
+    p_org_id bigint DEFAULT NULL,
+    p_limit int DEFAULT 10,
+    p_offset int DEFAULT 0,
+    p_sort_by text DEFAULT 'created_at',
+    p_sort_direction text DEFAULT 'desc'
+)
+    RETURNS TABLE(
+                     id bigint,
+                     code varchar,
+                     title varchar,
+                     orgId bigint,
+                     positionId bigint,
+                     jobType varchar,
+                     dueDate timestamp,
+                     quantity int,
+                     salaryType varchar,
+                     salaryFrom int,
+                     salaryTo int,
+                     currencyType varchar,
+                     keyword varchar,
+                     description text,
+                     requirement text,
+                     benefit text,
+                     hrContactId bigint,
+                     jobAdStatus varchar,
+                     isPublic boolean,
+                     isAutoSendEmail boolean,
+                     emailTemplateId bigint,
+                     isRemote boolean,
+                     isAllLevel boolean,
+                     keyCodeInternal varchar,
+                     isActive boolean,
+                     isDeleted boolean,
+                     createdBy varchar,
+                     createdAt timestamp,
+                     updatedBy varchar,
+                     updatedAt timestamp,
+                     viewCount bigint
+                 )
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY EXECUTE format($f$
+        SELECT DISTINCT ja.id,
+                        ja.code,
+                        ja.title,
+                        ja.org_id,
+                        ja.position_id,
+                        ja.job_type,
+                        ja.due_date,
+                        ja.quantity,
+                        ja.salary_type,
+                        ja.salary_from,
+                        ja.salary_to,
+                        ja.currency_type,
+                        ja.keyword,
+                        ja.description,
+                        ja.requirement,
+                        ja.benefit,
+                        ja.hr_contact_id,
+                        ja.job_ad_status,
+                        ja.is_public,
+                        ja.is_auto_send_email,
+                        ja.email_template_id,
+                        ja.is_remote,
+                        ja.is_all_level,
+                        ja.key_code_internal,
+                        ja.is_active,
+                        ja.is_deleted,
+                        ja.created_by,
+                        ja.created_at,
+                        ja.updated_by,
+                        ja.updated_at,
+                        case when jas.view_count is null then 0 else jas.view_count end as view_count
+        FROM job_ad ja
+        LEFT JOIN job_ad_career jac ON jac.job_ad_id = ja.id
+        LEFT JOIN job_ad_level jal ON jal.job_ad_id = ja.id
+        LEFT JOIN job_ad_work_location jawl ON jawl.job_ad_id = ja.id
+        LEFT JOIN organization_address oa ON oa.id = jawl.work_location_id
+        LEFT JOIN job_ad_statistic jas ON jas.job_ad_id = ja.id
+        JOIN organization o ON o.id = ja.org_id AND o.is_active = true
+        WHERE ja.is_public = true
+          AND ja.job_ad_status = 'OPEN'
+          AND (%L IS NULL OR jac.career_id = ANY(%L))
+          AND (%L IS NULL OR jal.level_id = ANY(%L))
+          AND (%L IS NULL OR (oa.province IS NOT NULL AND lower(oa.province) LIKE lower('%%' || %L || '%%')))
+          AND (%L IS NULL OR ja.is_remote = %L)
+          AND (%L IS NULL OR (ja.salary_from IS NOT NULL AND ja.salary_from <= %L))
+          AND (%L IS NULL OR (ja.salary_to IS NOT NULL AND %L <= ja.salary_to))
+          AND (%L IS NULL OR ja.salary_type = 'NEGOTIABLE')
+          AND (%L IS NULL OR ja.job_type = %L)
+          AND (%L IS NULL OR ja.org_id = %L)
+          AND (%L IS NULL
+               OR (%L = true AND lower(o.name) LIKE lower('%%' || %L || '%%'))
+               OR ts_rank(to_tsvector(ja.title || ' ' || replace(ja.keyword, ';', ' ')), plainto_tsquery(%L)) > 0.05
+               OR similarity(ja.title || ' ' || replace(ja.keyword, ';', ' '), %L) > 0.3)
+        ORDER BY %I %s, created_at DESC
+        LIMIT %s OFFSET %s
+        $f$,
+        p_career_ids, p_career_ids,
+        p_level_ids, p_level_ids,
+        p_job_ad_location, p_job_ad_location,
+        p_is_remote, p_is_remote,
+        p_salary_from, p_salary_from,
+        p_salary_to, p_salary_to,
+        p_negotiable,
+        p_job_type, p_job_type,
+        p_org_id, p_org_id,
+        p_keyword,
+        p_search_org, p_keyword,
+        p_keyword, p_keyword,
+        p_sort_by, p_sort_direction,
+        p_limit, p_offset
+    );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION FUNC_WORKING_LOCATION_OUTSIDE(
+    p_keyword text DEFAULT NULL,
+    p_career_ids bigint[] DEFAULT NULL,
+    p_level_ids bigint[] DEFAULT NULL,
+    p_job_ad_location text DEFAULT NULL,
+    p_is_remote boolean DEFAULT NULL,
+    p_salary_from int DEFAULT NULL,
+    p_salary_to int DEFAULT NULL,
+    p_negotiable boolean DEFAULT NULL,
+    p_job_type text DEFAULT NULL,
+    p_search_org boolean DEFAULT NULL,
+    p_org_id bigint DEFAULT NULL
+)
+    RETURNS TABLE(
+                     id bigint,
+                     isRemote boolean,
+                     province varchar
+                 )
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY EXECUTE format($f$
+        SELECT DISTINCT ja.id,
+                        ja.is_remote,
+                        oa.province
+        FROM job_ad ja
+        LEFT JOIN job_ad_career jac ON jac.job_ad_id = ja.id
+        LEFT JOIN job_ad_level jal ON jal.job_ad_id = ja.id
+        LEFT JOIN job_ad_work_location jawl ON jawl.job_ad_id = ja.id
+        LEFT JOIN organization_address oa ON oa.id = jawl.work_location_id
+        JOIN organization o ON o.id = ja.org_id AND o.is_active = true
+        WHERE ja.is_public = true
+          AND ja.job_ad_status = 'OPEN'
+          AND (%L IS NULL OR jac.career_id = ANY(%L))
+          AND (%L IS NULL OR jal.level_id = ANY(%L))
+          AND (%L IS NULL OR (oa.province IS NOT NULL AND lower(oa.province) LIKE lower('%%' || %L || '%%')))
+          AND (%L IS NULL OR ja.is_remote = %L)
+          AND (%L IS NULL OR (ja.salary_from IS NOT NULL AND ja.salary_from <= %L))
+          AND (%L IS NULL OR (ja.salary_to IS NOT NULL AND %L <= ja.salary_to))
+          AND (%L IS NULL OR ja.salary_type = 'NEGOTIABLE')
+          AND (%L IS NULL OR ja.job_type = %L)
+          AND (%L IS NULL OR ja.org_id = %L)
+          AND (%L IS NULL
+               OR (%L = true AND lower(o.name) LIKE lower('%%' || %L || '%%'))
+               OR ts_rank(to_tsvector(ja.title || ' ' || replace(ja.keyword, ';', ' ')), plainto_tsquery(%L)) > 0.05
+               OR similarity(ja.title || ' ' || replace(ja.keyword, ';', ' '), %L) > 0.3)
+        $f$,
+        p_career_ids, p_career_ids,
+        p_level_ids, p_level_ids,
+        p_job_ad_location, p_job_ad_location,
+        p_is_remote, p_is_remote,
+        p_salary_from, p_salary_from,
+        p_salary_to, p_salary_to,
+        p_negotiable,
+        p_job_type, p_job_type,
+        p_org_id, p_org_id,
+        p_keyword,
+        p_search_org, p_keyword,
+        p_keyword, p_keyword
+    );
+END;
+$$;
+
+CREATE TABLE IF NOT EXISTS search_history_outside (
+    id BIGSERIAL PRIMARY KEY,
+
+    keyword VARCHAR(255),
+    user_id BIGINT,
+
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100)
+
+);
+
+CREATE TABLE IF NOT EXISTS job_ad_statistic (
+    id BIGSERIAL PRIMARY KEY,
+
+    job_ad_id BIGINT NOT NULL,
+    view_count BIGINT DEFAULT 0,
+
+    is_active BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+
+    FOREIGN KEY (job_ad_id) REFERENCES job_ad (id) ON DELETE CASCADE
+
+);

@@ -3,12 +3,16 @@ package com.cvconnect.repository;
 import com.cvconnect.dto.jobAd.JobAdOrgFilterProjection;
 import com.cvconnect.dto.jobAd.JobAdOrgFilterRequest;
 import com.cvconnect.dto.jobAd.JobAdOutsideFilterRequest;
+import com.cvconnect.dto.jobAd.JobAdProjection;
 import com.cvconnect.entity.JobAd;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
@@ -118,27 +122,95 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
     Page<JobAd> getJobAdsByParticipantId(Long orgId, Long participantId, Pageable pageable);
 
     @Query(value = """
-        select distinct ja
+        select distinct (ja.id, ja.is_remote, oa.province)
         from job_ad ja
-        join Job_ad_career jac on jac.job_ad_id = ja.id
-        join job_ad_level jal on jal.job_ad_id = ja.id
-        join job_ad_work_location jawl on jawl.job_ad_id = ja.id
-        join organization_address oa on oa.id = jawl.work_location_id
+        left join job_ad_career jac on jac.job_ad_id = ja.id
+        left join job_ad_level jal on jal.job_ad_id = ja.id
+        left join job_ad_work_location jawl on jawl.job_ad_id = ja.id
+        left join organization_address oa on oa.id = jawl.work_location_id
         join organization o on o.id = ja.org_id and o.is_active = true
         where ja.is_public = true and ja.job_ad_status = 'OPEN'
         and (:#{#request.careerIds} is null or jac.career_id in :#{#request.careerIds})
         and (:#{#request.levelIds} is null or jal.level_id in :#{#request.levelIds})
-        and (:#{#request.jobAdLocation} is null or lower(oa.province) like lower(concat('%', :#{#request.jobAdLocation}, '%')))
-        and (:#{#request.isRemote} is null or ja.is_remote = :#{#request.isRemote})
-        and (:#{#request.salaryFrom} is null or ja.salary_from >= :#{#request.salaryFrom})
-        and (:#{#request.salaryTo} is null or ja.salary_to <= :#{#request.salaryTo})
-        and (:#{#request.negotiable} is null or ja.salary_type = 'NEGOTIABLE')
-        and (:#{#request.jobType} is null or ja.job_type = :#{#request.jobType.name()})
+        and (:#{#request.jobAdLocation.isEmpty()} = true or (oa.province is not null and lower(oa.province) like lower(concat('%', :#{#request.jobAdLocation}, '%'))))
+        and (coalesce(:#{#request.isRemote}, null) is null or ja.is_remote = :#{#request.isRemote})
+        and (coalesce(:#{#request.salaryFrom}, null) is null or (ja.salary_from is not null and ja.salary_from <= :#{#request.salaryFrom}))
+        and (coalesce(:#{#request.salaryTo}, null) is null or (ja.salary_to is not null and :#{#request.salaryTo} <= ja.salary_to))
+        and (coalesce(:#{#request.negotiable}, null) is null or ja.salary_type = 'NEGOTIABLE')
+        and (coalesce(:#{#request.jobType}, null) is null or ja.job_type = :#{#request.jobType != null ? #request.jobType.name() : null})
         and (
-            (:#{#request.searchOrg} = true and lower(o.name) like lower(concat('%', :#{#request.keyword}, '%')))
-            or ts_rank(to_tsvector(ja.title || ' ' || replace(ja.keyword, ';', ' ')), plainto_tsquery(:#{#request.keyword})) > 0.05
-            or similarity(ja.title || ' ' || replace(ja.keyword, ';', ' '), :keyword) > 0.3
+            :#{#request.keyword.isEmpty()} = true
+            or (:#{#request.searchOrg} = true and lower(o.name) like lower(concat('%', coalesce(:#{#request.keyword}, ''), '%')))
+            or ts_rank(to_tsvector(ja.title || ' ' || replace(ja.keyword, ';', ' ')), plainto_tsquery(coalesce(:#{#request.keyword}, ''))) > 0.05
+            or similarity(ja.title || ' ' || replace(ja.keyword, ';', ' '), coalesce(:#{#request.keyword}, '')) > 0.3
         )
     """, nativeQuery = true)
-    Page<JobAd> filterJobAdsForOutside(JobAdOutsideFilterRequest request, Pageable pageable);
+    List<Object[]> getWorkingLocationByFilter(JobAdOutsideFilterRequest request);
+
+    @Query(value = """
+        select * from FUNC_FILTER_JOB_AD_OUTSIDE(
+            :keyword,
+            :careerIds,
+            :levelIds,
+            :jobAdLocation,
+            :isRemote,
+            :salaryFrom,
+            :salaryTo,
+            :negotiable,
+            :jobType,
+            :searchOrg,
+            :orgId,
+            :limit,
+            :offset,
+            :sortBy,
+            :sortDirection
+        )
+    """, nativeQuery = true)
+    List<JobAdProjection> filterJobAdsForOutsideFunction(
+            @Param("keyword") String keyword,
+            @Param("careerIds") Long[] careerIds,
+            @Param("levelIds") Long[] levelIds,
+            @Param("jobAdLocation") String jobAdLocation,
+            @Param("isRemote") Boolean isRemote,
+            @Param("salaryFrom") Integer salaryFrom,
+            @Param("salaryTo") Integer salaryTo,
+            @Param("negotiable") Boolean negotiable,
+            @Param("jobType") String jobType,
+            @Param("searchOrg") Boolean searchOrg,
+            @Param("orgId") Long orgId,
+            @Param("limit") Integer limit,
+            @Param("offset") Integer offset,
+            @Param("sortBy") String sortBy,
+            @Param("sortDirection") String sortDirection
+    );
+
+    @Query(value = """
+        select * from FUNC_WORKING_LOCATION_OUTSIDE(
+            :keyword,
+            :careerIds,
+            :levelIds,
+            :jobAdLocation,
+            :isRemote,
+            :salaryFrom,
+            :salaryTo,
+            :negotiable,
+            :jobType,
+            :searchOrg,
+            :orgId
+        )
+    """, nativeQuery = true)
+    List<Object[]> getWorkingLocationByFilterFunction(
+            @Param("keyword") String keyword,
+            @Param("careerIds") Long[] careerIds,
+            @Param("levelIds") Long[] levelIds,
+            @Param("jobAdLocation") String jobAdLocation,
+            @Param("isRemote") Boolean isRemote,
+            @Param("salaryFrom") Integer salaryFrom,
+            @Param("salaryTo") Integer salaryTo,
+            @Param("negotiable") Boolean negotiable,
+            @Param("jobType") String jobType,
+            @Param("searchOrg") Boolean searchOrg,
+            @Param("orgId") Long orgId
+    );
+
 }
