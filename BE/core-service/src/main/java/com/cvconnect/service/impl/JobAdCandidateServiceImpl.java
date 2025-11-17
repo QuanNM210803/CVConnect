@@ -16,6 +16,7 @@ import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.dto.jobAd.JobAdProcessDto;
 import com.cvconnect.dto.jobAdCandidate.*;
 import com.cvconnect.dto.level.LevelDto;
+import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.cvconnect.entity.JobAdCandidate;
 import com.cvconnect.enums.*;
@@ -68,6 +69,8 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
     private ReplacePlaceholder replacePlaceholder;
     @Autowired
     private KafkaUtils kafkaUtils;
+    @Autowired
+    private OrgService orgService;
 
     @Override
     @Transactional
@@ -744,6 +747,67 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 .emailTemplateId(emailTemplateId)
                 .build();
         sendEmailService.sendEmailWithBody(sendEmailDto);
+    }
+
+    @Override
+    public FilterResponse<JobAdCandidateDto> getJobAdsAppliedByCandidate(JobAdAppliedFilterRequest request) {
+        Long userId = WebUtils.getCurrentUserId();
+        request.setUserId(userId);
+        request.setSortBy("applyDate");
+        Page<JobAdAppliedProjection> page = jobAdCandidateRepository.getJobAdsAppliedByCandidate(request, request.getPageable());
+
+        List<Long> hrIds = page.getContent().stream()
+                .map(JobAdAppliedProjection::getHrContactId)
+                .distinct()
+                .toList();
+        Map<Long, UserDto> hrContacts = restTemplateClient.getUsersByIds(hrIds);
+
+        List<Long> orgIds = page.getContent().stream()
+                .map(JobAdAppliedProjection::getOrgId)
+                .distinct()
+                .toList();
+        Map<Long, OrgDto> orgMap = orgService.getOrgMapByIds(orgIds);
+
+        List<JobAdCandidateDto> data = page.getContent().stream()
+                .map(p -> {
+                    UserDto hrContact = hrContacts.get(p.getHrContactId());
+                    OrgDto org = orgMap.get(p.getOrgId());
+                    AttachFileDto cvFile = attachFileService.getAttachFiles(List.of(p.getCvFileId())).get(0);
+                    JobAdCandidateDto jobAdCandidateDto = JobAdCandidateDto.builder()
+                            .id(p.getJobAdCandidateId())
+                            .candidateStatusDto(CandidateStatus.getCandidateStatusDto(p.getCandidateStatus()))
+                            .applyDate(p.getApplyDate())
+                            .onboardDate(p.getOnboardDate())
+                            .eliminateReason(EliminateReasonEnum.getEliminateReasonEnumDto(p.getEliminateReasonType()))
+                            .eliminateDate(p.getEliminateDate())
+                            .currentRound(ProcessTypeDto.builder()
+                                    .id(p.getJobAdProcessId())
+                                    .name(p.getProcessName())
+                                    .transferDate(p.getTransferDate())
+                                    .build())
+                            .jobAd(JobAdDto.builder()
+                                    .id(p.getJobAdId())
+                                    .title(p.getJobAdTitle())
+                                    .hrContactId(p.getHrContactId())
+                                    .hrContactName(hrContact != null ? hrContact.getFullName() : null)
+                                    .build())
+                            .org(OrgDto.builder()
+                                    .id(p.getOrgId())
+                                    .name(p.getOrgName())
+                                    .logoUrl(org != null ? org.getLogoUrl() : null)
+                                    .build())
+                            .candidateInfo(CandidateInfoApplyDto.builder()
+                                    .fullName(p.getFullName())
+                                    .email(p.getEmail())
+                                    .phone(p.getPhone())
+                                    .coverLetter(p.getCoverLetter())
+                                    .cvUrl(cvFile.getSecureUrl())
+                                    .build())
+                            .build();
+                    return jobAdCandidateDto;
+                }).toList();
+
+        return PageUtils.toFilterResponse(page, data);
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {

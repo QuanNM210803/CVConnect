@@ -1,9 +1,7 @@
 package com.cvconnect.repository;
 
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyProjection;
-import com.cvconnect.dto.jobAdCandidate.CandidateFilterProjection;
-import com.cvconnect.dto.jobAdCandidate.CandidateFilterRequest;
-import com.cvconnect.dto.jobAdCandidate.JobAdCandidateProjection;
+import com.cvconnect.dto.jobAdCandidate.*;
 import com.cvconnect.entity.JobAdCandidate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -190,4 +188,33 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
             where ja.orgId = :orgId and jac.id = :jobAdCandidateId
     """)
     Boolean existsByJobAdCandidateIdAndOrgId(Long jobAdCandidateId, Long orgId);
+
+    @Query(value = """
+        select distinct ja.id as jobAdId, ja.title as jobAdTitle, ja.hrContactId as hrContactId,
+               jac.id as jobAdCandidateId, jac.candidateStatus as candidateStatus, jac.applyDate as applyDate,
+               jac.onboardDate as onboardDate, jac.eliminateReasonType as eliminateReasonType, jac.eliminateDate as eliminateDate,
+               jap.id as jobAdProcessId, jap.name as processName, japc.actionDate as transferDate,
+               o.id as orgId, o.name as orgName, o.logoId as logoId,
+               cia.fullName as fullName, cia.phone as phone, cia.email as email, cia.coverLetter as coverLetter, cia.cvFileId as cvFileId
+        from JobAdCandidate as jac
+        join JobAd as ja on ja.id = jac.jobAdId
+        join Organization as o on o.id = ja.orgId
+        join CandidateInfoApply as cia on cia.id = jac.candidateInfoId
+        join JobAdProcessCandidate as japc on japc.jobAdCandidateId = jac.id and japc.isCurrentProcess = true
+        join JobAdProcess as jap on jap.id = japc.jobAdProcessId
+        where cia.candidateId = :#{#request.userId}
+        and (:#{#request.candidateStatus} is null or jac.candidateStatus = :#{#request.candidateStatus})
+    """,
+     countQuery = """
+        select count(jac.id)
+        from JobAdCandidate jac
+        join JobAd ja on ja.id = jac.jobAdId
+        join Organization o on o.id = ja.orgId
+        join CandidateInfoApply cia on cia.id = jac.candidateInfoId
+        join JobAdProcessCandidate japc on japc.jobAdCandidateId = jac.id and japc.isCurrentProcess = true
+        join JobAdProcess jap on jap.id = japc.jobAdProcessId
+        where cia.candidateId = :#{#request.userId}
+        and (:#{#request.candidateStatus} is null or jac.candidateStatus = :#{#request.candidateStatus})
+     """)
+    Page<JobAdAppliedProjection> getJobAdsAppliedByCandidate(JobAdAppliedFilterRequest request, Pageable pageable);
 }

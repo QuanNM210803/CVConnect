@@ -29,7 +29,6 @@ import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.CoreServiceUtils;
-import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.PageInfo;
 import nmquan.commonlib.dto.request.FilterRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
@@ -86,6 +85,8 @@ public class JobAdServiceImpl implements JobAdService {
     private OrgService orgService;
     @Autowired
     private SearchHistoryOutsideService searchHistoryOutsideService;
+    @Autowired
+    private JobAdStatisticService jobAdStatisticService;
 
     private static final String JOB_AD_CODE_PREFIX = "JD-";
 
@@ -505,6 +506,7 @@ public class JobAdServiceImpl implements JobAdService {
     public JobAdOutsideFilterResponse<JobAdOutsideDetailResponse> filterJobAdsForOutside(JobAdOutsideFilterRequest request) {
         request.setPageSize(20); // default page size
         request.setSortBy(CoreServiceUtils.toSnakeCase(request.getSortBy()));
+        Boolean isShowExpired = request.getOrgId() != null;
 
         Long userId = WebUtils.getCurrentUserId();
         if(userId != null){
@@ -520,6 +522,7 @@ public class JobAdServiceImpl implements JobAdService {
         Pageable pageable = request.getPageable();
         List<JobAdProjection> jobAdProjections = jobAdRepository.filterJobAdsForOutsideFunction(
                 request.getKeyword(),
+                isShowExpired,
                 request.getCareerIds() != null ? request.getCareerIds().toArray(new Long[0]) : null,
                 request.getLevelIds() != null ? request.getLevelIds().toArray(new Long[0]) : null,
                 request.getJobAdLocation(),
@@ -537,72 +540,7 @@ public class JobAdServiceImpl implements JobAdService {
         );
 
         List<JobAdDto> jobAdDtos = ObjectMapperUtils.convertToList(jobAdProjections, JobAdDto.class);
-        List<Long> positionIds = jobAdDtos.stream()
-                .map(JobAdDto::getPositionId)
-                .distinct()
-                .toList();
-        Map<Long, PositionDto> positionMap = positionService.getPositionMapByIds(positionIds);
-
-        List<Long> jobAdIds = jobAdDtos.stream()
-                .map(JobAdDto::getId)
-                .toList();
-        Map<Long, List<OrgAddressDto>> jobAdWorkLocationMap = orgAddressService.getOrgAddressByJobAdIds(jobAdIds);
-        Map<Long, List<LevelDto>> jobAdLevelMap = levelService.getLevelsMapByJobAdIds(jobAdIds);
-
-        List<Long> orgIds = jobAdDtos.stream()
-                .map(JobAdDto::getOrgId)
-                .distinct()
-                .toList();
-        Map<Long, OrgDto> orgMap = orgService.getOrgMapByIds(orgIds);
-
-        List<JobAdOutsideDetailResponse> dtos = jobAdDtos.stream()
-                .map(jobAd -> {
-                    JobAdOutsideDetailResponse dto = new JobAdOutsideDetailResponse();
-                    dto.setId(jobAd.getId());
-                    dto.setTitle(jobAd.getTitle());
-                    dto.setPosition(positionMap.get(jobAd.getPositionId()));
-                    dto.setDueDate(jobAd.getDueDate());
-                    dto.setDueDateStr(this.convertDueDateToString(jobAd.getDueDate()));
-                    dto.setQuantity(jobAd.getQuantity());
-
-                    if(jobAd.getSalaryFrom() != null && jobAd.getSalaryTo() != null){
-                        dto.setSalaryStr(this.convertSalaryToString(jobAd.getSalaryFrom(), jobAd.getSalaryTo()));
-                    } else {
-                        SalaryType salaryType = SalaryType.valueOf(jobAd.getSalaryType());
-                        dto.setSalaryStr(salaryType.getDescription());
-                    }
-
-                    dto.setIsRemote(jobAd.getIsRemote());
-                    dto.setWorkLocations(jobAdWorkLocationMap.get(jobAd.getId()));
-                    dto.setIsAllLevel(jobAd.getIsAllLevel());
-                    if(jobAd.getIsAllLevel() == null || !jobAd.getIsAllLevel()) {
-                        dto.setLevels(jobAdLevelMap.get(jobAd.getId()));
-                    }
-
-                    dto.setOrg(orgMap.get(jobAd.getOrgId()));
-
-                    dto.setCreatedAt(jobAd.getCreatedAt());
-                    dto.setKeyword(jobAd.getKeyword());
-
-                    List<String> tags = new ArrayList<>();
-                    JobType jobType = JobType.getJobType(jobAd.getJobType());
-                    tags.add(jobType.getDescription());
-                    if(jobAd.getIsRemote() != null && jobAd.getIsRemote()){
-                        tags.add("Remote");
-                    }
-                    if (!ObjectUtils.isEmpty(jobAd.getKeyword())) {
-                        String[] keywords = jobAd.getKeyword().split(";");
-                        Arrays.stream(keywords)
-                                .filter(k -> !k.isBlank())
-                                .limit(2)
-                                .map(String::trim)
-                                .forEach(tags::add);
-                    }
-                    dto.setTags(tags);
-
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        List<JobAdOutsideDetailResponse> dtos = this.buildJobAdOutsideByFilter(jobAdDtos);
 
         FilterResponse<JobAdOutsideDetailResponse> response = new FilterResponse<>();
         response.setData(dtos);
@@ -614,6 +552,7 @@ public class JobAdServiceImpl implements JobAdService {
         // count working location
         List<Object[]> locationData = jobAdRepository.getWorkingLocationByFilterFunction(
                 request.getKeyword(),
+                isShowExpired,
                 request.getCareerIds() != null ? request.getCareerIds().toArray(new Long[0]) : null,
                 request.getLevelIds() != null ? request.getLevelIds().toArray(new Long[0]) : null,
                 request.getJobAdLocation(),
@@ -662,6 +601,128 @@ public class JobAdServiceImpl implements JobAdService {
                 .data(response)
                 .locations(locations)
                 .build();
+    }
+
+    @Override
+    public JobAdOutsideDetailResponse detailOutside(Long jobAdId, String keyCodeInternal) {
+        JobAd ja = jobAdRepository.findById(jobAdId);
+        if(ObjectUtils.isEmpty(ja)){
+            throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+        if(!ja.getIsPublic()){
+            if(ObjectUtils.isEmpty(keyCodeInternal) || !keyCodeInternal.equals(ja.getKeyCodeInternal())){
+                throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+            }
+        }
+        JobAdDto jobAd = ObjectMapperUtils.convertToObject(ja, JobAdDto.class);
+        JobAdOutsideDetailResponse response = this.buildJobAdOutsideDetail(jobAd);
+
+        // save view statistic
+        jobAdStatisticService.addViewStatistic(jobAdId);
+
+        return response;
+    }
+
+    @Override
+    public List<JobAdOutsideDetailResponse> listRelateOutside(Long jobAdId) {
+        JobAd ja = jobAdRepository.findById(jobAdId);
+        if(ObjectUtils.isEmpty(ja)){
+            throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+        List<JobAd> relatedJobAds = jobAdRepository.findRelatedJobAds(ja.getTitle(), jobAdId);
+        List<JobAdDto> jobAdDtos = ObjectMapperUtils.convertToList(relatedJobAds, JobAdDto.class);
+
+        return this.buildJobAdOutsideByFilter(jobAdDtos);
+    }
+
+    @Override
+    public FilterResponse<JobAdOutsideDetailResponse> filterFeaturedOutside(FilterRequest request) {
+        Integer pageIndex = request.getPageIndex();
+        Integer pageSize = request.getPageSize();
+        long offset = request.getPageable().getOffset();
+        long totalElements = 0L;
+        int totalPages = 0;
+
+        List<JobAdProjection> jobAdProjections = jobAdRepository.getFeaturedJobAds(pageSize, offset);
+        List<JobAdDto> jobAdDtos = ObjectMapperUtils.convertToList(jobAdProjections, JobAdDto.class);
+        if(!jobAdProjections.isEmpty()){
+            totalElements = jobAdProjections.get(0).getTotalElement();
+        }
+        totalPages = (int) Math.ceil((double) totalElements / pageSize);
+
+        List<JobAdOutsideDetailResponse> dtos = this.buildJobAdOutsideByFilter(jobAdDtos);
+        FilterResponse<JobAdOutsideDetailResponse> filterResponse = new FilterResponse<>();
+        filterResponse.setData(dtos);
+        filterResponse.setPageInfo(PageInfo.builder()
+                .pageIndex(pageIndex)
+                .pageSize(pageSize)
+                .totalPages(totalPages)
+                .totalElements(totalElements)
+                .hasNextPage(pageIndex + 1 < totalPages)
+                .build());
+
+        return filterResponse;
+    }
+
+    @Override
+    public FilterResponse<JobAdOutsideDetailResponse> filterSuitableOutside(FilterRequest request) {
+        Long userId = WebUtils.getCurrentUserId();
+        Integer pageIndex = request.getPageIndex();
+        Integer pageSize = request.getPageSize();
+        long offset = request.getPageable().getOffset();
+        long totalElements = 0L;
+        int totalPages = 0;
+
+        FilterResponse<JobAdOutsideDetailResponse> filterResponse = new FilterResponse<>();
+        filterResponse.setData(new ArrayList<>());
+        filterResponse.setPageInfo(PageInfo.builder()
+                .pageIndex(pageIndex)
+                .pageSize(pageSize)
+                .totalPages(totalPages)
+                .totalElements(totalElements)
+                .hasNextPage(pageIndex + 1 < totalPages)
+                .build());
+        if(userId == null){
+            return filterResponse;
+        }
+
+        // get search history
+        List<SearchHistoryOutsideDto> searchHistory = searchHistoryOutsideService.getMySearchHistoryOutside(); // limit 5
+        String keyword = searchHistory.stream()
+                .limit(1)
+                .map(SearchHistoryOutsideDto::getKeyword)
+                .distinct()
+                .reduce("", (a, b) -> a + " " + b).trim();
+        if(keyword.isEmpty()){
+            return filterResponse;
+        }
+
+        // get suitable job ads
+        List<JobAdProjection> jobAdProjections = jobAdRepository.getSuitableJobAds(keyword, pageSize, offset);
+        if(jobAdProjections.isEmpty()){
+            return filterResponse;
+        }
+
+        // calculate total elements and total pages
+        List<JobAdDto> jobAdDtos = ObjectMapperUtils.convertToList(jobAdProjections, JobAdDto.class);
+        if(!jobAdProjections.isEmpty()){
+            totalElements = jobAdProjections.get(0).getTotalElement();
+        }
+        totalPages = (int) Math.ceil((double) totalElements / pageSize);
+
+        // build response
+        List<JobAdOutsideDetailResponse> dtos = this.buildJobAdOutsideByFilter(jobAdDtos);
+
+        filterResponse.setData(dtos);
+        filterResponse.setPageInfo(PageInfo.builder()
+                .pageIndex(pageIndex)
+                .pageSize(pageSize)
+                .totalPages(totalPages)
+                .totalElements(totalElements)
+                .hasNextPage(pageIndex + 1 < totalPages)
+                .build());
+
+        return filterResponse;
     }
 
     private void validateCreate(JobAdRequest request) {
@@ -790,4 +851,114 @@ public class JobAdServiceImpl implements JobAdService {
         return String.format("%.1f", million);
     }
 
+    private List<String> getTags(JobAdDto jobAd, Long limitTag) {
+        List<String> tags = new ArrayList<>();
+
+        JobType jobType = JobType.getJobType(jobAd.getJobType());
+        tags.add(jobType.getDescription());
+
+        Long remain = (limitTag != null ? limitTag - 1 : null);
+
+        if (jobAd.getIsRemote() != null && jobAd.getIsRemote()) {
+            if (remain == null || remain > 0) {
+                tags.add("Remote");
+                if (remain != null) remain--;
+            }
+        }
+
+        if (!ObjectUtils.isEmpty(jobAd.getKeyword())) {
+            String[] keywords = jobAd.getKeyword().split(";");
+            for (String k : keywords) {
+                if (k == null || k.isBlank()) continue;
+                if (remain != null && remain <= 0) break;
+                tags.add(k.trim());
+                if (remain != null) remain--;
+            }
+        }
+        return tags;
+    }
+
+    private List<JobAdOutsideDetailResponse> buildJobAdOutsideByFilter(List<JobAdDto> jobAdDtos) {
+        List<Long> positionIds = jobAdDtos.stream()
+                .map(JobAdDto::getPositionId)
+                .distinct()
+                .toList();
+        Map<Long, PositionDto> positionMap = positionService.getPositionMapByIds(positionIds);
+
+        List<Long> jobAdIds = jobAdDtos.stream()
+                .map(JobAdDto::getId)
+                .toList();
+        Map<Long, List<OrgAddressDto>> jobAdWorkLocationMap = orgAddressService.getOrgAddressByJobAdIds(jobAdIds);
+        Map<Long, List<LevelDto>> jobAdLevelMap = levelService.getLevelsMapByJobAdIds(jobAdIds);
+
+        List<Long> orgIds = jobAdDtos.stream()
+                .map(JobAdDto::getOrgId)
+                .distinct()
+                .toList();
+        Map<Long, OrgDto> orgMap = orgService.getOrgMapByIds(orgIds);
+
+        return jobAdDtos.stream()
+                .map(jobAd -> {
+                    JobAdOutsideDetailResponse dto = new JobAdOutsideDetailResponse();
+                    dto.setId(jobAd.getId());
+                    dto.setTitle(jobAd.getTitle());
+                    dto.setPosition(positionMap.get(jobAd.getPositionId()));
+                    dto.setDueDate(jobAd.getDueDate());
+                    dto.setDueDateStr(this.convertDueDateToString(jobAd.getDueDate()));
+                    dto.setQuantity(jobAd.getQuantity());
+
+                    if(jobAd.getSalaryFrom() != null && jobAd.getSalaryTo() != null){
+                        dto.setSalaryStr(this.convertSalaryToString(jobAd.getSalaryFrom(), jobAd.getSalaryTo()));
+                    } else {
+                        SalaryType salaryType = SalaryType.valueOf(jobAd.getSalaryType());
+                        dto.setSalaryStr(salaryType.getDescription());
+                    }
+
+                    dto.setIsRemote(jobAd.getIsRemote());
+                    dto.setWorkLocations(jobAdWorkLocationMap.get(jobAd.getId()));
+                    dto.setIsAllLevel(jobAd.getIsAllLevel());
+                    if(jobAd.getIsAllLevel() == null || !jobAd.getIsAllLevel()) {
+                        dto.setLevels(jobAdLevelMap.get(jobAd.getId()));
+                    }
+
+                    dto.setOrg(orgMap.get(jobAd.getOrgId()));
+
+                    dto.setCreatedAt(jobAd.getCreatedAt());
+                    dto.setKeyword(jobAd.getKeyword());
+                    dto.setTags(this.getTags(jobAd, 4L));
+
+                    return dto;
+                })
+                .toList();
+    }
+
+    private JobAdOutsideDetailResponse buildJobAdOutsideDetail(JobAdDto jobAd) {
+        Long jobAdId = jobAd.getId();
+        JobAdOutsideDetailResponse response = new JobAdOutsideDetailResponse();
+        response.setTitle(jobAd.getTitle());
+        response.setDueDate(jobAd.getDueDate());
+        response.setDueDateStr(this.convertDueDateToString(jobAd.getDueDate()));
+        response.setQuantity(jobAd.getQuantity());
+        if(jobAd.getSalaryFrom() != null && jobAd.getSalaryTo() != null){
+            response.setSalaryStr(this.convertSalaryToString(jobAd.getSalaryFrom(), jobAd.getSalaryTo()));
+        } else {
+            SalaryType salaryType = SalaryType.valueOf(jobAd.getSalaryType());
+            response.setSalaryStr(salaryType.getDescription());
+        }
+        response.setDescription(jobAd.getDescription());
+        response.setRequirement(jobAd.getRequirement());
+        response.setBenefit(jobAd.getBenefit());
+        response.setIsAllLevel(jobAd.getIsAllLevel());
+        response.setTags(this.getTags(jobAd, null));
+
+        Map<Long, PositionDto> positionMap = positionService.getPositionMapByIds(List.of(jobAd.getPositionId()));
+        Map<Long, List<OrgAddressDto>> jobAdWorkLocationMap = orgAddressService.getOrgAddressByJobAdIds(List.of(jobAdId));
+        Map<Long, List<LevelDto>> jobAdLevelMap = levelService.getLevelsMapByJobAdIds(List.of(jobAdId));
+        OrgDto org = orgService.getOrgInfoOutside(jobAd.getOrgId());
+        response.setPosition(positionMap.get(jobAd.getPositionId()));
+        response.setWorkLocations(jobAdWorkLocationMap.get(jobAdId));
+        response.setLevels(jobAdLevelMap.get(jobAdId));
+        response.setOrg(org);
+        return response;
+    }
 }

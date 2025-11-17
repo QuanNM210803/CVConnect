@@ -1,7 +1,10 @@
 package com.cvconnect.dto.jobAdCandidate;
 
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
+import com.cvconnect.dto.enums.CandidateStatusDto;
 import com.cvconnect.dto.enums.EliminateReasonEnumDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
+import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -36,8 +39,11 @@ public class JobAdCandidateDto extends BaseDto<Instant> {
     private Instant eliminateDate;
 
     // attribute expansion
+    private CandidateStatusDto candidateStatusDto;
     private EliminateReasonEnumDto eliminateReason;
     private JobAdDto jobAd;
     private ProcessTypeDto currentRound;
     private List<JobAdProcessCandidateDto> jobAdProcessCandidates;
+    private CandidateInfoApplyDto candidateInfo;
+    private OrgDto org;
 }

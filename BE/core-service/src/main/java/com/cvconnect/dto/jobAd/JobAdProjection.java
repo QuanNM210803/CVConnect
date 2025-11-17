@@ -53,4 +53,6 @@ public interface JobAdProjection extends BaseRepositoryDto {
     String getKeyCodeInternal();
 
     Long getViewCount();
+
+    Long getTotalElement();
 }

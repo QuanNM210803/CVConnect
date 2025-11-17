@@ -20,4 +20,7 @@ public class ProcessTypeDto extends BaseDto<Instant> {
     private Integer sortOrder;
     private Boolean isDefault;
 
+    // add
+    private Instant transferDate;
+
 }

@@ -52,4 +52,8 @@ public class JobAdOutsideDetailResponse {
     private String keyword;
     private List<String> tags = new ArrayList<>();
 
+    private String description;
+    private String requirement;
+    private String benefit;
+
 }

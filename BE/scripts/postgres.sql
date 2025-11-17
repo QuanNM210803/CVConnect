@@ -841,6 +841,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE OR REPLACE FUNCTION FUNC_FILTER_JOB_AD_OUTSIDE(
     p_keyword text DEFAULT NULL,
+    p_is_show_expired boolean DEFAULT false,
     p_career_ids bigint[] DEFAULT NULL,
     p_level_ids bigint[] DEFAULT NULL,
     p_job_ad_location text DEFAULT NULL,
@@ -903,7 +904,7 @@ BEGIN
                         ja.quantity,
                         ja.salary_type,
                         ja.salary_from,
-                        ja.salary_to,
+                        case when ja.salary_to is null then 0 else ja.salary_to end as salary_to,
                         ja.currency_type,
                         ja.keyword,
                         ja.description,
@@ -933,6 +934,7 @@ BEGIN
         JOIN organization o ON o.id = ja.org_id AND o.is_active = true
         WHERE ja.is_public = true
           AND ja.job_ad_status = 'OPEN'
+          AND (%L = true OR ja.due_date >= CURRENT_DATE)
           AND (%L IS NULL OR jac.career_id = ANY(%L))
           AND (%L IS NULL OR jal.level_id = ANY(%L))
           AND (%L IS NULL OR (oa.province IS NOT NULL AND lower(oa.province) LIKE lower('%%' || %L || '%%')))
@@ -949,6 +951,7 @@ BEGIN
         ORDER BY %I %s, created_at DESC
         LIMIT %s OFFSET %s
         $f$,
+        p_is_show_expired,
         p_career_ids, p_career_ids,
         p_level_ids, p_level_ids,
         p_job_ad_location, p_job_ad_location,
@@ -969,6 +972,7 @@ $$;
 
 CREATE OR REPLACE FUNCTION FUNC_WORKING_LOCATION_OUTSIDE(
     p_keyword text DEFAULT NULL,
+    p_is_show_expired boolean DEFAULT false,
     p_career_ids bigint[] DEFAULT NULL,
     p_level_ids bigint[] DEFAULT NULL,
     p_job_ad_location text DEFAULT NULL,
@@ -1000,6 +1004,7 @@ BEGIN
         JOIN organization o ON o.id = ja.org_id AND o.is_active = true
         WHERE ja.is_public = true
           AND ja.job_ad_status = 'OPEN'
+          AND (%L = true OR ja.due_date >= CURRENT_DATE)
           AND (%L IS NULL OR jac.career_id = ANY(%L))
           AND (%L IS NULL OR jal.level_id = ANY(%L))
           AND (%L IS NULL OR (oa.province IS NOT NULL AND lower(oa.province) LIKE lower('%%' || %L || '%%')))
@@ -1014,6 +1019,7 @@ BEGIN
                OR ts_rank(to_tsvector(ja.title || ' ' || replace(ja.keyword, ';', ' ')), plainto_tsquery(%L)) > 0.05
                OR similarity(ja.title || ' ' || replace(ja.keyword, ';', ' '), %L) > 0.3)
         $f$,
+        p_is_show_expired,
         p_career_ids, p_career_ids,
         p_level_ids, p_level_ids,
         p_job_ad_location, p_job_ad_location,

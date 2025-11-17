@@ -122,34 +122,9 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
     Page<JobAd> getJobAdsByParticipantId(Long orgId, Long participantId, Pageable pageable);
 
     @Query(value = """
-        select distinct (ja.id, ja.is_remote, oa.province)
-        from job_ad ja
-        left join job_ad_career jac on jac.job_ad_id = ja.id
-        left join job_ad_level jal on jal.job_ad_id = ja.id
-        left join job_ad_work_location jawl on jawl.job_ad_id = ja.id
-        left join organization_address oa on oa.id = jawl.work_location_id
-        join organization o on o.id = ja.org_id and o.is_active = true
-        where ja.is_public = true and ja.job_ad_status = 'OPEN'
-        and (:#{#request.careerIds} is null or jac.career_id in :#{#request.careerIds})
-        and (:#{#request.levelIds} is null or jal.level_id in :#{#request.levelIds})
-        and (:#{#request.jobAdLocation.isEmpty()} = true or (oa.province is not null and lower(oa.province) like lower(concat('%', :#{#request.jobAdLocation}, '%'))))
-        and (coalesce(:#{#request.isRemote}, null) is null or ja.is_remote = :#{#request.isRemote})
-        and (coalesce(:#{#request.salaryFrom}, null) is null or (ja.salary_from is not null and ja.salary_from <= :#{#request.salaryFrom}))
-        and (coalesce(:#{#request.salaryTo}, null) is null or (ja.salary_to is not null and :#{#request.salaryTo} <= ja.salary_to))
-        and (coalesce(:#{#request.negotiable}, null) is null or ja.salary_type = 'NEGOTIABLE')
-        and (coalesce(:#{#request.jobType}, null) is null or ja.job_type = :#{#request.jobType != null ? #request.jobType.name() : null})
-        and (
-            :#{#request.keyword.isEmpty()} = true
-            or (:#{#request.searchOrg} = true and lower(o.name) like lower(concat('%', coalesce(:#{#request.keyword}, ''), '%')))
-            or ts_rank(to_tsvector(ja.title || ' ' || replace(ja.keyword, ';', ' ')), plainto_tsquery(coalesce(:#{#request.keyword}, ''))) > 0.05
-            or similarity(ja.title || ' ' || replace(ja.keyword, ';', ' '), coalesce(:#{#request.keyword}, '')) > 0.3
-        )
-    """, nativeQuery = true)
-    List<Object[]> getWorkingLocationByFilter(JobAdOutsideFilterRequest request);
-
-    @Query(value = """
         select * from FUNC_FILTER_JOB_AD_OUTSIDE(
             :keyword,
+            :isShowExpired,
             :careerIds,
             :levelIds,
             :jobAdLocation,
@@ -168,6 +143,7 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
     """, nativeQuery = true)
     List<JobAdProjection> filterJobAdsForOutsideFunction(
             @Param("keyword") String keyword,
+            @Param("isShowExpired") Boolean isShowExpired,
             @Param("careerIds") Long[] careerIds,
             @Param("levelIds") Long[] levelIds,
             @Param("jobAdLocation") String jobAdLocation,
@@ -187,6 +163,7 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
     @Query(value = """
         select * from FUNC_WORKING_LOCATION_OUTSIDE(
             :keyword,
+            :isShowExpired,
             :careerIds,
             :levelIds,
             :jobAdLocation,
@@ -201,6 +178,7 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
     """, nativeQuery = true)
     List<Object[]> getWorkingLocationByFilterFunction(
             @Param("keyword") String keyword,
+            @Param("isShowExpired") Boolean isShowExpired,
             @Param("careerIds") Long[] careerIds,
             @Param("levelIds") Long[] levelIds,
             @Param("jobAdLocation") String jobAdLocation,
@@ -212,5 +190,141 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
             @Param("searchOrg") Boolean searchOrg,
             @Param("orgId") Long orgId
     );
+
+    @Query(value = """
+            select ja.* from (
+                select ja.id,
+                       ts_rank(
+                               to_tsvector(ja.title || ' ' || replace(ja.keyword, ';', ' ')),
+                               plainto_tsquery(:keyword)
+                       ) as rank_score,
+                       similarity(ja.title || ' ' || replace(ja.keyword, ';', ' '), :keyword) as sim_score
+                from job_ad ja
+                where ja.is_public = true
+                and ja.job_ad_status = 'OPEN'
+                and ja.due_date >= CURRENT_DATE
+                and ja.id <> :jobAdId
+            ) as ranked_jobs
+            join job_ad ja on ja.id = ranked_jobs.id
+            where rank_score > 0.05 or sim_score > 0.3
+            order by 0.3 * rank_score + 0.05  * sim_score desc
+            limit 10
+        """, nativeQuery = true)
+    List<JobAd> findRelatedJobAds(String keyword, Long jobAdId);
+
+    @Query(value = """
+        WITH all_jobs AS (
+            SELECT ja.id,
+                   COALESCE(jas.view_count, 0) AS view_count
+            FROM job_ad ja
+            LEFT JOIN job_ad_statistic jas ON jas.job_ad_id = ja.id
+            WHERE ja.is_public = true
+            AND ja.job_ad_status = 'OPEN'
+            AND ja.due_date >= CURRENT_DATE
+        ),
+        featured_jobs AS (
+            SELECT id
+            FROM all_jobs
+            ORDER BY view_count DESC, id DESC
+            LIMIT :pageSize OFFSET :offset
+        )
+        SELECT
+            ja.id as id,
+            ja.code as code,
+            ja.title as title,
+            ja.org_id as orgId,
+            ja.position_id as positionId,
+            ja.job_type as jobType,
+            ja.due_date as dueDate,
+            ja.quantity as quantity,
+            ja.salary_type as salaryType,
+            ja.salary_from as salaryFrom,
+            ja.salary_to as salaryTo,
+            ja.currency_type as currencyType,
+            ja.keyword as keyword,
+            ja.description as description,
+            ja.requirement as requirement,
+            ja.benefit as benefit,
+            ja.hr_contact_id as hrContactId,
+            ja.job_ad_status as jobAdStatus,
+            ja.is_public as isPublic,
+            ja.is_auto_send_email as isAutoSendEmail,
+            ja.email_template_id as emailTemplateId,
+            ja.is_remote as isRemote,
+            ja.is_all_level as isAllLevel,
+            ja.is_active as isActive,
+            ja.is_deleted as isDeleted,
+            ja.created_by as createdBy,
+            ja.created_at as createdAt,
+            ja.updated_by as updatedBy,
+            ja.updated_at as updatedAt,
+            ja.key_code_internal as keyCodeInternal,
+            (SELECT COUNT(*) FROM all_jobs) AS totalElement
+        FROM featured_jobs pj
+        JOIN job_ad ja ON ja.id = pj.id;
+    """, nativeQuery = true)
+    List<JobAdProjection> getFeaturedJobAds(Integer pageSize, Long offset);
+
+
+    @Query(value = """
+        with rank_calculation as (
+            select ja.id,
+                 ts_rank(
+                        to_tsvector(ja.title || ' ' || replace(ja.keyword, ';', ' ')),
+                        plainto_tsquery(:keyword)
+                ) as rank_score,
+                 similarity(ja.title || ' ' || replace(ja.keyword, ';', ' '), :keyword) as sim_score
+            from job_ad ja
+            where ja.is_public = true
+            and ja.job_ad_status = 'OPEN'
+            and ja.due_date >= CURRENT_DATE
+        ),
+        all_jobs as (
+            select rc.*
+            from rank_calculation rc
+            where rc.rank_score > 0.05 or rc.sim_score > 0.3
+        ),
+        suitable_jobs as (
+            select aj.id
+            from all_jobs aj
+            order by 0.3 * aj.rank_score + 0.05 * aj.sim_score desc
+            LIMIT :pageSize OFFSET :offset
+        )
+        SELECT
+            ja.id as id,
+            ja.code as code,
+            ja.title as title,
+            ja.org_id as orgId,
+            ja.position_id as positionId,
+            ja.job_type as jobType,
+            ja.due_date as dueDate,
+            ja.quantity as quantity,
+            ja.salary_type as salaryType,
+            ja.salary_from as salaryFrom,
+            ja.salary_to as salaryTo,
+            ja.currency_type as currencyType,
+            ja.keyword as keyword,
+            ja.description as description,
+            ja.requirement as requirement,
+            ja.benefit as benefit,
+            ja.hr_contact_id as hrContactId,
+            ja.job_ad_status as jobAdStatus,
+            ja.is_public as isPublic,
+            ja.is_auto_send_email as isAutoSendEmail,
+            ja.email_template_id as emailTemplateId,
+            ja.is_remote as isRemote,
+            ja.is_all_level as isAllLevel,
+            ja.is_active as isActive,
+            ja.is_deleted as isDeleted,
+            ja.created_by as createdBy,
+            ja.created_at as createdAt,
+            ja.updated_by as updatedBy,
+            ja.updated_at as updatedAt,
+            ja.key_code_internal as keyCodeInternal,
+            (SELECT COUNT(*) FROM all_jobs) AS totalElement
+        FROM suitable_jobs sj
+        JOIN job_ad ja ON ja.id = sj.id
+    """, nativeQuery = true)
+    List<JobAdProjection> getSuitableJobAds(String keyword, Integer pageSize, Long offset);
 
 }

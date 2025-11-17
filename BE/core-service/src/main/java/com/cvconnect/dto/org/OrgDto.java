@@ -30,4 +30,5 @@ public class OrgDto extends BaseDto<Instant> {
     private String coverPhotoUrl;
     private List<IndustryDto> industryList;
     private List<OrgAddressDto> addresses;
+    private Long numOfJobAds;
 }

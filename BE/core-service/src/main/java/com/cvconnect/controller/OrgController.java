@@ -15,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/org")
 public class OrgController {
@@ -68,5 +70,11 @@ public class OrgController {
     @Operation(summary = "Get Organization info outside")
     public ResponseEntity<Response<OrgDto>> getOrgInfoOutside(@PathVariable Long orgId) {
         return ResponseUtils.success(orgService.getOrgInfoOutside(orgId));
+    }
+
+    @GetMapping("/outside/org-featured")
+    @Operation(summary = "Get Featured Organizations outside")
+    public ResponseEntity<Response<List<OrgDto>>> getFeaturedOrgOutside() {
+        return ResponseUtils.success(orgService.getFeaturedOrgOutside());
     }
 }

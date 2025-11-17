@@ -89,7 +89,7 @@ public class JobAdController {
     }
 
     @GetMapping("/outside/data-filter")
-    @Operation(summary = "Filter Job Ads for Outside Users")
+    @Operation(summary = "Get data filter for Outside Users")
     public ResponseEntity<Response<JobAdOutsideDataFilter>> outsideDataFilter() {
         return ResponseUtils.success(jobAdService.outsideDataFilter());
     }
@@ -98,5 +98,30 @@ public class JobAdController {
     @Operation(summary = "Filter Job Ads for Outside Users")
     public ResponseEntity<Response<JobAdOutsideFilterResponse<JobAdOutsideDetailResponse>>> filterJobAdsForOutside(@Valid @ModelAttribute JobAdOutsideFilterRequest request) {
         return ResponseUtils.success(jobAdService.filterJobAdsForOutside(request));
+    }
+
+    @GetMapping("/outside/detail/{jobAdId}")
+    @Operation(summary = "Get Job Ad Detail for Outside Users")
+    public ResponseEntity<Response<JobAdOutsideDetailResponse>> detailOutside(@PathVariable Long jobAdId,
+                                                                              @RequestParam(name = "keyCodeInternal", required = false) String keyCodeInternal) {
+        return ResponseUtils.success(jobAdService.detailOutside(jobAdId, keyCodeInternal));
+    }
+
+    @GetMapping("/outside/relate/{jobAdId}")
+    @Operation(summary = "Get Related Job Ads for Outside Users")
+    public ResponseEntity<Response<List<JobAdOutsideDetailResponse>>> listRelateOutside(@PathVariable Long jobAdId) {
+        return ResponseUtils.success(jobAdService.listRelateOutside(jobAdId));
+    }
+
+    @GetMapping("/outside/filter-featured")
+    @Operation(summary = "Filter Default Featured Job Ads for Outside Users")
+    public ResponseEntity<Response<FilterResponse<JobAdOutsideDetailResponse>>> filterFeaturedOutside(@ModelAttribute FilterRequest request) {
+        return ResponseUtils.success(jobAdService.filterFeaturedOutside(request));
+    }
+
+    @GetMapping("/outside/filter-suitable")
+    @Operation(summary = "Filter Default Suitable Job Ads for Outside Users")
+    public ResponseEntity<Response<FilterResponse<JobAdOutsideDetailResponse>>> filterSuitableOutside(@ModelAttribute FilterRequest request) {
+        return ResponseUtils.success(jobAdService.filterSuitableOutside(request));
     }
 }

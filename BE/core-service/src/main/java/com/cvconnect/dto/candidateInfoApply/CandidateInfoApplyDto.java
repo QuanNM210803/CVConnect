@@ -42,4 +42,6 @@ public class CandidateInfoApplyDto extends BaseDto<Instant> {
     private CandidateStatusDto candidateStatus;
     private Instant applyDate;
     private Instant onboardDate;
+
+    private String cvUrl;
 }

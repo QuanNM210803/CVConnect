@@ -19,5 +19,6 @@ public interface JobAdCandidateService {
     Boolean existsByJobAdCandidateIdAndOrgId(Long jobAdCandidateId, Long orgId);
     JobAdCandidateDto findById(Long jobAdCandidateId);
     void sendEmailToCandidate(SendEmailToCandidateRequest request);
+    FilterResponse<JobAdCandidateDto> getJobAdsAppliedByCandidate(JobAdAppliedFilterRequest request);
 
 }

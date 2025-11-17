@@ -87,4 +87,10 @@ public class JobAdCandidateController {
         jobAdCandidateService.sendEmailToCandidate(request);
         return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(Messages.SEND_EMAIL_SUCCESS));
     }
+
+    @GetMapping("/job-ad-applied")
+    @Operation(summary = "Get job ads applied by candidate")
+    public ResponseEntity<Response<FilterResponse<JobAdCandidateDto>>> getJobAdsAppliedByCandidate(@Valid @ModelAttribute JobAdAppliedFilterRequest request) {
+        return ResponseUtils.success(jobAdCandidateService.getJobAdsAppliedByCandidate(request));
+    }
 }

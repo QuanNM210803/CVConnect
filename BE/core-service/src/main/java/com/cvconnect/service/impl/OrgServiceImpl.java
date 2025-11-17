@@ -4,10 +4,7 @@ import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.attachFile.AttachFileDto;
 import com.cvconnect.dto.industry.IndustryDto;
-import com.cvconnect.dto.org.OrgAddressDto;
-import com.cvconnect.dto.org.OrgDto;
-import com.cvconnect.dto.org.OrgIndustryDto;
-import com.cvconnect.dto.org.OrganizationRequest;
+import com.cvconnect.dto.org.*;
 import com.cvconnect.entity.Organization;
 import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.OrgRepository;
@@ -23,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -273,5 +271,30 @@ public class OrgServiceImpl implements OrgService {
         List<OrgAddressDto> addressDtos = orgAddressService.getByOrgId(orgId);
         orgDto.setAddresses(addressDtos);
         return orgDto;
+    }
+
+    @Override
+    public List<OrgDto> getFeaturedOrgOutside() {
+        List<OrgProjection> orgs = orgRepository.findFeaturedOrgs().stream()
+                .limit(10)
+                .toList();
+        if(ObjectUtils.isEmpty(orgs)) {
+            return new ArrayList<>();
+        }
+        List<OrgDto> orgDtos = ObjectMapperUtils.convertToList(orgs, OrgDto.class);
+        // todo: need optimize number of calls
+        for(OrgDto orgDto : orgDtos) {
+            if(orgDto.getLogoId() != null) {
+                AttachFileDto logoInfo = attachFileService.getAttachFiles(List.of(orgDto.getLogoId())).get(0);
+                orgDto.setLogoUrl(logoInfo.getSecureUrl());
+            }
+
+            List<IndustryDto> industryDtos = industryService.getIndustriesByOrgId(orgDto.getId());
+            orgDto.setIndustryList(industryDtos);
+
+            List<OrgAddressDto> addressDtos = orgAddressService.getByOrgId(orgDto.getId());
+            orgDto.setAddresses(addressDtos);
+        }
+        return orgDtos;
     }
 }

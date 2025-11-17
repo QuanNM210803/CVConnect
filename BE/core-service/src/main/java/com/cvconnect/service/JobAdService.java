@@ -21,4 +21,8 @@ public interface JobAdService {
     FilterResponse<JobAdDto> getJobAdsByParticipantId(FilterRequest request);
     JobAdOutsideDataFilter outsideDataFilter();
     JobAdOutsideFilterResponse<JobAdOutsideDetailResponse> filterJobAdsForOutside(JobAdOutsideFilterRequest request);
+    JobAdOutsideDetailResponse detailOutside(Long jobAdId, String keyCodeInternal);
+    List<JobAdOutsideDetailResponse> listRelateOutside(Long jobAdId);
+    FilterResponse<JobAdOutsideDetailResponse> filterFeaturedOutside(FilterRequest request);
+    FilterResponse<JobAdOutsideDetailResponse> filterSuitableOutside(FilterRequest request);
 }
