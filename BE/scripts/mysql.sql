@@ -363,11 +363,12 @@
 # set sort_order = 3
 # where code = 'CAREER';
 
-delete from `cvconnect-user-service`.menus
-where code = 'CV_TEMPLATE';
-
-alter table `cvconnect-user-service`.menus
-drop column is_show;
+# da run o 2 PC
+# delete from `cvconnect-user-service`.menus
+# where code = 'CV_TEMPLATE';
+#
+# alter table `cvconnect-user-service`.menus
+# drop column is_show;
 
 #----------------------------------------------------------------------------------------------------------------------#
 
