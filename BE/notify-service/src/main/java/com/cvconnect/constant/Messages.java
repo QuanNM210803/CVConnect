@@ -9,6 +9,7 @@ public class Messages {
     public static final String EMAIL_TEMPLATE_CODE_EXISTED = "email.template.code.existed";
     public static final String EMAIL_TEMPLATE_NOT_FOUND = "email.template.not.found";
     public static final String EMAIL_LOG_NOT_FOUND = "email.log.not.found";
+    public static final String CONVERSATION_EXISTED = "conversation.existed";
 
     /*
      * Validation messages
@@ -23,6 +24,7 @@ public class Messages {
     public static final String EMAIL_CONFIG_PASSWORD_REQUIRED = "email.config.password.required";
     public static final String EMAIL_CONFIG_IS_SSL_REQUIRED = "email.config.is.ssl.required";
     public static final String EMAIL_CONFIG_PROTOCOL_REQUIRED = "email.config.protocol.required";
+    public static final String CONVERSATION_APPLY_REQUIRED = "conversation.apply.required";
 
     /*
      * Other messages

@@ -28,4 +28,5 @@ public interface JobAdAppliedProjection {
     String getEmail();
     String getCoverLetter();
     Long getCvFileId();
+    Long getCandidateId();
 }

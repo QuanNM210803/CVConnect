@@ -43,4 +43,17 @@ public class RestTemplateClient {
         );
         return response.getData();
     }
+
+    public Long validateAndGetHrContactId(Long jobAdId, Long candidateId){
+        Map<String, Object> body = Map.of(
+                "jobAdId", jobAdId,
+                "candidateId", candidateId
+        );
+        Response<Long> response = restTemplateService.postMethodRestTemplate(
+                SERVER_CORE_SERVICE + "/job-ad-candidate/internal/validate-create-conversation",
+                new ParameterizedTypeReference<Response<Long>>() {},
+                body
+        );
+        return response.getData();
+    }
 }

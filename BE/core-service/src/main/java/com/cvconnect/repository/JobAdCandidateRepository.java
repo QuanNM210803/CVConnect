@@ -195,7 +195,7 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
                jac.onboardDate as onboardDate, jac.eliminateReasonType as eliminateReasonType, jac.eliminateDate as eliminateDate,
                jap.id as jobAdProcessId, jap.name as processName, japc.actionDate as transferDate,
                o.id as orgId, o.name as orgName, o.logoId as logoId,
-               cia.fullName as fullName, cia.phone as phone, cia.email as email, cia.coverLetter as coverLetter, cia.cvFileId as cvFileId
+               cia.fullName as fullName, cia.phone as phone, cia.email as email, cia.coverLetter as coverLetter, cia.cvFileId as cvFileId, cia.candidateId as candidateId
         from JobAdCandidate as jac
         join JobAd as ja on ja.id = jac.jobAdId
         join Organization as o on o.id = ja.orgId
@@ -204,6 +204,11 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
         join JobAdProcess as jap on jap.id = japc.jobAdProcessId
         where cia.candidateId = :#{#request.userId}
         and (:#{#request.candidateStatus} is null or jac.candidateStatus = :#{#request.candidateStatus})
+        and (
+             :#{#request.keyword} is null
+             or lower(ja.title) like lower(concat('%', :#{#request.keyword}, '%'))
+             or lower(o.name) like lower(concat('%', :#{#request.keyword}, '%'))
+        )
     """,
      countQuery = """
         select count(jac.id)
@@ -215,6 +220,18 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
         join JobAdProcess jap on jap.id = japc.jobAdProcessId
         where cia.candidateId = :#{#request.userId}
         and (:#{#request.candidateStatus} is null or jac.candidateStatus = :#{#request.candidateStatus})
+        and (
+             :#{#request.keyword} is null
+             or lower(ja.title) like lower(concat('%', :#{#request.keyword}, '%'))
+             or lower(o.name) like lower(concat('%', :#{#request.keyword}, '%'))
+        )
      """)
     Page<JobAdAppliedProjection> getJobAdsAppliedByCandidate(JobAdAppliedFilterRequest request, Pageable pageable);
+
+    @Query("""
+        select jac from JobAdCandidate as jac
+        join CandidateInfoApply cia on cia.id = jac.candidateInfoId
+        where jac.jobAdId = :jobAdId and cia.candidateId = :candidateId
+    """)
+    JobAdCandidate findByJobAdIdAndCandidateId(Long jobAdId, Long candidateId);
 }

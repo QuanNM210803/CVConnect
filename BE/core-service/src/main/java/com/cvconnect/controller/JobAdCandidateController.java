@@ -6,6 +6,7 @@ import com.cvconnect.dto.jobAdCandidate.*;
 import com.cvconnect.service.JobAdCandidateService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import nmquan.commonlib.annotation.InternalRequest;
 import nmquan.commonlib.constant.MessageConstants;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
@@ -17,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/job-ad-candidate")
@@ -92,5 +95,14 @@ public class JobAdCandidateController {
     @Operation(summary = "Get job ads applied by candidate")
     public ResponseEntity<Response<FilterResponse<JobAdCandidateDto>>> getJobAdsAppliedByCandidate(@Valid @ModelAttribute JobAdAppliedFilterRequest request) {
         return ResponseUtils.success(jobAdCandidateService.getJobAdsAppliedByCandidate(request));
+    }
+
+    @PostMapping("/internal/validate-create-conversation")
+    @InternalRequest
+    @Operation(summary = "Validate and get HR contact ID for creating conversation")
+    public ResponseEntity<Response<Long>> validateAndGetHrContactId(@RequestBody Map<String, Object> body) {
+        Long jobAdId = Long.valueOf(body.get("jobAdId").toString());
+        Long candidateId = Long.valueOf(body.get("candidateId").toString());
+        return ResponseUtils.success(jobAdCandidateService.validateAndGetHrContactId(jobAdId, candidateId));
     }
 }

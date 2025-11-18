@@ -20,5 +20,6 @@ public interface JobAdCandidateService {
     JobAdCandidateDto findById(Long jobAdCandidateId);
     void sendEmailToCandidate(SendEmailToCandidateRequest request);
     FilterResponse<JobAdCandidateDto> getJobAdsAppliedByCandidate(JobAdAppliedFilterRequest request);
+    Long validateAndGetHrContactId(Long jobAdId, Long candidateId);
 
 }

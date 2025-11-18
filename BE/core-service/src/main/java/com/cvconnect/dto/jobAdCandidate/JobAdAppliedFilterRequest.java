@@ -14,6 +14,7 @@ import nmquan.commonlib.dto.request.FilterRequest;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JobAdAppliedFilterRequest extends FilterRequest {
+    private String keyword;
     private CandidateStatus candidateStatus;
     private Long userId;
 }

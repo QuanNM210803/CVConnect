@@ -18,6 +18,7 @@ import com.cvconnect.dto.jobAdCandidate.*;
 import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
+import com.cvconnect.entity.JobAd;
 import com.cvconnect.entity.JobAdCandidate;
 import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdCandidateRepository;
@@ -802,12 +803,26 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                     .phone(p.getPhone())
                                     .coverLetter(p.getCoverLetter())
                                     .cvUrl(cvFile.getSecureUrl())
+                                    .candidateId(p.getCandidateId())
                                     .build())
                             .build();
                     return jobAdCandidateDto;
                 }).toList();
 
         return PageUtils.toFilterResponse(page, data);
+    }
+
+    @Override
+    public Long validateAndGetHrContactId(Long jobAdId, Long candidateId) {
+        JobAdCandidate jobAdCandidate = jobAdCandidateRepository.findByJobAdIdAndCandidateId(jobAdId, candidateId);
+        if(ObjectUtils.isEmpty(jobAdCandidate)) {
+            throw new AppException(CoreErrorCode.CANDIDATE_INFO_APPLY_NOT_FOUND);
+        }
+        JobAdDto jobAd = jobAdService.findById(jobAdId);
+        if(ObjectUtils.isEmpty(jobAd)){
+            throw new AppException(CommonErrorCode.ACCESS_DENIED);
+        }
+        return jobAd.getHrContactId();
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {
