@@ -363,7 +363,7 @@
 # set sort_order = 3
 # where code = 'CAREER';
 
-# da run o 2 PC
+-- todo: da run o 2 PC
 # delete from `cvconnect-user-service`.menus
 # where code = 'CV_TEMPLATE';
 #

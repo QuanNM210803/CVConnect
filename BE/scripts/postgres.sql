@@ -837,7 +837,7 @@
 -- alter table job_ad
 -- add column key_code_internal VARCHAR(100);
 
--- da run o 2 PC
+-- todo: da run o 2 PC
 -- CREATE EXTENSION IF NOT EXISTS pg_trgm;
 --
 -- CREATE OR REPLACE FUNCTION FUNC_FILTER_JOB_AD_OUTSIDE(
