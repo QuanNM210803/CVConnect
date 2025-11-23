@@ -203,7 +203,7 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
         join JobAdProcessCandidate as japc on japc.jobAdCandidateId = jac.id and japc.isCurrentProcess = true
         join JobAdProcess as jap on jap.id = japc.jobAdProcessId
         where cia.candidateId = :#{#request.userId}
-        and (:#{#request.candidateStatus} is null or jac.candidateStatus = :#{#request.candidateStatus})
+        and (:#{#request.candidateStatus?.name()} is null or jac.candidateStatus = :#{#request.candidateStatus?.name()})
         and (
              :#{#request.keyword} is null
              or lower(ja.title) like lower(concat('%', :#{#request.keyword}, '%'))
@@ -219,7 +219,7 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
         join JobAdProcessCandidate japc on japc.jobAdCandidateId = jac.id and japc.isCurrentProcess = true
         join JobAdProcess jap on jap.id = japc.jobAdProcessId
         where cia.candidateId = :#{#request.userId}
-        and (:#{#request.candidateStatus} is null or jac.candidateStatus = :#{#request.candidateStatus})
+        and (:#{#request.candidateStatus?.name()} is null or jac.candidateStatus = :#{#request.candidateStatus?.name()})
         and (
              :#{#request.keyword} is null
              or lower(ja.title) like lower(concat('%', :#{#request.keyword}, '%'))
@@ -234,4 +234,13 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
         where jac.jobAdId = :jobAdId and cia.candidateId = :candidateId
     """)
     JobAdCandidate findByJobAdIdAndCandidateId(Long jobAdId, Long candidateId);
+
+    @Query("""
+        select jac.id as id, ja.id as jobAdId, ja.title as jobAdTitle, cia.id as candidateInfoId, cia.fullName as fullName
+        from JobAdCandidate jac
+        join JobAd ja on ja.id =jac.jobAdId
+        join CandidateInfoApply cia on cia.id = jac.candidateInfoId
+        where ja.id = :jobAdId and cia.candidateId = :candidateId
+    """)
+    JobAdCandidateProjection getJobAdCandidateByJobAdIdAndCandidateId(Long jobAdId, Long candidateId);
 }

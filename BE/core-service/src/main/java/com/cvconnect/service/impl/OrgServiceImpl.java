@@ -4,6 +4,8 @@ import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.attachFile.AttachFileDto;
 import com.cvconnect.dto.industry.IndustryDto;
+import com.cvconnect.dto.internal.response.UserDto;
+import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.dto.org.*;
 import com.cvconnect.entity.Organization;
 import com.cvconnect.enums.CoreErrorCode;
@@ -15,6 +17,7 @@ import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -39,6 +42,9 @@ public class OrgServiceImpl implements OrgService {
     private AttachFileService attachFileService;
     @Autowired
     private RestTemplateClient restTemplateClient;
+    @Lazy
+    @Autowired
+    private JobAdService jobAdService;
 
     @Override
     @Transactional
@@ -296,5 +302,31 @@ public class OrgServiceImpl implements OrgService {
             orgDto.setAddresses(addressDtos);
         }
         return orgDtos;
+    }
+
+    @Override
+    public OrgDto getOrgByJobAd(Long jobAdId) {
+        JobAdDto jobAdDto = jobAdService.findById(jobAdId);
+        if(ObjectUtils.isEmpty(jobAdDto)) {
+            throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
+        }
+        Long orgId = jobAdDto.getOrgId();
+        Organization org = orgRepository.findById(orgId).orElse(null);
+        if(ObjectUtils.isEmpty(org)) {
+            throw new AppException(CoreErrorCode.ORG_NOT_FOUND);
+        }
+
+        OrgDto orgDto = ObjectMapperUtils.convertToObject(org, OrgDto.class);
+        if(org.getLogoId() != null) {
+            AttachFileDto logoInfo = attachFileService.getAttachFiles(List.of(org.getLogoId())).get(0);
+            orgDto.setLogoUrl(logoInfo.getSecureUrl());
+        }
+        if(jobAdDto.getHrContactId() != null) {
+            Long hrContactId = jobAdDto.getHrContactId();
+            UserDto hrContact = restTemplateClient.getUser(hrContactId);
+            orgDto.setHrContact(hrContact);
+        }
+
+        return orgDto;
     }
 }

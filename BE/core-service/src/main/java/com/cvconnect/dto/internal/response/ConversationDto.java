@@ -1,12 +1,11 @@
-package com.cvconnect.dto;
+package com.cvconnect.dto.internal.response;
 
-import com.cvconnect.collection.ChatMessage;
+import com.cvconnect.dto.internal.ChatMessage;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import nmquan.commonlib.dto.response.FilterResponse;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,5 +30,4 @@ public class ConversationDto {
     private String lastMessage;
     private Long lastMessageSenderId;
     private List<Long> lastMessageSeenBy;
-    private FilterResponse<ChatMessage> messagesWithFilter;
 }

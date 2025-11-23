@@ -1,8 +1,10 @@
 package com.cvconnect.dto.jobAdCandidate;
 
+import nmquan.commonlib.dto.BaseRepositoryDto;
+
 import java.time.Instant;
 
-public interface JobAdCandidateProjection {
+public interface JobAdCandidateProjection extends BaseRepositoryDto {
     Long getJobAdId();
     String getJobAdTitle();
     Long getHrContactId();
@@ -24,4 +26,8 @@ public interface JobAdCandidateProjection {
     Long getJobAdProcessId();
     String getProcessName();
     String getKeyCodeInternal();
+
+    // candidate info
+    Long getCandidateInfoId();
+    String getFullName();
 }

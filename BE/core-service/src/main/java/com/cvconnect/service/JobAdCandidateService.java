@@ -1,6 +1,7 @@
 package com.cvconnect.service;
 
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoDetail;
+import com.cvconnect.dto.internal.response.ConversationDto;
 import com.cvconnect.dto.jobAdCandidate.*;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
@@ -21,5 +22,7 @@ public interface JobAdCandidateService {
     void sendEmailToCandidate(SendEmailToCandidateRequest request);
     FilterResponse<JobAdCandidateDto> getJobAdsAppliedByCandidate(JobAdAppliedFilterRequest request);
     Long validateAndGetHrContactId(Long jobAdId, Long candidateId);
+    FilterResponse<JobAdCandidateDto> jobAdCandidateConversation(JobAdAppliedFilterRequest request);
+    FilterResponse<JobAdCandidateDto> jobAdCandidateConversationForOrg(MyConversationWithFilter request);
 
 }

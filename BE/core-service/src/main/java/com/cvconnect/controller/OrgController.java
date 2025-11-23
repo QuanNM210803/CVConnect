@@ -77,4 +77,10 @@ public class OrgController {
     public ResponseEntity<Response<List<OrgDto>>> getFeaturedOrgOutside() {
         return ResponseUtils.success(orgService.getFeaturedOrgOutside());
     }
+
+    @GetMapping("/outside/org-by-job-ad/{jobAdId}")
+    @Operation(summary = "Get Organization by Job Ad id outside")
+    public ResponseEntity<Response<OrgDto>> getOrgByJobAd(@PathVariable Long jobAdId) {
+        return ResponseUtils.success(orgService.getOrgByJobAd(jobAdId));
+    }
 }

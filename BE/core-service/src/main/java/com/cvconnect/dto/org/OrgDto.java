@@ -1,6 +1,7 @@
 package com.cvconnect.dto.org;
 
 import com.cvconnect.dto.industry.IndustryDto;
+import com.cvconnect.dto.internal.response.UserDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,4 +32,5 @@ public class OrgDto extends BaseDto<Instant> {
     private List<IndustryDto> industryList;
     private List<OrgAddressDto> addresses;
     private Long numOfJobAds;
+    private UserDto hrContact;
 }

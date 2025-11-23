@@ -10,6 +10,7 @@ public class Messages {
     public static final String EMAIL_TEMPLATE_NOT_FOUND = "email.template.not.found";
     public static final String EMAIL_LOG_NOT_FOUND = "email.log.not.found";
     public static final String CONVERSATION_EXISTED = "conversation.existed";
+    public static final String INVALID_CREATE_CONVERSATION_HR_CONTACT = "invalid.create.conversation.hr.contact";
 
     /*
      * Validation messages
@@ -25,6 +26,7 @@ public class Messages {
     public static final String EMAIL_CONFIG_IS_SSL_REQUIRED = "email.config.is.ssl.required";
     public static final String EMAIL_CONFIG_PROTOCOL_REQUIRED = "email.config.protocol.required";
     public static final String CONVERSATION_APPLY_REQUIRED = "conversation.apply.required";
+    public static final String CHAT_MESSAGE_TEXT_REQUIRED = "chat.message.text.required";
 
     /*
      * Other messages

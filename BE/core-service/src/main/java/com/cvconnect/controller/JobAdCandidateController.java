@@ -105,4 +105,16 @@ public class JobAdCandidateController {
         Long candidateId = Long.valueOf(body.get("candidateId").toString());
         return ResponseUtils.success(jobAdCandidateService.validateAndGetHrContactId(jobAdId, candidateId));
     }
+
+    @GetMapping("/conversation/view-candidate")
+    @Operation(summary = "Job ad candidate conversation view for candidate")
+    public ResponseEntity<Response<FilterResponse<JobAdCandidateDto>>> jobAdCandidateConversation(@Valid @ModelAttribute JobAdAppliedFilterRequest request) {
+        return ResponseUtils.success(jobAdCandidateService.jobAdCandidateConversation(request));
+    }
+
+    @GetMapping("/conversation/view-organization")
+    @Operation(summary = "Job ad candidate conversation view for organization")
+    public ResponseEntity<Response<FilterResponse<JobAdCandidateDto>>> jobAdCandidateConversationForOrg(@Valid @ModelAttribute MyConversationWithFilter request) {
+        return ResponseUtils.success(jobAdCandidateService.jobAdCandidateConversationForOrg(request));
+    }
 }

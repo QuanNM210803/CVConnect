@@ -1,6 +1,5 @@
 package com.cvconnect.collection;
 
-import com.cvconnect.dto.SeenMessage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +18,6 @@ public class ChatMessage {
     private String text;
     private Long senderId;
     private Instant sentAt;
-    private List<SeenMessage> seenBy;
+    private List<Long> seenBy;
 
 }

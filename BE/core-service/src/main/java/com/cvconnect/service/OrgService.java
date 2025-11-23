@@ -18,5 +18,6 @@ public interface OrgService {
     Map<Long, OrgDto> getOrgMapByIds(List<Long> orgIds);
     OrgDto getOrgInfoOutside(Long orgId);
     List<OrgDto> getFeaturedOrgOutside();
+    OrgDto getOrgByJobAd(Long jobAdId);
 
 }

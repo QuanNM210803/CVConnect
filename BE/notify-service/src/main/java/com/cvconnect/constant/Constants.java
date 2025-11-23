@@ -14,7 +14,9 @@ public class Constants {
     public static class SocketTopic {
         public static final String NOTIFY = "notify";
         public static final String UNREAD_NOTIFY = "unread_notify";
-        public static final String UNREAD_NOTIFY_EVENT = "unread_notify_event";
+        public static final String NEW_CONVERSATION = "new_conversation";
+        public static final String READ_ALL_MESSAGES = "read_all_messages";
+        public static final String NEW_MESSAGE = "new_message";
     }
 
     public static class NotificationType {

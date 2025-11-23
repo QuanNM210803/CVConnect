@@ -1,8 +1,11 @@
 package com.cvconnect.common;
 
+import com.cvconnect.dto.internal.response.ConversationDto;
 import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;
+import com.cvconnect.dto.jobAdCandidate.MyConversationWithFilter;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.service.RestTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,6 +96,31 @@ public class RestTemplateClient {
                 SERVER_USER_SERVICE + "/org-member/internal/check-org-member",
                 new ParameterizedTypeReference<Response<Boolean>>() {},
                 userIds
+        );
+        return response.getData();
+    }
+
+    public List<ConversationDto> getConversationUnread() {
+        Response<List<ConversationDto>> response = restTemplateService.getMethodRestTemplate(
+                SERVER_NOTIFY_SERVICE + "/conversation/internal/conversation-unread",
+                new ParameterizedTypeReference<Response<List<ConversationDto>>>() {}
+        );
+        return response.getData();
+    }
+
+    public List<ConversationDto> getMyConversations() {
+        Response<List<ConversationDto>> response = restTemplateService.getMethodRestTemplate(
+                SERVER_NOTIFY_SERVICE + "/conversation/internal/my-conversations",
+                new ParameterizedTypeReference<Response<List<ConversationDto>>>() {}
+        );
+        return response.getData();
+    }
+
+    public FilterResponse<ConversationDto> getMyConversationsWithFilter(MyConversationWithFilter filter) {
+        Response<FilterResponse<ConversationDto>> response = restTemplateService.postMethodRestTemplate(
+                SERVER_NOTIFY_SERVICE + "/conversation/internal/my-conversations-filtered",
+                new ParameterizedTypeReference<Response<FilterResponse<ConversationDto>>>() {},
+                filter
         );
         return response.getData();
     }

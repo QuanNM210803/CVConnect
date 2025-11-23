@@ -10,6 +10,7 @@ import com.cvconnect.dto.candidateSummaryOrg.CandidateSummaryOrgDto;
 import com.cvconnect.dto.common.DataReplacePlaceholder;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.common.NotificationDto;
+import com.cvconnect.dto.internal.response.ConversationDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
@@ -18,7 +19,6 @@ import com.cvconnect.dto.jobAdCandidate.*;
 import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
-import com.cvconnect.entity.JobAd;
 import com.cvconnect.entity.JobAdCandidate;
 import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdCandidateRepository;
@@ -769,12 +769,19 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 .toList();
         Map<Long, OrgDto> orgMap = orgService.getOrgMapByIds(orgIds);
 
+        List<ConversationDto> conversationUnread = restTemplateClient.getConversationUnread();
+        Map<Long, ConversationDto> conversationMap = conversationUnread.stream()
+                .collect(Collectors.toMap(
+                        ConversationDto::getJobAdId,
+                        Function.identity()
+                ));
+
         List<JobAdCandidateDto> data = page.getContent().stream()
                 .map(p -> {
                     UserDto hrContact = hrContacts.get(p.getHrContactId());
                     OrgDto org = orgMap.get(p.getOrgId());
                     AttachFileDto cvFile = attachFileService.getAttachFiles(List.of(p.getCvFileId())).get(0);
-                    JobAdCandidateDto jobAdCandidateDto = JobAdCandidateDto.builder()
+                    return JobAdCandidateDto.builder()
                             .id(p.getJobAdCandidateId())
                             .candidateStatusDto(CandidateStatus.getCandidateStatusDto(p.getCandidateStatus()))
                             .applyDate(p.getApplyDate())
@@ -805,9 +812,10 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                     .cvUrl(cvFile.getSecureUrl())
                                     .candidateId(p.getCandidateId())
                                     .build())
+                            .hasMessageUnread(conversationMap.get(p.getJobAdId()) != null)
                             .build();
-                    return jobAdCandidateDto;
-                }).toList();
+
+                }).collect(Collectors.toList());
 
         return PageUtils.toFilterResponse(page, data);
     }
@@ -823,6 +831,131 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             throw new AppException(CommonErrorCode.ACCESS_DENIED);
         }
         return jobAd.getHrContactId();
+    }
+
+    @Override
+    public FilterResponse<JobAdCandidateDto> jobAdCandidateConversation(JobAdAppliedFilterRequest request) {
+        Long userId = WebUtils.getCurrentUserId();
+        request.setSortBy("applyDate");
+        request.setUserId(userId);
+        request.setPageIndex(0);
+        request.setPageSize(Integer.MAX_VALUE);
+
+        Page<JobAdAppliedProjection> page = jobAdCandidateRepository.getJobAdsAppliedByCandidate(request, request.getPageable());
+
+        List<Long> orgIds = page.getContent().stream()
+                .map(JobAdAppliedProjection::getOrgId)
+                .distinct()
+                .toList();
+        Map<Long, OrgDto> orgMap = orgService.getOrgMapByIds(orgIds);
+
+        List<ConversationDto> conversation = restTemplateClient.getMyConversations();
+        Map<Long, ConversationDto> conversationMap = conversation.stream()
+                .collect(Collectors.toMap(
+                        ConversationDto::getJobAdId,
+                        Function.identity()
+                ));
+
+        List<JobAdCandidateDto> data = page.getContent().stream()
+                .map(p -> {
+                    OrgDto org = orgMap.get(p.getOrgId());
+                    AttachFileDto cvFile = attachFileService.getAttachFiles(List.of(p.getCvFileId())).get(0);
+                    ConversationDto conversationDto = conversationMap.get(p.getJobAdId());
+
+                    boolean hasMessageUnread = false;
+                    if(!ObjectUtils.isEmpty(conversationDto)){
+                        Long senderId = conversationDto.getLastMessageSenderId();
+                        List<Long> seenBy = conversationDto.getLastMessageSeenBy();
+                        if(!senderId.equals(userId) && !seenBy.contains(userId)){
+                            hasMessageUnread = true;
+                        }
+                    }
+                    return JobAdCandidateDto.builder()
+                            .id(p.getJobAdCandidateId())
+                            .candidateStatusDto(CandidateStatus.getCandidateStatusDto(p.getCandidateStatus()))
+                            .applyDate(p.getApplyDate())
+                            .onboardDate(p.getOnboardDate())
+                            .eliminateReason(EliminateReasonEnum.getEliminateReasonEnumDto(p.getEliminateReasonType()))
+                            .eliminateDate(p.getEliminateDate())
+                            .currentRound(ProcessTypeDto.builder()
+                                    .id(p.getJobAdProcessId())
+                                    .name(p.getProcessName())
+                                    .transferDate(p.getTransferDate())
+                                    .build())
+                            .jobAd(JobAdDto.builder()
+                                    .id(p.getJobAdId())
+                                    .title(p.getJobAdTitle())
+                                    .build())
+                            .org(OrgDto.builder()
+                                    .id(p.getOrgId())
+                                    .name(p.getOrgName())
+                                    .logoUrl(org != null ? org.getLogoUrl() : null)
+                                    .build())
+                            .candidateInfo(CandidateInfoApplyDto.builder()
+                                    .fullName(p.getFullName())
+                                    .email(p.getEmail())
+                                    .phone(p.getPhone())
+                                    .coverLetter(p.getCoverLetter())
+                                    .cvUrl(cvFile.getSecureUrl())
+                                    .candidateId(p.getCandidateId())
+                                    .build())
+                            .hasMessageUnread(hasMessageUnread)
+                            .conversation(conversationMap.get(p.getJobAdId()))
+                            .build();
+                })
+                .sorted(
+                        Comparator.comparing(
+                                (JobAdCandidateDto d) -> d.getConversation() != null ? d.getConversation().getLastMessageSentAt() : null,
+                                Comparator.nullsLast(Comparator.reverseOrder())
+                        ).thenComparing(
+                                JobAdCandidateDto::getApplyDate,
+                                Comparator.reverseOrder()
+                        )
+                ).collect(Collectors.toList());
+
+        return PageUtils.toFilterResponse(page, data);
+    }
+
+    @Override
+    public FilterResponse<JobAdCandidateDto> jobAdCandidateConversationForOrg(MyConversationWithFilter request) {
+        restTemplateClient.validOrgMember(); // validate org member
+        Long userId = WebUtils.getCurrentUserId();
+
+        FilterResponse<ConversationDto> conversationPage = restTemplateClient.getMyConversationsWithFilter(request);
+        List<JobAdCandidateDto> data = new ArrayList<>();
+        for(ConversationDto conversationDto : conversationPage.getData()){
+            JobAdCandidateProjection projection = jobAdCandidateRepository.getJobAdCandidateByJobAdIdAndCandidateId(
+                    conversationDto.getJobAdId(), conversationDto.getCandidateId()
+            );
+            if(ObjectUtils.isEmpty(projection)){
+                continue;
+            }
+            boolean hasMessageUnread = false;
+            Long senderId = conversationDto.getLastMessageSenderId();
+            List<Long> seenBy = conversationDto.getLastMessageSeenBy();
+            if(!senderId.equals(userId) && !seenBy.contains(userId)){
+                hasMessageUnread = true;
+            }
+            JobAdCandidateDto jobAdCandidateDto = JobAdCandidateDto.builder()
+                    .id(projection.getId())
+                    .jobAd(JobAdDto.builder()
+                            .id(projection.getJobAdId())
+                            .title(projection.getJobAdTitle())
+                            .build())
+                    .candidateInfo(CandidateInfoApplyDto.builder()
+                            .id(projection.getCandidateInfoId())
+                            .fullName(projection.getFullName())
+                            .build())
+                    .hasMessageUnread(hasMessageUnread)
+                    .conversation(conversationDto)
+                    .build();
+            data.add(jobAdCandidateDto);
+        }
+
+        FilterResponse<JobAdCandidateDto> response = new FilterResponse<>();
+        response.setData(data);
+        response.setPageInfo(conversationPage.getPageInfo());
+        return response;
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {
