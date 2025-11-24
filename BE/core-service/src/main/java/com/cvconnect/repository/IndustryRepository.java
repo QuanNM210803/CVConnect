@@ -1,6 +1,7 @@
 package com.cvconnect.repository;
 
 import com.cvconnect.dto.industry.IndustryFilterRequest;
+import com.cvconnect.dto.industry.IndustryProjection;
 import com.cvconnect.entity.Industry;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
@@ -34,4 +35,16 @@ public interface IndustryRepository extends JpaRepository<Industry, Long> {
             "JOIN OrganizationIndustry oi ON oi.industryId = i.id " +
             "WHERE oi.orgId = :orgId")
     List<Industry> getIndustriesByOrgId(Long orgId);
+
+    @Query("""
+        select distinct i.id as id,
+                        i.code as code,
+                        i.name as name,
+                        i.description as description,
+                        oi.orgId as orgId
+        from OrganizationIndustry oi
+        join Industry i on oi.industryId = i.id
+        where oi.orgId in :orgIds
+    """)
+    List<IndustryProjection> getIndustriesByOrgIds(List<Long> orgIds);
 }

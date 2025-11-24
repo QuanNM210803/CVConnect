@@ -34,6 +34,7 @@ public class JobAdOutsideDetailResponse {
     private Integer quantity;
 
     private JobTypeDto jobType;
+    private String jobAdStatus;
 
     private SalaryTypeDto salaryType;
     private Integer salaryFrom;

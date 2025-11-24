@@ -168,6 +168,18 @@ public class OrgAddressServiceImpl implements OrgAddressService {
         return dtos;
     }
 
+    @Override
+    public Map<Long, List<OrgAddressDto>> getMapOrgAddressByOrgIds(List<Long> orgIds) {
+        List<OrganizationAddress> projections = orgAddressRepository.findByOrgIds(orgIds);
+        if(ObjectUtils.isEmpty(projections)){
+            return Map.of();
+        }
+
+        List<OrgAddressDto> dtos = ObjectMapperUtils.convertToList(projections, OrgAddressDto.class);
+        return dtos.stream()
+                .collect(Collectors.groupingBy(OrgAddressDto::getOrgId));
+    }
+
     private String buildDisplayAddress(OrgAddressDto dto) {
         StringJoiner addressJoiner = new StringJoiner(", ");
         if (dto.getDetailAddress() != null && !dto.getDetailAddress().isEmpty()) {

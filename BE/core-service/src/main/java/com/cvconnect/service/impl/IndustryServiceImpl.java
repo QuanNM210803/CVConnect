@@ -2,6 +2,7 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.dto.industry.IndustryDto;
 import com.cvconnect.dto.industry.IndustryFilterRequest;
+import com.cvconnect.dto.industry.IndustryProjection;
 import com.cvconnect.dto.industry.IndustryRequest;
 import com.cvconnect.entity.Industry;
 import com.cvconnect.enums.CoreErrorCode;
@@ -19,9 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class IndustryServiceImpl implements IndustryService {
@@ -118,5 +122,19 @@ public class IndustryServiceImpl implements IndustryService {
     public List<IndustryDto> getIndustriesByOrgId(Long orgId) {
         List<Industry> entities = industryRepository.getIndustriesByOrgId(orgId);
         return ObjectMapperUtils.convertToList(entities, IndustryDto.class);
+    }
+
+    @Override
+    public Map<Long, List<IndustryDto>> getMapIndustriesByOrgIds(List<Long> orgIds) {
+        List<IndustryProjection> projections = industryRepository.getIndustriesByOrgIds(orgIds);
+        if(ObjectUtils.isEmpty(projections)) {
+            return Map.of();
+        }
+        return projections.stream()
+                .map(projection -> ObjectMapperUtils.convertToObject(projection, IndustryDto.class))
+                .collect(
+                        Collectors.groupingBy(IndustryDto::getOrgId, Collectors.toList())
+                );
+
     }
 }

@@ -5,9 +5,11 @@ import com.cvconnect.dto.jobAd.JobAdOrgFilterRequest;
 import com.cvconnect.dto.jobAd.JobAdOutsideFilterRequest;
 import com.cvconnect.dto.jobAd.JobAdProjection;
 import com.cvconnect.entity.JobAd;
+import com.cvconnect.enums.JobAdStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -326,5 +328,9 @@ public interface JobAdRepository extends JpaRepository<JobAd, Integer> {
         JOIN job_ad ja ON ja.id = sj.id
     """, nativeQuery = true)
     List<JobAdProjection> getSuitableJobAds(String keyword, Integer pageSize, Long offset);
+
+    @Modifying
+    @Query("UPDATE JobAd ja SET ja.jobAdStatus = :jobAdStatus WHERE ja.orgId IN :orgIds")
+    void updateJobAdStatusByOrgIds(List<Long> orgIds, String jobAdStatus);
 
 }

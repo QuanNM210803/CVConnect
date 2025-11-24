@@ -934,7 +934,7 @@
 --         LEFT JOIN job_ad_statistic jas ON jas.job_ad_id = ja.id
 --         JOIN organization o ON o.id = ja.org_id AND o.is_active = true
 --         WHERE ja.is_public = true
---           AND ja.job_ad_status = 'OPEN'
+--           AND (%L = true OR ja.job_ad_status = 'OPEN')
 --           AND (%L = true OR ja.due_date >= CURRENT_DATE)
 --           AND (%L IS NULL OR jac.career_id = ANY(%L))
 --           AND (%L IS NULL OR jal.level_id = ANY(%L))
@@ -952,6 +952,7 @@
 --         ORDER BY %I %s, created_at DESC
 --         LIMIT %s OFFSET %s
 --         $f$,
+--         p_is_show_expired,
 --         p_is_show_expired,
 --         p_career_ids, p_career_ids,
 --         p_level_ids, p_level_ids,

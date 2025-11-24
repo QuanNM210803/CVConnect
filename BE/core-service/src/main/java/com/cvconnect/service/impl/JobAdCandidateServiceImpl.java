@@ -31,10 +31,7 @@ import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.service.SendEmailService;
-import nmquan.commonlib.utils.KafkaUtils;
-import nmquan.commonlib.utils.ObjectMapperUtils;
-import nmquan.commonlib.utils.PageUtils;
-import nmquan.commonlib.utils.WebUtils;
+import nmquan.commonlib.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -196,7 +193,6 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             request.setHrContactId(null);
         }
 
-        // todo: nho viet them cau lenh check nguoi tham gia la HR va interviewer
         if(Objects.equals(request.getSortBy(), CommonConstants.DEFAULT_SORT_BY)){
             request.setSortBy("applyDate");
         }
@@ -295,6 +291,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                     .fullName(projection.getFullName())
                                     .email(projection.getEmail())
                                     .phone(projection.getPhone())
+                                    .candidateId(projection.getCandidateId())
                                     .attachFile(AttachFileDto.builder()
                                             .id(projection.getCvFileId())
                                             .secureUrl(projection.getCvFileUrl())
@@ -956,6 +953,57 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         response.setData(data);
         response.setPageInfo(conversationPage.getPageInfo());
         return response;
+    }
+
+    @Override
+    public FilterResponse<JobAdCandidateDto> getListOfOnboardedCandidates(CandidateOnboardFilterRequest request) {
+        Long orgId = restTemplateClient.validOrgMember();
+        request.setOrgId(orgId);
+        Long participantId = null;
+        List<String> role = WebUtils.getCurrentRole();
+        if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
+            participantId = WebUtils.getCurrentUserId();
+            request.setHrContactId(null);
+        }
+        if (request.getOnboardDateEnd() != null) {
+            request.setOnboardDateEnd(DateUtils.endOfDay(request.getOnboardDateEnd(), CommonConstants.ZONE.UTC));
+        }
+        if (request.getApplyDateEnd() != null) {
+            request.setApplyDateEnd(DateUtils.endOfDay(request.getApplyDateEnd(), CommonConstants.ZONE.UTC));
+        }
+        Page<JobAdCandidateProjection> page = jobAdCandidateRepository.getListOfOnboardedCandidates(request, participantId, request.getPageable());
+
+        List<Long> hrIds = page.getContent().stream()
+                .map(JobAdCandidateProjection::getHrContactId)
+                .distinct()
+                .toList();
+        Map<Long, UserDto> hrContacts = restTemplateClient.getUsersByIds(hrIds);
+
+        List<JobAdCandidateDto> data = page.getContent().stream()
+                .map(p -> JobAdCandidateDto.builder()
+                        .id(p.getId())
+                        .applyDate(p.getApplyDate())
+                        .onboardDate(p.getOnboardDate())
+                        .candidateStatusDto(CandidateStatus.getCandidateStatusDto(p.getCandidateStatus()))
+                        .jobAd(JobAdDto.builder()
+                                .id(p.getJobAdId())
+                                .title(p.getJobAdTitle())
+                                .hrContact(hrContacts.get(p.getHrContactId()))
+                                .build())
+                        .candidateInfo(CandidateInfoApplyDto.builder()
+                                .id(p.getCandidateInfoId())
+                                .fullName(p.getFullName())
+                                .email(p.getEmail())
+                                .phone(p.getPhone())
+                                .build())
+                        .level(LevelDto.builder()
+                                .id(p.getLevelId())
+                                .levelName(p.getLevelName())
+                                .build())
+                        .build())
+                .collect(Collectors.toList());
+
+        return PageUtils.toFilterResponse(page, data);
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {

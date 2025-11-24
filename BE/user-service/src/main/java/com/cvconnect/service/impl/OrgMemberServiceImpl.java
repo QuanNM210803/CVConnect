@@ -29,6 +29,7 @@ import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.enums.EmailTemplateEnum;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -342,5 +344,19 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     public Boolean checkOrgMember(List<Long> userIds) {
         List<OrgMember> orgMembers = orgMemberRepository.findByUserIdInAndIsActiveTrue(userIds);
         return orgMembers.size() == userIds.size();
+    }
+
+    @Override
+    public void updateAccountStatusByOrgIds(ChangeStatusActiveRequest request) {
+        if(ObjectUtils.isEmpty(request.getIds())){
+            throw new AppException(CommonErrorCode.INVALID_FORMAT);
+        }
+
+        if(Boolean.FALSE.equals(request.getActive())){
+            orgMemberRepository.updateAccountStatusByOrgIds(request.getIds(), false);
+        } else {
+            List<Long> userIds = orgMemberRepository.findAccountAdminByOrgIds(request.getIds());
+            orgMemberRepository.updateAccountOrgAdminStatusByOrgIds(userIds, true);
+        }
     }
 }

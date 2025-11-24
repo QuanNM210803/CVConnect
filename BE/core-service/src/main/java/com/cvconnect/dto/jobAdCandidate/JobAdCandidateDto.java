@@ -5,6 +5,7 @@ import com.cvconnect.dto.enums.CandidateStatusDto;
 import com.cvconnect.dto.enums.EliminateReasonEnumDto;
 import com.cvconnect.dto.internal.response.ConversationDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
+import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -49,4 +50,5 @@ public class JobAdCandidateDto extends BaseDto<Instant> {
     private OrgDto org;
     private boolean hasMessageUnread;
     private ConversationDto conversation;
+    private LevelDto level;
 }

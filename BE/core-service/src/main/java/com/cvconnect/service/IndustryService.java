@@ -7,6 +7,7 @@ import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IndustryService {
     List<IndustryDto> findByIds(List<Long> ids);
@@ -17,4 +18,5 @@ public interface IndustryService {
     IDResponse<Long> create(IndustryRequest request);
     IDResponse<Long> update(IndustryRequest request);
     List<IndustryDto> getIndustriesByOrgId(Long orgId);
+    Map<Long, List<IndustryDto>> getMapIndustriesByOrgIds(List<Long> orgIds);
 }

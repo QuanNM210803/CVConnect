@@ -18,6 +18,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
@@ -195,7 +196,7 @@ public class MongoQueryServiceImpl implements MongoQueryService {
 
         ConversationDto result = results.getUniqueMappedResult();
 
-        if (result != null) {
+        if (result != null && !ObjectUtils.isEmpty(result.getMessages())) {
             FilterResponse<ChatMessage> chatMessages = new FilterResponse<>();
 
             List<ChatMessage> reversed = new ArrayList<>(result.getMessages());

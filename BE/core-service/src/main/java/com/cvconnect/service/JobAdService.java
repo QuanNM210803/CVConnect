@@ -25,4 +25,5 @@ public interface JobAdService {
     List<JobAdOutsideDetailResponse> listRelateOutside(Long jobAdId);
     FilterResponse<JobAdOutsideDetailResponse> filterFeaturedOutside(FilterRequest request);
     FilterResponse<JobAdOutsideDetailResponse> filterSuitableOutside(FilterRequest request);
+    void updateJobAdStatusByOrgIds(List<Long> orgIds, Boolean isActive);
 }

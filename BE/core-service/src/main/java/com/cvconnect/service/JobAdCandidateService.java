@@ -24,5 +24,6 @@ public interface JobAdCandidateService {
     Long validateAndGetHrContactId(Long jobAdId, Long candidateId);
     FilterResponse<JobAdCandidateDto> jobAdCandidateConversation(JobAdAppliedFilterRequest request);
     FilterResponse<JobAdCandidateDto> jobAdCandidateConversationForOrg(MyConversationWithFilter request);
+    FilterResponse<JobAdCandidateDto> getListOfOnboardedCandidates(CandidateOnboardFilterRequest request);
 
 }

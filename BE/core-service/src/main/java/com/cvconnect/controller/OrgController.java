@@ -1,13 +1,19 @@
 package com.cvconnect.controller;
 
 import com.cvconnect.dto.org.OrgDto;
+import com.cvconnect.dto.org.OrgFilterRequest;
 import com.cvconnect.dto.org.OrganizationRequest;
 import com.cvconnect.service.OrgService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import nmquan.commonlib.annotation.InternalRequest;
+import nmquan.commonlib.constant.CommonConstants;
+import nmquan.commonlib.constant.MessageConstants;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.dto.response.Response;
+import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +28,8 @@ import java.util.List;
 public class OrgController {
     @Autowired
     private OrgService orgService;
+    @Autowired
+    private LocalizationUtils localizationUtils;
 
     @InternalRequest
     @PostMapping("/internal/create")
@@ -82,5 +90,20 @@ public class OrgController {
     @Operation(summary = "Get Organization by Job Ad id outside")
     public ResponseEntity<Response<OrgDto>> getOrgByJobAd(@PathVariable Long jobAdId) {
         return ResponseUtils.success(orgService.getOrgByJobAd(jobAdId));
+    }
+
+    @GetMapping("/filter")
+    @Operation(summary = "Filter Organizations")
+    @PreAuthorize("hasAnyAuthority('ORG:VIEW', 'SYSTEM_ADMIN')")
+    public ResponseEntity<Response<FilterResponse<OrgDto>>> filterOrgs(@Valid @ModelAttribute OrgFilterRequest filter) {
+        return ResponseUtils.success(orgService.filterOrgs(filter));
+    }
+
+    @PutMapping("/change-status-active")
+    @PreAuthorize("hasAnyAuthority('ORG:UPDATE', 'SYSTEM_ADMIN')")
+    @Operation(summary = "Change status active organization")
+    public ResponseEntity<Response<Void>> changeStatusActive(@Valid @RequestBody ChangeStatusActiveRequest request) {
+        orgService.changeStatusActive(request);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
     }
 }

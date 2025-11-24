@@ -7,11 +7,13 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface OrgMemberRepository extends JpaRepository<OrgMember, Long> {
@@ -80,4 +82,21 @@ public interface OrgMemberRepository extends JpaRepository<OrgMember, Long> {
 
     @Query("select om from OrgMember om where om.userId in :userIds and om.isActive = true")
     List<OrgMember> findByUserIdInAndIsActiveTrue(List<Long> userIds);
+
+    @Modifying
+    @Query("UPDATE OrgMember om SET om.isActive = :isActive WHERE om.orgId IN :orgIds")
+    void updateAccountStatusByOrgIds(List<Long> orgIds, Boolean isActive);
+
+    @Query("""
+        select distinct om.userId
+        from OrgMember om
+        join RoleUser ru on ru.userId = om.userId
+        join Role r on r.id = ru.roleId
+        where om.orgId in :orgIds and r.code = 'ORG_ADMIN'
+    """)
+    List<Long> findAccountAdminByOrgIds(List<Long> orgIds);
+
+    @Modifying
+    @Query("UPDATE OrgMember om SET om.isActive = :isActive WHERE om.userId IN :userIds")
+    void updateAccountOrgAdminStatusByOrgIds(List<Long> userIds, Boolean isActive);
 }

@@ -43,5 +43,8 @@ public interface OrgAddressRepository extends JpaRepository<OrganizationAddress,
     """)
     List<OrgAddressProjection> findByJobAdIdIn(List<Long> jobAdIds);
 
+    @Query("SELECT oa FROM OrganizationAddress oa WHERE oa.orgId IN :orgIds " +
+            "ORDER BY oa.isHeadquarter DESC, oa.createdAt DESC")
+    List<OrganizationAddress> findByOrgIds(List<Long> orgIds);
 
 }

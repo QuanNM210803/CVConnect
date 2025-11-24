@@ -19,4 +19,6 @@ public class IndustryDto extends BaseDto<Instant> {
     private String name;
     private String description;
 
+    private Long orgId;
+
 }

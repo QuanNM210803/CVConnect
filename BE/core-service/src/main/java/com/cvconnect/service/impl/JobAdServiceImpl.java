@@ -725,6 +725,13 @@ public class JobAdServiceImpl implements JobAdService {
         return filterResponse;
     }
 
+    @Override
+    public void updateJobAdStatusByOrgIds(List<Long> orgIds, Boolean isActive) {
+        if(Boolean.FALSE.equals(isActive)) {
+            jobAdRepository.updateJobAdStatusByOrgIds(orgIds, JobAdStatus.PAUSE.name());
+        }
+    }
+
     private void validateCreate(JobAdRequest request) {
         // validate orgId, positionId
         boolean exists = jobAdRepository.existsByOrgIdAndPositionId(request.getOrgId(), request.getPositionId());
@@ -906,6 +913,7 @@ public class JobAdServiceImpl implements JobAdService {
                     dto.setDueDate(jobAd.getDueDate());
                     dto.setDueDateStr(this.convertDueDateToString(jobAd.getDueDate()));
                     dto.setQuantity(jobAd.getQuantity());
+                    dto.setJobAdStatus(jobAd.getJobAdStatus());
 
                     if(jobAd.getSalaryFrom() != null && jobAd.getSalaryTo() != null){
                         dto.setSalaryStr(this.convertSalaryToString(jobAd.getSalaryFrom(), jobAd.getSalaryTo()));

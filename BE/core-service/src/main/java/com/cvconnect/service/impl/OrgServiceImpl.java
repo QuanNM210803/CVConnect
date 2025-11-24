@@ -12,12 +12,18 @@ import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.OrgRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.CoreServiceUtils;
+import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.BaseDto;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
+import nmquan.commonlib.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -328,5 +334,43 @@ public class OrgServiceImpl implements OrgService {
         }
 
         return orgDto;
+    }
+
+    @Override
+    public FilterResponse<OrgDto> filterOrgs(OrgFilterRequest request) {
+        if(request.getCreatedAtEnd() != null) {
+            request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
+        }
+        if(request.getUpdatedAtEnd() != null) {
+            request.setUpdatedAtEnd(DateUtils.endOfDay(request.getUpdatedAtEnd(), CommonConstants.ZONE.UTC));
+        }
+
+        Page<OrgProjection> orgPage = orgRepository.filterOrgs(request, request.getPageable());
+
+        List<Long> orgIds = orgPage.getContent().stream()
+                .map(OrgProjection::getId)
+                .toList();
+        Map<Long, List<OrgAddressDto>> addressMap = orgAddressService.getMapOrgAddressByOrgIds(orgIds);
+        Map<Long, List<IndustryDto>> industryMap = industryService.getMapIndustriesByOrgIds(orgIds);
+
+        List<OrgDto> orgDtos = ObjectMapperUtils.convertToList(orgPage.getContent(), OrgDto.class);
+        for(OrgDto orgDto : orgDtos) {
+            orgDto.setAddresses(addressMap.getOrDefault(orgDto.getId(), null));
+            orgDto.setIndustryList(industryMap.getOrDefault(orgDto.getId(), null));
+        }
+
+        return PageUtils.toFilterResponse(orgPage, orgDtos);
+    }
+
+    @Override
+    @Transactional
+    public void changeStatusActive(ChangeStatusActiveRequest request) {
+        orgRepository.updateStatus(request.getIds(), request.getActive());
+
+        // update job ads status
+        jobAdService.updateJobAdStatusByOrgIds(request.getIds(), request.getActive());
+
+        // update accounts status
+        restTemplateClient.updateAccountStatusByOrgIds(request);
     }
 }

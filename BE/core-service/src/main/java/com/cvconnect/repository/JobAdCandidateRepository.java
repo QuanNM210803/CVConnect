@@ -154,15 +154,6 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
     """)
     Boolean existsByJobAdCandidateIdAndHrContactId(Long jobAdCandidateId, Long hrContactId);
 
-    @Query("""
-        select case when count(*) > 0 then true else false end
-            from JobAdProcessCandidate as japc
-            join JobAdCandidate as jac on jac.id = japc.jobAdCandidateId
-            join JobAd as ja on ja.id = jac.jobAdId
-            where ja.hrContactId = :hrContactId and japc.id = :jobAdProcessCandidateId
-    """)
-    Boolean existsByJobAdProcessCandidateIdAndHrContactId(Long jobAdProcessCandidateId, Long hrContactId);
-
     @Modifying
     @Query("UPDATE JobAdCandidate jac SET jac.candidateStatus = :candidateStatus WHERE jac.id = :jobAdCandidateId")
     void updateCandidateStatus(Long jobAdCandidateId, String candidateStatus);
@@ -243,4 +234,31 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
         where ja.id = :jobAdId and cia.candidateId = :candidateId
     """)
     JobAdCandidateProjection getJobAdCandidateByJobAdIdAndCandidateId(Long jobAdId, Long candidateId);
+
+    // ko sort HR, CandidateStatus
+    @Query("""
+        select jac.id as id, jac.applyDate as applyDate, jac.onboardDate as onboardDate, jac.candidateStatus as candidateStatus,
+               ja.id as jobAdId, ja.title as title, ja.hrContactId as hrContactId,
+               cia.id as candidateInfoId, cia.fullName as fullName, cia.email as email, cia.phone as phone,
+               l.id as levelId, l.name as levelName
+        from JobAdCandidate as jac
+        join JobAd as ja on ja.id = jac.jobAdId
+        join CandidateInfoApply as cia on cia.id = jac.candidateInfoId
+        join CandidateSummaryOrg cso on cso.candidateInfoId = cia.id and cso.orgId = :#{#request.orgId}
+        join Level l on l.id = cso.levelId
+        where jac.candidateStatus in ('ONBOARDED', 'WAITING_ONBOARDING')
+        and (COALESCE(:#{#request.onboardDateStart}, NULL) IS NULL OR jac.onboardDate >= :#{#request.onboardDateStart})
+        and (COALESCE(:#{#request.onboardDateEnd}, NULL) IS NULL OR jac.onboardDate <= :#{#request.onboardDateEnd})
+        and (COALESCE(:#{#request.applyDateStart}, NULL) IS NULL OR jac.applyDate >= :#{#request.applyDateStart})
+        and (COALESCE(:#{#request.applyDateEnd}, NULL) IS NULL OR jac.applyDate <= :#{#request.applyDateEnd})
+        and (:#{#request.fullName} is null or lower(cia.fullName) like lower(concat('%', :#{#request.fullName}, '%')))
+        and (:#{#request.email} is null or lower(cia.email) like lower(concat('%', :#{#request.email}, '%')))
+        and (:#{#request.phone} is null or lower(cia.phone) like lower(concat('%', :#{#request.phone}, '%')))
+        and (:#{#request.jobAdTitle} is null or lower(ja.title) like lower(concat('%', :#{#request.jobAdTitle}, '%')))
+        and (:#{#request.hrContactId} is null or ja.hrContactId = :#{#request.hrContactId})
+        and (:#{#request.levelId} is null or cso.levelId = :#{#request.levelId})
+        and (:#{#request.status?.name()} is null or jac.candidateStatus = :#{#request.status?.name()})
+        and (:participantId is null or ja.hrContactId = :participantId)
+    """)
+    Page<JobAdCandidateProjection> getListOfOnboardedCandidates(CandidateOnboardFilterRequest request, Long participantId, Pageable pageable);
 }

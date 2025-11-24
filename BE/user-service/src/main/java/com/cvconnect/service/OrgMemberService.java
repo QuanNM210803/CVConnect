@@ -22,5 +22,6 @@ public interface OrgMemberService {
     void changeStatusActive(ChangeStatusActiveRequest request);
     OrgMemberDto orgMemberInfo(Long userId);
     Boolean checkOrgMember(List<Long> userIds);
+    void updateAccountStatusByOrgIds(ChangeStatusActiveRequest request);
 
 }

@@ -5,6 +5,7 @@ import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAdCandidate.MyConversationWithFilter;
+import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.service.RestTemplateService;
@@ -123,6 +124,14 @@ public class RestTemplateClient {
                 filter
         );
         return response.getData();
+    }
+
+    public void updateAccountStatusByOrgIds(ChangeStatusActiveRequest request){
+        restTemplateService.postMethodRestTemplate(
+                SERVER_USER_SERVICE + "/org-member/internal/update-account-status-by-org-ids",
+                new ParameterizedTypeReference<Response<Void>>() {},
+                request
+        );
     }
 
 }

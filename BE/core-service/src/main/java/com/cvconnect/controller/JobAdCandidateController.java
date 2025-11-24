@@ -117,4 +117,11 @@ public class JobAdCandidateController {
     public ResponseEntity<Response<FilterResponse<JobAdCandidateDto>>> jobAdCandidateConversationForOrg(@Valid @ModelAttribute MyConversationWithFilter request) {
         return ResponseUtils.success(jobAdCandidateService.jobAdCandidateConversationForOrg(request));
     }
+
+    @GetMapping("/list-onboard")
+    @Operation(summary = "Get list of onboarded candidates")
+    @PreAuthorize("hasAnyAuthority('ORG_CANDIDATE:VIEW')")
+    public ResponseEntity<Response<FilterResponse<JobAdCandidateDto>>> getListOfOnboardedCandidates(@Valid @ModelAttribute CandidateOnboardFilterRequest request) {
+        return ResponseUtils.success(jobAdCandidateService.getListOfOnboardedCandidates(request));
+    }
 }

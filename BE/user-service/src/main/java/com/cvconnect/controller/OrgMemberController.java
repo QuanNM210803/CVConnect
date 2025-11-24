@@ -89,4 +89,12 @@ public class OrgMemberController {
     public ResponseEntity<Response<Boolean>> checkOrgMember(@RequestBody List<Long> userIds) {
         return ResponseUtils.success(orgMemberService.checkOrgMember(userIds));
     }
+
+    @PostMapping("/internal/update-account-status-by-org-ids")
+    @Operation(summary = "Internal update account status by organization IDs")
+    @InternalRequest
+    public ResponseEntity<Response<Void>> updateAccountStatusByOrgIds(@Valid @RequestBody ChangeStatusActiveRequest request) {
+        orgMemberService.updateAccountStatusByOrgIds(request);
+        return ResponseUtils.success(null);
+    }
 }
