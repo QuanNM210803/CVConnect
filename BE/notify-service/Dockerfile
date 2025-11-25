@@ -6,7 +6,7 @@ COPY . .
 COPY settings.xml /root/.m2/settings.xml
 RUN mvn clean package -pl notify-service -am -DskipTests
 
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 

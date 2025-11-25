@@ -13,7 +13,7 @@ spring:
   data:
     mongodb:
       host: ${COLLECTION_HOST:localhost}
-      port: 27017
+      port: ${COLLECTION_PORT:27017}
       database: cvconnect-notify-service
       username: root
       password: root
