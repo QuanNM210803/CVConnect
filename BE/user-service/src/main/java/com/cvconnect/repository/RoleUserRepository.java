@@ -26,4 +26,11 @@ public interface RoleUserRepository extends JpaRepository<RoleUser, Long> {
     @Modifying
     @Query("DELETE FROM RoleUser ru WHERE ru.userId = :userId AND ru.roleId IN :roleIds")
     void deleteByUserIdAndRoleIds(Long userId, List<Long> roleIds);
+
+    @Query("SELECT CASE WHEN COUNT(ru) > 0 THEN true ELSE false END " +
+            "FROM RoleUser ru " +
+            "join User u on u.id = ru.userId " +
+            "WHERE ru.roleId = :roleId " +
+            "and u.isActive = true and u.isEmailVerified = true ")
+    Boolean existsUserActiveByRoleId(Long roleId);
 }

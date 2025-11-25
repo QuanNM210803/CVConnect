@@ -89,6 +89,19 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     }
 
     @Override
+    public OrgMemberDto getOrgMemberForSystemAdmin(Long userId) {
+        Optional<OrgMember> orgMember = orgMemberRepository.findByUserId(userId);
+        OrgMember entity = orgMember.orElse(null);
+        if(entity == null) {
+            return null;
+        }
+        OrgDto orgDto = restTemplateClient.getOrgById(entity.getOrgId());
+        OrgMemberDto orgMemberDto = ObjectMapperUtils.convertToObject(entity, OrgMemberDto.class);
+        orgMemberDto.setOrg(orgDto);
+        return orgMemberDto;
+    }
+
+    @Override
     public OrgMemberDto createOrgMember(OrgMemberDto orgMemberDto) {
         OrgMember orgMember = ObjectMapperUtils.convertToObject(orgMemberDto, OrgMember.class);
         orgMemberRepository.save(orgMember);
@@ -358,5 +371,40 @@ public class OrgMemberServiceImpl implements OrgMemberService {
             List<Long> userIds = orgMemberRepository.findAccountAdminByOrgIds(request.getIds());
             orgMemberRepository.updateAccountOrgAdminStatusByOrgIds(userIds, true);
         }
+    }
+
+    @Override
+    public FilterResponse<OrgMemberDto> filterBySystemAdmin(OrgMemberFilter request) {
+        if (request.getCreatedAtEnd() != null) {
+            request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
+        }
+        if (request.getUpdatedAtEnd() != null) {
+            request.setUpdatedAtEnd(DateUtils.endOfDay(request.getUpdatedAtEnd(), CommonConstants.ZONE.UTC));
+        }
+        Page<OrgMemberProjection> page = orgMemberRepository.filter(request, request.getPageable());
+        Page<OrgMemberDto> orgMemberDtoPage = page.map(projection -> OrgMemberDto.builder()
+                .userId(projection.getUserId())
+                .username(projection.getUsername())
+                .email(projection.getEmail())
+                .fullName(projection.getFullName())
+                .phoneNumber(projection.getPhoneNumber())
+                .dateOfBirth(projection.getDateOfBirth())
+                .isEmailVerified(projection.getIsEmailVerified())
+                .isActive(projection.getIsActive())
+                .createdAt(projection.getCreatedAt())
+                .updatedAt(projection.getUpdatedAt())
+                .inviter(projection.getInviter())
+                .updatedBy(projection.getUpdatedBy())
+                .build());
+        List<OrgMemberDto> orgMemberDtos = orgMemberDtoPage.getContent();
+        List<Long> userIds = orgMemberDtos.stream()
+                .map(OrgMemberDto::getUserId)
+                .toList();
+        Map<Long, List<RoleDto>> userRoles = roleService.getRolesByUserIds(userIds);
+        orgMemberDtos.forEach(orgMemberDto -> {
+            orgMemberDto.setRoles(userRoles.get(orgMemberDto.getUserId()));
+        });
+
+        return PageUtils.toFilterResponse(orgMemberDtoPage, orgMemberDtos);
     }
 }

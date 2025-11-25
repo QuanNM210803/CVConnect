@@ -9,6 +9,7 @@ import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.dto.org.*;
 import com.cvconnect.entity.Organization;
 import com.cvconnect.enums.CoreErrorCode;
+import com.cvconnect.enums.TemplateExport;
 import com.cvconnect.repository.OrgRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.CoreServiceUtils;
@@ -19,17 +20,22 @@ import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.DateUtils;
+import nmquan.commonlib.utils.ExportUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -363,6 +369,54 @@ public class OrgServiceImpl implements OrgService {
     }
 
     @Override
+    public InputStreamResource exportOrg(OrgFilterRequest request) {
+        request.setPageIndex(0);
+        request.setPageSize(Integer.MAX_VALUE);
+        FilterResponse<OrgDto> filter = filterOrgs(request);
+        List<OrgDto> orgDtos = filter.getData();
+        orgDtos.forEach(orgDto -> {
+            String staffCountStr = "";
+            if(orgDto.getStaffCountFrom() != null && orgDto.getStaffCountTo() != null) {
+                staffCountStr = orgDto.getStaffCountFrom() + " - " + orgDto.getStaffCountTo();
+            } else if(orgDto.getStaffCountFrom() != null) {
+                staffCountStr = "Từ " + orgDto.getStaffCountFrom();
+            } else if(orgDto.getStaffCountTo() != null) {
+                staffCountStr = "Dưới " + orgDto.getStaffCountTo();
+            }
+            orgDto.setNumberOfEmployees(staffCountStr);
+
+            // address
+            if(!ObjectUtils.isEmpty(orgDto.getAddresses())) {
+                String addressStr = orgDto.getAddresses().stream()
+                        .map(OrgAddressDto::getDetailAddress)
+                        .collect(Collectors.joining("; "));
+                orgDto.setAddressStr(addressStr);
+            }
+
+            // industry
+            if(!ObjectUtils.isEmpty(orgDto.getIndustryList())) {
+                String industryStr = orgDto.getIndustryList().stream()
+                        .map(IndustryDto::getName)
+                        .collect(Collectors.joining("; "));
+                orgDto.setIndustryStr(industryStr);
+            }
+
+            // active str
+            orgDto.setActiveStr(orgDto.getIsActive() ? "Đang hoạt động" : "Ngừng hoạt động");
+            // created at str
+            orgDto.setCreatedAtStr(DateUtils.instantToString_HCM(orgDto.getCreatedAt(), CommonConstants.DATE_TIME.DD_MM_YYYY_HH_MM_SS));
+            // updated at str
+            orgDto.setUpdatedAtStr(DateUtils.instantToString_HCM(orgDto.getUpdatedAt(), CommonConstants.DATE_TIME.DD_MM_YYYY_HH_MM_SS));
+        });
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("data", orgDtos);
+        params.put("date", DateUtils.instantToString_HCM(Instant.now(), CommonConstants.DATE_TIME.DD_MM_YYYY_HH_MM));
+        ByteArrayOutputStream bytes = ExportUtils.genXlsxFromMap(params, TemplateExport.ORG_EXPORT_TEMPLATE.getPath());
+        return ExportUtils.toInputStreamResource(bytes);
+    }
+
+    @Override
     @Transactional
     public void changeStatusActive(ChangeStatusActiveRequest request) {
         orgRepository.updateStatus(request.getIds(), request.getActive());
@@ -372,5 +426,10 @@ public class OrgServiceImpl implements OrgService {
 
         // update accounts status
         restTemplateClient.updateAccountStatusByOrgIds(request);
+    }
+
+    @Override
+    public OrgDto getOrgDetails(Long orgId) {
+        return this.getOrgInfoOutside(orgId);
     }
 }

@@ -176,6 +176,9 @@ public class OrgAddressServiceImpl implements OrgAddressService {
         }
 
         List<OrgAddressDto> dtos = ObjectMapperUtils.convertToList(projections, OrgAddressDto.class);
+        for (OrgAddressDto dto : dtos) {
+            dto.setDisplayAddress(this.buildDisplayAddress(dto));
+        }
         return dtos.stream()
                 .collect(Collectors.groupingBy(OrgAddressDto::getOrgId));
     }

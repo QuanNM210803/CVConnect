@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface OrgMemberService {
     OrgMemberDto getOrgMember(Long userId);
+    OrgMemberDto getOrgMemberForSystemAdmin(Long userId);
     OrgMemberDto createOrgMember(OrgMemberDto orgMemberDto);
     boolean existsByUserId(Long userId);
     void inviteUserToJoinOrg(InviteUserRequest request);
@@ -23,5 +24,6 @@ public interface OrgMemberService {
     OrgMemberDto orgMemberInfo(Long userId);
     Boolean checkOrgMember(List<Long> userIds);
     void updateAccountStatusByOrgIds(ChangeStatusActiveRequest request);
+    FilterResponse<OrgMemberDto> filterBySystemAdmin(OrgMemberFilter orgMemberFilter);
 
 }

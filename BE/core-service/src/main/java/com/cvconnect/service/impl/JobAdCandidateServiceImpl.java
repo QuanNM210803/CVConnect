@@ -995,6 +995,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                 .fullName(p.getFullName())
                                 .email(p.getEmail())
                                 .phone(p.getPhone())
+                                .candidateId(p.getCandidateId())
                                 .build())
                         .level(LevelDto.builder()
                                 .id(p.getLevelId())

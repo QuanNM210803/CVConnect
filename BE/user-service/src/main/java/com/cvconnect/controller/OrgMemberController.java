@@ -97,4 +97,11 @@ public class OrgMemberController {
         orgMemberService.updateAccountStatusByOrgIds(request);
         return ResponseUtils.success(null);
     }
+
+    @GetMapping("/org-member-by-org")
+    @Operation(summary = "Get organization members by organization ID")
+    @PreAuthorize("hasAnyAuthority('ORG:VIEW', 'SYSTEM_ADMIN')")
+    public ResponseEntity<Response<FilterResponse<OrgMemberDto>>> getOrgMembersByOrgId(@Valid @ModelAttribute OrgMemberFilter request) {
+        return ResponseUtils.success(orgMemberService.filterBySystemAdmin(request));
+    }
 }

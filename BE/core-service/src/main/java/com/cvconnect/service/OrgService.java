@@ -6,6 +6,7 @@ import com.cvconnect.dto.org.OrganizationRequest;
 import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public interface OrgService {
     List<OrgDto> getFeaturedOrgOutside();
     OrgDto getOrgByJobAd(Long jobAdId);
     FilterResponse<OrgDto> filterOrgs(OrgFilterRequest request);
+    InputStreamResource exportOrg(OrgFilterRequest request);
     void changeStatusActive(ChangeStatusActiveRequest request);
-
+    OrgDto getOrgDetails(Long orgId);
 }

@@ -12,5 +12,6 @@ public interface RoleUserService {
     void saveList(List<RoleUserDto> roleUserDtos);
     List<RoleUserDto> getRolesByUserIds(List<Long> userIds);
     void deleteByUserIdAndRoleIds(Long userId, List<Long> roleIds);
+    boolean existsUserActiveByRoleId(Long roleId);
 
 }

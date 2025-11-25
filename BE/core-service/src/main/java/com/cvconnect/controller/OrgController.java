@@ -3,6 +3,7 @@ package com.cvconnect.controller;
 import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.org.OrgFilterRequest;
 import com.cvconnect.dto.org.OrganizationRequest;
+import com.cvconnect.enums.TemplateExport;
 import com.cvconnect.service.OrgService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -16,6 +17,7 @@ import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -99,11 +101,25 @@ public class OrgController {
         return ResponseUtils.success(orgService.filterOrgs(filter));
     }
 
+    @GetMapping("/filter/export")
+    @Operation(summary = "Export filtered orgs")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'ORG:EXPORT')")
+    public ResponseEntity<InputStreamResource> exportOrg(@Valid @ModelAttribute OrgFilterRequest filter) {
+        return ResponseUtils.downloadFile(TemplateExport.ORG_EXPORT_TEMPLATE.getFileName(), orgService.exportOrg(filter));
+    }
+
     @PutMapping("/change-status-active")
     @PreAuthorize("hasAnyAuthority('ORG:UPDATE', 'SYSTEM_ADMIN')")
     @Operation(summary = "Change status active organization")
     public ResponseEntity<Response<Void>> changeStatusActive(@Valid @RequestBody ChangeStatusActiveRequest request) {
         orgService.changeStatusActive(request);
         return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @GetMapping("/org-details/{orgId}")
+    @Operation(summary = "Get Organization details by id")
+    @PreAuthorize("hasAnyAuthority('ORG:VIEW', 'SYSTEM_ADMIN')")
+    public ResponseEntity<Response<OrgDto>> getOrgDetails(@PathVariable Long orgId) {
+        return ResponseUtils.success(orgService.getOrgDetails(orgId));
     }
 }

@@ -25,6 +25,9 @@ public class Messages {
     public static final String CURRENT_PASSWORD_INCORRECT="current.password.incorrect";
     public static final String IMAGE_FILE_INVALID = "image.file.invalid";
     public static final String DOCUMENT_FILE_INVALID = "document.file.invalid";
+    public static final String USER_ALREADY_HAS_ROLE = "user.already.has.role";
+    public static final String USER_DOES_NOT_HAVE_ROLE = "user.does.not.have.role";
+    public static final String LAST_SYSTEM_ADMIN_CANNOT_BE_REMOVED = "last.system.admin.cannot.be.removed";
 
     /*
      * Validation messages

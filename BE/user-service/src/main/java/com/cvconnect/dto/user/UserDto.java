@@ -1,5 +1,6 @@
 package com.cvconnect.dto.user;
 
+import com.cvconnect.dto.orgMember.OrgMemberDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -34,6 +35,16 @@ public class UserDto extends BaseDto<Instant> {
     private String avatarUrl;
     private Long orgId;
     private String inviter;
+
+    // add
+    private List<AccessMethodDto> accessMethods;
+    private OrgMemberDto orgMember;
+    private String dateOfBirthStr;
+    private String verifyEmailStr;
+    private String activeStr;
+    private String rolesStr;
+    private String createdAtStr;
+    private String updatedAtStr;
 
     public UserDto configResponse() {
         this.setIsDeleted(null);

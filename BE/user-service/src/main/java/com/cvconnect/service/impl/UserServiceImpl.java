@@ -1,7 +1,9 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
+import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.internal.response.AttachFileDto;
+import com.cvconnect.dto.orgMember.OrgMemberDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.roleUser.RoleUserDto;
 import com.cvconnect.dto.user.*;
@@ -11,20 +13,26 @@ import com.cvconnect.entity.OrgMember;
 import com.cvconnect.entity.User;
 import com.cvconnect.enums.AccessMethod;
 import com.cvconnect.enums.MemberType;
+import com.cvconnect.enums.TemplateExport;
 import com.cvconnect.enums.UserErrorCode;
 import com.cvconnect.repository.UserRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.ServiceUtils;
 import com.cvconnect.utils.UserServiceUtils;
 import jakarta.annotation.PostConstruct;
+import nmquan.commonlib.constant.CommonConstants;
+import nmquan.commonlib.constant.MessageConstants;
+import nmquan.commonlib.dto.response.ExportResponse;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
-import nmquan.commonlib.utils.ObjectMapperUtils;
-import nmquan.commonlib.utils.PageUtils;
-import nmquan.commonlib.utils.WebUtils;
+import nmquan.commonlib.utils.*;
+import org.jxls.common.Context;
+import org.jxls.transform.poi.PoiTransformer;
+import org.jxls.util.JxlsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,6 +40,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -289,6 +303,174 @@ public class UserServiceImpl implements UserService {
         return userDtos.stream()
                 .map(UserDto::configResponse)
                 .collect(Collectors.toMap(UserDto::getId, Function.identity()));
+    }
+
+    @Override
+    public FilterResponse<UserDto> filter(UserFilterRequest request) {
+        if(request.getCreatedAtEnd() != null){
+            request.setCreatedAtEnd(DateUtils.endOfDay(request.getCreatedAtEnd(), CommonConstants.ZONE.UTC));
+        }
+        if(request.getUpdatedAtEnd() != null){
+            request.setUpdatedAtEnd(DateUtils.endOfDay(request.getUpdatedAtEnd(), CommonConstants.ZONE.UTC));
+        }
+        Page<UserProjection> page = userRepository.filter(request, request.getPageable());
+
+        List<Long> userIds = page.getContent().stream()
+                .map(UserProjection::getId)
+                .toList();
+        Map<Long, List<RoleDto>> roleUsers =  roleService.getRolesByUserIds(userIds);
+
+        List<UserDto> userDtos = page.getContent().stream()
+                .map(p -> {
+                    UserDto userDto = new UserDto();
+                    userDto.setId(p.getId());
+                    userDto.setUsername(p.getUsername());
+                    userDto.setEmail(p.getEmail());
+                    userDto.setFullName(p.getFullName());
+                    userDto.setPhoneNumber(p.getPhoneNumber());
+                    userDto.setDateOfBirth(p.getDateOfBirth());
+                    userDto.setIsEmailVerified(p.getIsEmailVerified());
+                    userDto.setAccessMethod(p.getAccessMethod());
+                    if(!ObjectUtils.isEmpty(p.getAccessMethod())){
+                        List<String> accessMethod = Arrays.asList(p.getAccessMethod().split(","));
+                        List<AccessMethodDto> accessMethodDtos = accessMethod.stream()
+                                .map(AccessMethod::getAccessMethodDto)
+                                .toList();
+                        userDto.setAccessMethods(accessMethodDtos);
+                    }
+                    if(p.getAvatarId() != null){
+                        AttachFileDto avatar = restTemplateClient.getAttachFileById(p.getAvatarId());
+                        userDto.setAvatarUrl(avatar.getSecureUrl());
+                    }
+                    userDto.setRoles(roleUsers.get(p.getId()));
+                    userDto.setIsActive(p.getIsActive());
+                    userDto.setCreatedAt(p.getCreatedAt());
+                    userDto.setUpdatedAt(p.getUpdatedAt());
+                    userDto.setCreatedBy(p.getCreatedBy());
+                    userDto.setUpdatedBy(p.getUpdatedBy());
+                    return userDto.configResponse();
+                }).toList();
+        return PageUtils.toFilterResponse(page, userDtos);
+    }
+
+    @Override
+    public UserDto userDetailForSystemAdmin(Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
+
+        Map<Long, List<RoleDto>> roleUsers =  roleService.getRolesByUserIds(List.of(userId));
+        userDto.setRoles(roleUsers.get(userId));
+
+        if(!ObjectUtils.isEmpty(userDto.getAccessMethod())){
+            List<String> accessMethod = Arrays.asList(userDto.getAccessMethod().split(","));
+            List<AccessMethodDto> accessMethodDtos = accessMethod.stream()
+                    .map(AccessMethod::getAccessMethodDto)
+                    .toList();
+            userDto.setAccessMethods(accessMethodDtos);
+        }
+        if(userDto.getAvatarId() != null){
+            AttachFileDto avatar = restTemplateClient.getAttachFileById(userDto.getAvatarId());
+            userDto.setAvatarUrl(avatar.getSecureUrl());
+        }
+
+        OrgMemberDto orgMemberDto = orgMemberService.getOrgMemberForSystemAdmin(userId);
+        userDto.setOrgMember(orgMemberDto);
+
+        return userDto;
+    }
+
+    @Override
+    @Transactional
+    public void assignAdminSystemRole(Long userId) {
+        RoleDto roleSystemAdmin = roleService.getRoleByCode(Constants.RoleCode.SYSTEM_ADMIN);
+        if(roleSystemAdmin == null) {
+            throw new AppException(CommonErrorCode.ERROR);
+        }
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        if (Boolean.FALSE.equals(user.getIsEmailVerified())) {
+            throw new AppException(UserErrorCode.EMAIL_NOT_VERIFIED);
+        }
+        if (Boolean.FALSE.equals(user.getIsActive())) {
+            throw new AppException(UserErrorCode.ACCOUNT_NOT_ACTIVE);
+        }
+        RoleUserDto roleUserDto = roleUserService.findByUserIdAndRoleId(userId, roleSystemAdmin.getId());
+        if(roleUserDto != null) {
+            throw new AppException(UserErrorCode.USER_ALREADY_HAS_ROLE);
+        }
+        roleUserDto = RoleUserDto.builder()
+                .userId(userId)
+                .roleId(roleSystemAdmin.getId())
+                .build();
+        roleUserService.createRoleUser(roleUserDto);
+    }
+
+    @Override
+    @Transactional
+    public void retrieveAdminSystemRole(Long userId) {
+        RoleDto roleSystemAdmin = roleService.getRoleByCode(Constants.RoleCode.SYSTEM_ADMIN);
+        if(roleSystemAdmin == null) {
+            throw new AppException(CommonErrorCode.ERROR);
+        }
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        RoleUserDto roleUserDto = roleUserService.findByUserIdAndRoleId(userId, roleSystemAdmin.getId());
+        if(roleUserDto == null) {
+            throw new AppException(UserErrorCode.USER_DOES_NOT_HAVE_ROLE);
+        }
+        roleUserService.deleteByUserIdAndRoleIds(userId, List.of(roleUserDto.getId()));
+
+        boolean checkRoleSystemAdminExists = roleUserService.existsUserActiveByRoleId(roleUserDto.getId());
+        if(!checkRoleSystemAdminExists) {
+            throw new AppException(UserErrorCode.LAST_SYSTEM_ADMIN_CANNOT_BE_REMOVED);
+        }
+    }
+
+    @Override
+    public InputStreamResource exportUser(UserFilterRequest filter) {
+        filter.setPageIndex(0);
+        filter.setPageSize(Integer.MAX_VALUE);
+        FilterResponse<UserDto> filterResponse = this.filter(filter);
+        List<UserDto> users = filterResponse.getData();
+        users.forEach(u -> {
+            if(u.getDateOfBirth() != null) {
+                DateFormat dateFormat = new SimpleDateFormat(CommonConstants.DATE_TIME.DD_MM_YYYY_HYPHEN);
+                u.setDateOfBirthStr(dateFormat.format(u.getDateOfBirth()));
+            }
+            if(u.getIsEmailVerified() == true) {
+                u.setVerifyEmailStr("Đã xác thực");
+            } else {
+                u.setVerifyEmailStr("Chưa xác thực");
+            }
+            if(u.getIsActive() == true) {
+                u.setActiveStr("Đang hoạt động");
+            } else {
+                u.setActiveStr("Ngừng hoạt động");
+            }
+            if(!ObjectUtils.isEmpty(u.getRoles())) {
+                String rolesStr = u.getRoles().stream()
+                        .map(RoleDto::getName)
+                        .collect(Collectors.joining(", "));
+                u.setRolesStr(rolesStr);
+            }
+            u.setCreatedAtStr(DateUtils.instantToString_HCM(u.getCreatedAt(), CommonConstants.DATE_TIME.DD_MM_YYYY_HH_MM_SS));
+            if(!ObjectUtils.isEmpty(u.getUpdatedAt())) {
+                u.setUpdatedAtStr(DateUtils.instantToString_HCM(u.getUpdatedAt(), CommonConstants.DATE_TIME.DD_MM_YYYY_HH_MM_SS));
+            }
+        });
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("data", users);
+        map.put("date", DateUtils.instantToString_HCM(Instant.now(), CommonConstants.DATE_TIME.DD_MM_YYYY_HH_MM));
+        ByteArrayOutputStream bytes = ExportUtils.genXlsxFromMap(map, TemplateExport.USER_EXPORT_TEMPLATE.getPath());
+        return ExportUtils.toInputStreamResource(bytes);
     }
 
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {

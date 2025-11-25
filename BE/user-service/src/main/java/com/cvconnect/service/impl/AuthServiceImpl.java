@@ -259,7 +259,12 @@ public class AuthServiceImpl implements AuthService {
                     .isEmailVerified(false)
                     .build();
             userDto = userService.create(userDto);
-            OrgMemberDto saved = this.createOrgMemberForUser(userDto.getId(), roleOrgAdmin.getId());
+
+            RoleDto roleCandidate = roleService.getRoleByCode(Constants.RoleCode.CANDIDATE);
+            if(roleCandidate == null){
+                throw new AppException(UserErrorCode.ROLE_NOT_FOUND);
+            }
+            OrgMemberDto saved = this.createOrgMemberForUser(userDto.getId(), roleOrgAdmin.getId(), roleCandidate.getId());
 
             // create organization
             request.getOrganization().setCreatedBy(request.getUsername());
@@ -313,7 +318,7 @@ public class AuthServiceImpl implements AuthService {
             existsByEmail.setFullName(request.getFullName());
             existsByEmail.setAccessMethod(String.join(",", providers));
             userService.create(existsByEmail);
-            OrgMemberDto saved = this.createOrgMemberForUser(existsByEmail.getId(), roleOrgAdmin.getId());
+            OrgMemberDto saved = this.createOrgMemberForUser(existsByEmail.getId(), roleOrgAdmin.getId(), null);
 
             // create organization
             request.getOrganization().setCreatedBy(request.getUsername());
@@ -512,7 +517,15 @@ public class AuthServiceImpl implements AuthService {
         return restTemplateClient.createOrg(request);
     }
 
-    private OrgMemberDto createOrgMemberForUser(Long userId, Long roleSystemAdminId){
+    private OrgMemberDto createOrgMemberForUser(Long userId, Long roleSystemAdminId, Long roleCandidateId){
+        if(roleCandidateId != null){
+            RoleUserDto roleUserDtoCandidate = RoleUserDto.builder()
+                    .userId(userId)
+                    .roleId(roleCandidateId)
+                    .build();
+            roleUserService.createRoleUser(roleUserDtoCandidate);
+        }
+
         RoleUserDto roleUserDto = RoleUserDto.builder()
                 .userId(userId)
                 .roleId(roleSystemAdminId)

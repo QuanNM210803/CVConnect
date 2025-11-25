@@ -33,4 +33,10 @@ public class OrgDto extends BaseDto<Instant> {
     private List<OrgAddressDto> addresses;
     private Long numOfJobAds;
     private UserDto hrContact;
+    private String numberOfEmployees;
+    private String addressStr;
+    private String industryStr;
+    private String activeStr;
+    private String createdAtStr;
+    private String updatedAtStr;
 }

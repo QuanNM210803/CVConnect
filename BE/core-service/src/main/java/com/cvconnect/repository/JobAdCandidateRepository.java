@@ -239,7 +239,7 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
     @Query("""
         select jac.id as id, jac.applyDate as applyDate, jac.onboardDate as onboardDate, jac.candidateStatus as candidateStatus,
                ja.id as jobAdId, ja.title as title, ja.hrContactId as hrContactId,
-               cia.id as candidateInfoId, cia.fullName as fullName, cia.email as email, cia.phone as phone,
+               cia.id as candidateInfoId, cia.fullName as fullName, cia.email as email, cia.phone as phone, cia.candidateId as candidateId,
                l.id as levelId, l.name as levelName
         from JobAdCandidate as jac
         join JobAd as ja on ja.id = jac.jobAdId

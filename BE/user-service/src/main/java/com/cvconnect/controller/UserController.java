@@ -5,6 +5,7 @@ import com.cvconnect.dto.user.UpdatePasswordRequest;
 import com.cvconnect.dto.user.UserDto;
 import com.cvconnect.dto.user.UserFilterRequest;
 import com.cvconnect.dto.user.UserUpdateRequest;
+import com.cvconnect.enums.TemplateExport;
 import com.cvconnect.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -15,6 +16,7 @@ import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.LocalizationUtils;
 import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -106,5 +108,42 @@ public class UserController {
     @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW', 'USER_GROUP:VIEW')")
     public ResponseEntity<Response<FilterResponse<UserDto>>> findNotOrgMember(@Valid @ModelAttribute UserFilterRequest request) {
         return ResponseUtils.success(userService.findNotOrgMember(request));
+    }
+
+    @GetMapping("/filter")
+    @Operation(summary = "Filter users")
+    @PreAuthorize("hasAnyAuthority('USER:VIEW', 'SYSTEM_ADMIN')")
+    public ResponseEntity<Response<FilterResponse<UserDto>>> filter(@Valid @ModelAttribute UserFilterRequest request) {
+        return ResponseUtils.success(userService.filter(request));
+    }
+
+    @GetMapping("/user-detail-for-system-admin/{userId}")
+    @Operation(summary = "Get user detail for system admin by user ID")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'USER:VIEW')")
+    public ResponseEntity<Response<UserDto>> getUserDetailForSystemAdmin(@PathVariable Long userId) {
+        return ResponseUtils.success(userService.userDetailForSystemAdmin(userId));
+    }
+
+    @PutMapping("/assign-role-system-admin/{userId}")
+    @Operation(summary = "Assign admin system role to user")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'USER:UPDATE')")
+    public ResponseEntity<Response<Void>> assignAdminSystemRole(@PathVariable Long userId) {
+        userService.assignAdminSystemRole(userId);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @PutMapping("/retrieve-role-system-admin/{userId}")
+    @Operation(summary = "Retrieve admin system role from user")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'USER:UPDATE')")
+    public ResponseEntity<Response<Void>> retrieveAdminSystemRole(@PathVariable Long userId) {
+        userService.retrieveAdminSystemRole(userId);
+        return ResponseUtils.success(null, localizationUtils.getLocalizedMessage(MessageConstants.UPDATE_SUCCESSFULLY));
+    }
+
+    @GetMapping("/filter/export")
+    @Operation(summary = "Export filtered users")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN', 'USER:EXPORT')")
+    public ResponseEntity<InputStreamResource> exportUser(@Valid @ModelAttribute UserFilterRequest request) {
+        return ResponseUtils.downloadFile(TemplateExport.USER_EXPORT_TEMPLATE.getFileName(), userService.exportUser(request));
     }
 }

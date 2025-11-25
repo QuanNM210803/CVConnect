@@ -6,6 +6,7 @@ import com.cvconnect.dto.user.UserDto;
 import com.cvconnect.dto.user.UserFilterRequest;
 import com.cvconnect.dto.user.UserUpdateRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -30,4 +31,9 @@ public interface UserService {
     List<RoleDto> getMyRoles();
     FilterResponse<UserDto> findNotOrgMember(UserFilterRequest request);
     Map<Long, UserDto> getByIds(List<Long> userIds);
+    FilterResponse<UserDto> filter(UserFilterRequest request);
+    UserDto userDetailForSystemAdmin(Long userId);
+    void assignAdminSystemRole(Long userId);
+    void retrieveAdminSystemRole(Long userId);
+    InputStreamResource exportUser(UserFilterRequest filter);
 }

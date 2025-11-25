@@ -99,4 +99,9 @@ public class RoleUserServiceImpl implements RoleUserService {
     public void deleteByUserIdAndRoleIds(Long userId, List<Long> roleIds) {
         roleUserRepository.deleteByUserIdAndRoleIds(userId, roleIds);
     }
+
+    @Override
+    public boolean existsUserActiveByRoleId(Long roleId) {
+        return roleUserRepository.existsUserActiveByRoleId(roleId);
+    }
 }

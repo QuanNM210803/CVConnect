@@ -32,6 +32,7 @@ public interface JobAdCandidateProjection extends BaseRepositoryDto {
     String getFullName();
     String getEmail();
     String getPhone();
+    Long getCandidateId();
     Long getLevelId();
     String getLevelName();
     String getTitle();
