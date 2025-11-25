@@ -124,4 +124,11 @@ public class JobAdCandidateController {
     public ResponseEntity<Response<FilterResponse<JobAdCandidateDto>>> getListOfOnboardedCandidates(@Valid @ModelAttribute CandidateOnboardFilterRequest request) {
         return ResponseUtils.success(jobAdCandidateService.getListOfOnboardedCandidates(request));
     }
+
+    @GetMapping("/internal/get-job-ad-candidate-data/{jobAdId}/{candidateId}")
+    @InternalRequest
+    @Operation(summary = "Get job ad candidate data for internal use")
+    public ResponseEntity<Response<JobAdCandidateDto>> getJobAdCandidateData(@PathVariable Long jobAdId, @PathVariable Long candidateId) {
+        return ResponseUtils.success(jobAdCandidateService.getJobAdCandidateData(jobAdId, candidateId));
+    }
 }

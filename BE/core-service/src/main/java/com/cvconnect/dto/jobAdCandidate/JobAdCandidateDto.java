@@ -51,4 +51,6 @@ public class JobAdCandidateDto extends BaseDto<Instant> {
     private boolean hasMessageUnread;
     private ConversationDto conversation;
     private LevelDto level;
+    private String jobAdTitle;
+    private String fullName;
 }

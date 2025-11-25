@@ -5,10 +5,7 @@ import com.cvconnect.collection.Conversation;
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.config.socket.SocketHandler;
 import com.cvconnect.constant.Constants;
-import com.cvconnect.dto.ChatMessageFilter;
-import com.cvconnect.dto.ChatMessageRequest;
-import com.cvconnect.dto.ConversationDto;
-import com.cvconnect.dto.ConversationRequest;
+import com.cvconnect.dto.*;
 import com.cvconnect.dto.internal.request.MyConversationWithFilter;
 import com.cvconnect.enums.NotifyErrorCode;
 import com.cvconnect.enums.RoomSocketType;
@@ -34,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -213,10 +211,17 @@ public class ConversationServiceImpl implements ConversationService {
         conversationRepository.save(conversation);
 
         // socket
+        DataJobAdCandidate dataJobAdCandidate = restTemplateClient.getJobAdCandidateData(request.getJobAdId(), request.getCandidateId());
+        Map<String, Object> params = new HashMap<>();
+        params.put("newMessage", chatMessage);
+        params.put("jobAdId", request.getJobAdId());
+        params.put("title", dataJobAdCandidate.getJobAdTitle());
+        params.put("candidateId", request.getCandidateId());
+        params.put("fullName", dataJobAdCandidate.getFullName());
         for(Long participantId : conversation.getParticipantIds()) {
             if(!participantId.equals(userId)) {
                 socketHandler.sendEventWithRoom(
-                        chatMessage,
+                        params,
                         Constants.SocketTopic.NEW_MESSAGE,
                         RoomSocketType.USER.getPrefix() + participantId
                 );

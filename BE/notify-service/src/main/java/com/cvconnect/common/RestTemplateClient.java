@@ -1,5 +1,6 @@
 package com.cvconnect.common;
 
+import com.cvconnect.dto.DataJobAdCandidate;
 import com.cvconnect.dto.internal.request.DataReplacePlaceholder;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.service.RestTemplateService;
@@ -53,6 +54,15 @@ public class RestTemplateClient {
                 SERVER_CORE_SERVICE + "/job-ad-candidate/internal/validate-create-conversation",
                 new ParameterizedTypeReference<Response<Long>>() {},
                 body
+        );
+        return response.getData();
+    }
+
+    public DataJobAdCandidate getJobAdCandidateData(Long jobAdId, Long candidateId){
+        Response<DataJobAdCandidate> response = restTemplateService.getMethodRestTemplate(
+                SERVER_CORE_SERVICE + "/job-ad-candidate/internal/get-job-ad-candidate-data/{jobAdId}/{candidateId}",
+                new ParameterizedTypeReference<Response<DataJobAdCandidate>>() {},
+                jobAdId, candidateId
         );
         return response.getData();
     }

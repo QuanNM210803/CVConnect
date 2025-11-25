@@ -963,7 +963,6 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         List<String> role = WebUtils.getCurrentRole();
         if(!role.contains(Constants.RoleCode.ORG_ADMIN)){
             participantId = WebUtils.getCurrentUserId();
-            request.setHrContactId(null);
         }
         if (request.getOnboardDateEnd() != null) {
             request.setOnboardDateEnd(DateUtils.endOfDay(request.getOnboardDateEnd(), CommonConstants.ZONE.UTC));
@@ -1005,6 +1004,15 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 .collect(Collectors.toList());
 
         return PageUtils.toFilterResponse(page, data);
+    }
+
+    @Override
+    public JobAdCandidateDto getJobAdCandidateData(Long jobAdId, Long candidateId) {
+        JobAdCandidateProjection jobAdCandidate = jobAdCandidateRepository.getJobAdCandidateByJobAdIdAndCandidateId(jobAdId, candidateId);
+        return JobAdCandidateDto.builder()
+                .jobAdTitle(jobAdCandidate.getJobAdTitle())
+                .fullName(jobAdCandidate.getFullName())
+                .build();
     }
 
     private void validateApply(ApplyRequest request, MultipartFile cvFile) {
