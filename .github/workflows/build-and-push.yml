@@ -23,7 +23,7 @@ jobs:
       DB_POSTGRES_HOST: postgres-cvconnect
       DB_MYSQL_HOST: mysql-cvconnect
       COLLECTION_HOST: mongodb-cvconnect
-      COLLECTION_PORT: 27018
+      COLLECTION_PORT: 27017
 
     steps:
       - name: Checkout code
