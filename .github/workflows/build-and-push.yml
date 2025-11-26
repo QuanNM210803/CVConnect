@@ -40,7 +40,10 @@ jobs:
 
       - name: Create Maven settings.xml
         run: |
-          echo "${{ secrets.MAVEN_SETTINGS_XML }}" > $HOME/.m2/settings.xml
+          mkdir -p settings
+          cat << 'EOF' > settings/settings.xml
+          ${{ secrets.MAVEN_SETTINGS_XML }}
+          EOF
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
