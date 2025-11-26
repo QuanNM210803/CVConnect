@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - setup-deploy
+  pull_request:
+    branches:
+      - setup-deploy
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -18,7 +21,12 @@ jobs:
       PORT_CORE_SERVICE: 8082
       HOST_SOCKET: notify-service-cvconnect
       PORT_SOCKET: 9090
-      DB_CORE_SERVICE_HOST: postgres-cvconnect
+      HOST_REDIS: redis-cvconnect
+      PORT_REDIS: 6379
+      DB_POSTGRES_HOST: postgres-cvconnect
+      DB_MYSQL_HOST: mysql-cvconnect
+      COLLECTION_HOST: mongodb-cvconnect
+      COLLECTION_PORT: 27018
 
     steps:
       - name: Checkout code
@@ -57,7 +65,7 @@ jobs:
           docker build \
             --build-arg KAFKA_HOST=${{ env.KAFKA_HOST }} \
             --build-arg KAFKA_PORT=${{ env.KAFKA_PORT }} \
-            --build-arg DB_HOST=${{ env.DB_CORE_SERVICE_HOST }} \
+            --build-arg DB_HOST=${{ env.DB_POSTGRES_HOST }} \
             --build-arg HOST_USER_SERVICE=${{ env.HOST_USER_SERVICE }} \
             --build-arg PORT_USER_SERVICE=${{ env.PORT_USER_SERVICE }} \
             --build-arg HOST_NOTIFY_SERVICE=${{ env.HOST_NOTIFY_SERVICE }} \
@@ -69,3 +77,52 @@ jobs:
             -t ${{ secrets.DOCKER_USERNAME }}/core-service:latest \
             -f core-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/core-service:latest
+          
+          docker build \
+              --build-arg DB_HOST=${{ env.DB_MYSQL_HOST }} \
+              --build-arg KAFKA_HOST=${{ env.KAFKA_HOST }} \
+              --build-arg KAFKA_PORT=${{ env.KAFKA_PORT }} \
+              --build-arg HOST_REDIS=${{ env.HOST_REDIS }} \
+              --build-arg PORT_REDIS=${{ env.PORT_REDIS }} \
+              --build-arg HOST_USER_SERVICE=${{ env.HOST_USER_SERVICE }} \
+              --build-arg PORT_USER_SERVICE=${{ env.PORT_USER_SERVICE }} \
+              --build-arg HOST_NOTIFY_SERVICE=${{ env.HOST_NOTIFY_SERVICE }} \
+              --build-arg PORT_NOTIFY_SERVICE=${{ env.PORT_NOTIFY_SERVICE }} \
+              --build-arg HOST_CORE_SERVICE=${{ env.HOST_CORE_SERVICE }} \
+              --build-arg PORT_CORE_SERVICE=${{ env.PORT_CORE_SERVICE }} \
+              --build-arg HOST_SOCKET=${{ env.HOST_SOCKET }} \
+              --build-arg PORT_SOCKET=${{ env.PORT_SOCKET }} \
+              -t ${{ secrets.DOCKER_USERNAME }}/user-service:latest \
+              -f user-service/Dockerfile .
+          docker push ${{ secrets.DOCKER_USERNAME }}/user-service:latest
+          
+          docker build \
+              --build-arg DB_HOST=${{ env.DB_MYSQL_HOST }} \
+              --build-arg COLLECTION_HOST=${{ env.COLLECTION_HOST }} \
+              --build-arg COLLECTION_PORT=${{ env.COLLECTION_PORT }} \
+              --build-arg KAFKA_HOST=${{ env.KAFKA_HOST }} \
+              --build-arg KAFKA_PORT=${{ env.KAFKA_PORT }} \
+              --build-arg HOST_USER_SERVICE=${{ env.HOST_USER_SERVICE }} \
+              --build-arg PORT_USER_SERVICE=${{ env.PORT_USER_SERVICE }} \
+              --build-arg HOST_NOTIFY_SERVICE=${{ env.HOST_NOTIFY_SERVICE }} \
+              --build-arg PORT_NOTIFY_SERVICE=${{ env.PORT_NOTIFY_SERVICE }} \
+              --build-arg HOST_CORE_SERVICE=${{ env.HOST_CORE_SERVICE }} \
+              --build-arg PORT_CORE_SERVICE=${{ env.PORT_CORE_SERVICE }} \
+              --build-arg HOST_SOCKET=${{ env.HOST_SOCKET }} \
+              --build-arg PORT_SOCKET=${{ env.PORT_SOCKET }} \
+              -t ${{ secrets.DOCKER_USERNAME }}/notify-service:latest \
+              -f notify-service/Dockerfile .
+          docker push ${{ secrets.DOCKER_USERNAME }}/notify-service:latest
+          
+          docker build \
+              --build-arg HOST_USER_SERVICE=${{ env.HOST_USER_SERVICE }} \
+              --build-arg PORT_USER_SERVICE=${{ env.PORT_USER_SERVICE }} \
+              --build-arg HOST_NOTIFY_SERVICE=${{ env.HOST_NOTIFY_SERVICE }} \
+              --build-arg PORT_NOTIFY_SERVICE=${{ env.PORT_NOTIFY_SERVICE }} \
+              --build-arg HOST_CORE_SERVICE=${{ env.HOST_CORE_SERVICE }} \
+              --build-arg PORT_CORE_SERVICE=${{ env.PORT_CORE_SERVICE }} \
+              --build-arg HOST_SOCKET=${{ env.HOST_SOCKET }} \
+              --build-arg PORT_SOCKET=${{ env.PORT_SOCKET }} \
+              -t ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest \
+              -f api-gateway/Dockerfile .
+          docker push ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest
