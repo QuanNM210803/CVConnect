@@ -30,7 +30,7 @@ spring:
       max-request-size: 50MB
 
 server:
-  port: 8082
+  port: ${PORT_CORE_SERVICE:8082}
   servlet:
     context-path: /core
   user_service: http://${HOST_USER_SERVICE:localhost}:${PORT_USER_SERVICE:8080}/user
