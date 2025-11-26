@@ -1,5 +1,5 @@
 -- CREATE DATABASE "cvconnect-core-service";
---
+-- \c cvconnect-core-service;
 -- CREATE TABLE IF NOT EXISTS attach_file (
 --     id BIGSERIAL PRIMARY KEY,
 --     original_filename VARCHAR(255) NOT NULL,
@@ -837,7 +837,6 @@
 -- alter table job_ad
 -- add column key_code_internal VARCHAR(100);
 
--- todo: da run o 2 PC
 -- CREATE EXTENSION IF NOT EXISTS pg_trgm;
 --
 -- CREATE OR REPLACE FUNCTION FUNC_FILTER_JOB_AD_OUTSIDE(

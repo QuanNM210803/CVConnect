@@ -15,7 +15,8 @@ public class CORSConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOriginPatterns(List.of(
                 "http://26.223.178.246:3000",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "http://vclab.tech"
         ));
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowedMethods(List.of("*"));
