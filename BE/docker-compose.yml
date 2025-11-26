@@ -82,4 +82,5 @@ volumes:
 
 networks:
   cvconnect-network:
+    name: cvconnect-network
     driver: bridge
