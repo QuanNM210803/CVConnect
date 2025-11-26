@@ -37,7 +37,7 @@ spring:
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
 server:
-  port: 8080
+  port: ${PORT_USER_SERVICE:8080}
   servlet:
     context-path: /user
   host_redis: ${HOST_REDIS:localhost}

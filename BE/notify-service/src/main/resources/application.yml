@@ -40,7 +40,7 @@ spring:
     cache: false
 
 server:
-  port: 8081
+  port: ${PORT_NOTIFY_SERVICE:8081}
   port-socket: 9090
   socket-context: /socket
   servlet:
