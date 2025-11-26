@@ -3,7 +3,7 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 COPY . .
-COPY settings/settings.xml /root/.m2/settings.xml
+COPY settings.xml /root/.m2/settings.xml
 RUN mvn clean package -pl core-service -am -DskipTests spring-boot:repackage
 
 FROM eclipse-temurin:17-jdk

@@ -40,8 +40,8 @@ jobs:
 
       - name: Create Maven settings.xml
         run: |
-          mkdir -p settings
-          cat << 'EOF' > settings/settings.xml
+          cd BE
+          cat << 'EOF' > settings.xml
           ${{ secrets.MAVEN_SETTINGS_XML }}
           EOF
 
