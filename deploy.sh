@@ -1,9 +1,9 @@
 #!/bin/bash
 DOCKER_USERNAME="nguyenminhquan2108"
 API_GATEWAY_IMAGE="api-gateway"
-CORE_SERVICE_IMAGE="core-service"
-USER_SERVICE_IMAGE="user-service"
-NOTIFY_SERVICE_IMAGE="notify-service"
+CORE_SERVICE_IMAGE="core-service-cvconnect"
+USER_SERVICE_IMAGE="user-service-cvconnect"
+NOTIFY_SERVICE_IMAGE="notify-service-cvconnect"
 
 echo "Pull Images"
 docker pull $DOCKER_USERNAME/$API_GATEWAY_IMAGE:latest
@@ -14,12 +14,12 @@ docker pull $DOCKER_USERNAME/$NOTIFY_SERVICE_IMAGE:latest
 echo "Stop and Remove Existing Containers"
 docker stop api-gateway || true
 docker rm api-gateway || true
-docker stop core-service || true
-docker rm core-service || true
-docker stop user-service || true
-docker rm user-service || true
-docker stop notify-service || true
-docker rm notify-service || true
+docker stop core-service-cvconnect || true
+docker rm core-service-cvconnect || true
+docker stop user-service-cvconnect || true
+docker rm user-service-cvconnect || true
+docker stop notify-service-cvconnect || true
+docker rm notify-service-cvconnect || true
 
 echo "Create Network if not exists"
 docker network inspect cvconnect-network >/dev/null 2>&1 || docker network create cvconnect-network
