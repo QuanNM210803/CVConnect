@@ -1,0 +1,30 @@
+package com.cvconnect.service;
+
+import com.cvconnect.dto.candidateInfoApply.CandidateInfoDetail;
+import com.cvconnect.dto.internal.response.ConversationDto;
+import com.cvconnect.dto.jobAdCandidate.*;
+import nmquan.commonlib.dto.response.FilterResponse;
+import nmquan.commonlib.dto.response.IDResponse;
+import org.springframework.web.multipart.MultipartFile;
+
+public interface JobAdCandidateService {
+    IDResponse<Long> apply(ApplyRequest request, MultipartFile cvFile);
+    FilterResponse<CandidateFilterResponse> filter(CandidateFilterRequest request);
+    CandidateInfoDetail candidateDetail(Long candidateInfoId);
+    boolean checkCandidateInfoInOrg(Long candidateInfoId, Long orgId, Long hrContactId);
+    void changeCandidateProcess(ChangeCandidateProcessRequest request);
+    void eliminateCandidate(EliminateCandidateRequest request);
+    void changeOnboardDate(ChangeOnboardDateRequest request);
+    void markOnboard(MarkOnboardRequest request);
+    Boolean existsByJobAdCandidateIdAndHrContactId(Long jobAdCandidateId, Long hrContactId);
+    Boolean existsByJobAdCandidateIdAndOrgId(Long jobAdCandidateId, Long orgId);
+    JobAdCandidateDto findById(Long jobAdCandidateId);
+    void sendEmailToCandidate(SendEmailToCandidateRequest request);
+    FilterResponse<JobAdCandidateDto> getJobAdsAppliedByCandidate(JobAdAppliedFilterRequest request);
+    Long validateAndGetHrContactId(Long jobAdId, Long candidateId);
+    FilterResponse<JobAdCandidateDto> jobAdCandidateConversation(JobAdAppliedFilterRequest request);
+    FilterResponse<JobAdCandidateDto> jobAdCandidateConversationForOrg(MyConversationWithFilter request);
+    FilterResponse<JobAdCandidateDto> getListOfOnboardedCandidates(CandidateOnboardFilterRequest request);
+    JobAdCandidateDto getJobAdCandidateData(Long jobAdId, Long candidateId);
+
+}

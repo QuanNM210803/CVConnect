@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirm Your Organization Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .logo img {
+      max-width: 250px;
+    }
+    h2 {
+      text-align: center;
+      color: #2E2E2E;
+    }
+    p {
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 14px 25px;
+      margin: 25px auto;
+      background: #990011;
+      color: #FCF6F5 !important;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+    .btn:hover {
+      background: #c90a1f;
+      cursor: pointer;
+    }
+    .btn-wrapper {
+      text-align: center;
+    }
+    .footer {
+      margin-top: 40px;
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+    }
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container { padding: 20px; }
+      .btn {
+        display: block;
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Logo -->
+    <div class="logo">
+      <img src="https://res.cloudinary.com/daygzzzwz/image/upload/v1756709808/cv-connect/logo-horizontal_dsha21.png" alt="Organization Logo">
+    </div>
+
+    <!-- Greeting -->
+    <h2>Welcome, <span th:text="${orgName}">Your Organization</span>!</h2>
+    <p>Thank you for registering your organization with <strong>CVConnect</strong> 🎉</p>
+    <p>Your registration has been received successfully. To complete the process and activate your organization account, please verify your email by clicking the button below:</p>
+
+    <!-- Button -->
+    <div class="btn-wrapper">
+      <a th:href="${verifyUrl}" class="btn">Verify organization Email</a>
+    </div>
+
+    <p>If you did not initiate this registration, please ignore this email.</p>
+
+    <!-- Footer -->
+    <div class="footer">
+      &copy; <span th:text="${year}">2025</span> CVConnect. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+spring:
+  application:
+    name: notify-service
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/cvconnect-notify-service
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+  data:
+    mongodb:
+      host: ${COLLECTION_HOST:localhost}
+      port: ${COLLECTION_PORT:27017}
+      database: cvconnect-notify-service
+      username: root
+      password: root
+      authentication-database: admin
+  kafka:
+    producer:
+      bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 3
+      acks: all
+      properties:
+        retry.backoff.ms: 2000
+    consumer:
+      bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9094}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      group-id: notify-service
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+
+server:
+  port: 8081
+  port-socket: 9090
+  socket-context: /socket
+  servlet:
+    context-path: /notify
+  user_service: http://${HOST_USER_SERVICE:localhost}:${PORT_USER_SERVICE:8080}/user
+  notify_service: http://${HOST_NOTIFY_SERVICE:localhost}:${PORT_NOTIFY_SERVICE:8081}/notify
+  core_service: http://${HOST_CORE_SERVICE:localhost}:${PORT_CORE_SERVICE:8082}/core
+  email-admin: nnmhqn2003@gmail.com
+
+logging:
+  level:
+    org:
+      springframework:
+        security: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %clr(%-5level) [%clr(%-15.15t){magenta}] %clr(%-40.40logger{36}){cyan} : %msg%n"
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+jwt:
+  expiration: 86400 # 1 day in seconds
+  secret-key: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
+  refresh-expiration: 604800 # 7 days in seconds
+  secret-internal: LmJHf7e5q3k8nPz9u2y4rXw6vT1sQ0aC3eFhJgKpR0tY=
+
+frontend:
+  url: http://localhost:3000
+
+open-api:
+  url-gateway-localhost: http://localhost:8888/api/v1${server.servlet.context-path}
+  url-gateway-radmin: http://26.9.175.39:8888/api/v1${server.servlet.context-path}
+  url-localhost: http://localhost:${server.port}${server.servlet.context-path}
+  url-radmin: http://26.9.175.39:${server.port}${server.servlet.context-path}
+
+redis:
+  token-key: token
+kafka:
+  topic:
+    send-email: send-email-topic
