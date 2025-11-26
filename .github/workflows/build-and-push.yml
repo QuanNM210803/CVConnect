@@ -2,10 +2,10 @@ name: build-and-push.yml
 on:
   push:
     branches:
-      - setup-deploy
+      - master
   pull_request:
     branches:
-      - setup-deploy
+      - master
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -14,11 +14,11 @@ jobs:
       KAFKA_HOST: kafka-cvconnect
       KAFKA_PORT: 9092
       HOST_USER_SERVICE: user-service-cvconnect
-      PORT_USER_SERVICE: 8080
+      PORT_USER_SERVICE: 8180
       HOST_NOTIFY_SERVICE: notify-service-cvconnect
-      PORT_NOTIFY_SERVICE: 8081
+      PORT_NOTIFY_SERVICE: 8181
       HOST_CORE_SERVICE: core-service-cvconnect
-      PORT_CORE_SERVICE: 8082
+      PORT_CORE_SERVICE: 8182
       HOST_SOCKET: notify-service-cvconnect
       PORT_SOCKET: 9090
       HOST_REDIS: redis-cvconnect
