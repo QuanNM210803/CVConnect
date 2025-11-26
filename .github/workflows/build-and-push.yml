@@ -3,14 +3,8 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    types:
-      - closed
-    branches:
-      - master
 jobs:
   build-and-push:
-    if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     env:
