@@ -16,6 +16,8 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    networks:
+      - cvconnect-network
   mysql:
     image: mysql:8.0
     container_name: mysql-cvconnect
@@ -27,7 +29,8 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./scripts/mysql.sql:/docker-entrypoint-initdb.d/mysql.sql:ro
+    networks:
+      - cvconnect-network
 
   redis:
     image: redis:7
@@ -38,6 +41,8 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - cvconnect-network
 
   mongodb:
     image: mongo:6
@@ -48,9 +53,11 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - cvconnect-network
 
   postgres:
     image: postgres:14
@@ -64,112 +71,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/postgres.sql:/docker-entrypoint-initdb.d/postgres.sql:ro
-
-  api-gateway:
-    build:
-      context: .
-      dockerfile: api-gateway/Dockerfile
-    container_name: api-gateway
-    ports:
-      - "8888:8888"
-    environment:
-      - HOST_USER_SERVICE=user-service-cvconnect
-      - PORT_USER_SERVICE=8080
-      - HOST_NOTIFY_SERVICE=notify-service-cvconnect
-      - PORT_NOTIFY_SERVICE=8081
-      - HOST_CORE_SERVICE=core-service-cvconnect
-      - PORT_CORE_SERVICE=8082
-      - HOST_SOCKET=notify-service-cvconnect
-      - PORT_SOCKET=9090
-    depends_on:
-      - kafka
-      - mysql
-      - postgres
-      - mongodb
-      - redis
-
-  user-service:
-    build:
-      context: .
-      dockerfile: user-service/Dockerfile
-    container_name: user-service-cvconnect
-    ports:
-      - "8080:8080"
-    environment:
-      - DB_HOST=mysql-cvconnect
-      - KAFKA_HOST=kafka-cvconnect
-      - KAFKA_PORT=9092
-      - HOST_REDIS=redis-cvconnect
-      - PORT_REDIS=6379
-      - HOST_USER_SERVICE=user-service-cvconnect
-      - PORT_USER_SERVICE=8080
-      - HOST_NOTIFY_SERVICE=notify-service-cvconnect
-      - PORT_NOTIFY_SERVICE=8081
-      - HOST_CORE_SERVICE=core-service-cvconnect
-      - PORT_CORE_SERVICE=8082
-      - HOST_SOCKET=notify-service-cvconnect
-      - PORT_SOCKET=9090
-    depends_on:
-      - kafka
-      - mysql
-      - postgres
-      - mongodb
-      - redis
-
-  notify-service:
-    build:
-      context: .
-      dockerfile: notify-service/Dockerfile
-    container_name: notify-service-cvconnect
-    ports:
-      - "8081:8081"
-    environment:
-      - DB_HOST=mysql-cvconnect
-      - COLLECTION_HOST=mongodb-cvconnect
-      - COLLECTION_PORT=27017
-      - KAFKA_HOST=kafka-cvconnect
-      - KAFKA_PORT=9092
-      - HOST_USER_SERVICE=user-service-cvconnect
-      - PORT_USER_SERVICE=8080
-      - HOST_NOTIFY_SERVICE=notify-service-cvconnect
-      - PORT_NOTIFY_SERVICE=8081
-      - HOST_CORE_SERVICE=core-service-cvconnect
-      - PORT_CORE_SERVICE=8082
-      - HOST_SOCKET=notify-service-cvconnect
-      - PORT_SOCKET=9090
-    depends_on:
-      - kafka
-      - mysql
-      - postgres
-      - mongodb
-      - redis
-
-  core-service:
-    build:
-      context: .
-      dockerfile: core-service/Dockerfile
-    container_name: core-service-cvconnect
-    ports:
-      - "8082:8082"
-    environment:
-      - DB_HOST=postgres-cvconnect
-      - KAFKA_HOST=kafka-cvconnect
-      - KAFKA_PORT=9092
-      - HOST_USER_SERVICE=user-service-cvconnect
-      - PORT_USER_SERVICE=8080
-      - HOST_NOTIFY_SERVICE=notify-service-cvconnect
-      - PORT_NOTIFY_SERVICE=8081
-      - HOST_CORE_SERVICE=core-service-cvconnect
-      - PORT_CORE_SERVICE=8082
-      - HOST_SOCKET=notify-service-cvconnect
-      - PORT_SOCKET=9090
-    depends_on:
-      - kafka
-      - mysql
-      - postgres
-      - mongodb
-      - redis
+    networks:
+      - cvconnect-network
 
 volumes:
   mysql_data:
