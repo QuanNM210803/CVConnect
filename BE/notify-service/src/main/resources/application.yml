@@ -76,6 +76,8 @@ frontend:
 open-api:
   url-gateway-localhost: http://localhost:8888/api/v1${server.servlet.context-path}
   url-gateway-radmin: http://api.vclab.tech/api/v1${server.servlet.context-path}
+  url-localhost: http://localhost:${server.port}${server.servlet.context-path}
+  url-radmin: http://api.vclab.tech${server.servlet.context-path}
 
 redis:
   token-key: token
