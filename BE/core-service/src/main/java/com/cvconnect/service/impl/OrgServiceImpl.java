@@ -388,7 +388,7 @@ public class OrgServiceImpl implements OrgService {
             // address
             if(!ObjectUtils.isEmpty(orgDto.getAddresses())) {
                 String addressStr = orgDto.getAddresses().stream()
-                        .map(OrgAddressDto::getDetailAddress)
+                        .map(OrgAddressDto::getDisplayAddress)
                         .collect(Collectors.joining("; "));
                 orgDto.setAddressStr(addressStr);
             }
