@@ -4,12 +4,17 @@ import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
+import com.corundumstudio.socketio.annotation.OnEvent;
 import com.cvconnect.constant.Constants;
+import com.cvconnect.dto.ChatMessageRequest;
 import com.cvconnect.dto.SocketSessionDto;
 import com.cvconnect.enums.RoomSocketType;
+import com.cvconnect.service.ConversationService;
 import com.cvconnect.service.SocketSessionService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nmquan.commonlib.model.JwtUser;
@@ -20,6 +25,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -29,6 +36,8 @@ public class SocketHandler {
     private final SocketIOServer server;
 
     private final SocketSessionService socketSessionService;
+    private final ConversationService conversationService;
+    private final Validator validator;
 
     @Value("${jwt.secret-key}")
     private String SECRET_KEY;
@@ -83,5 +92,23 @@ public class SocketHandler {
         Object payloadCopy = ObjectMapperUtils.convertToObject(payload, Object.class);
         server.getRoomOperations(room).sendEvent(topic, payloadCopy);
     }
+
+    @OnEvent(Constants.SocketTopic.RECEIVE_MESSAGE)
+    public void receiveMessage(SocketIOClient client, ChatMessageRequest data) {
+        Set<ConstraintViolation<ChatMessageRequest>> violations = validator.validate(data);
+        if (!violations.isEmpty()) {
+            return;
+        }
+        String token = client.getHandshakeData().getSingleUrlParam("token");
+        JwtUser jwtUser = JwtUtils.validate(token, SECRET_KEY);
+        Map<String, Object> userInfo =  jwtUser.getUser();
+        Object id = userInfo != null ? userInfo.get("id") : null;
+        if(id == null) {
+            return;
+        }
+        Long userId = Long.valueOf(id.toString());
+        conversationService.newMessage(data, userId);
+    }
+
 }
 

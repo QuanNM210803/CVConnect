@@ -150,6 +150,8 @@
 #
 # insert into `cvconnect-user-service`.role_user(user_id, role_id, created_by)
 # values (1,1, 'admin');
+# insert into `cvconnect-user-service`.role_user(user_id, role_id, created_by)
+# values (1,2, 'admin');
 
 # insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, created_by) values
 #  (1, 'REPORT', 'Báo cáo', 'material-symbols:dashboard-2-outline', null, null, 1, 'admin')
@@ -370,19 +372,19 @@
 # alter table `cvconnect-user-service`.menus
 # drop column is_show;
 
-delete from `cvconnect-user-service`.menus
-where code = 'REPORT_ORG_CANDIDATE' or code = 'REPORT_ORG_JOB_AD' or code = 'REPORT_JOB_AD' or code = 'REPORT_CANDIDATE';
-update `cvconnect-user-service`.menus
-set code = 'DASHBOARD', label = 'Dashboard', url = '/system-admin/dashboard', for_member_type = 'MANAGEMENT'
-where code = 'REPORT';
-insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, for_member_type, created_by) values
-(28, 'DASHBOARD_ORG', 'Dashboard', 'material-symbols:dashboard-2-outline', '/org/dashboard', null, 10, 'ORGANIZATION', 'admin');
-delete from `cvconnect-user-service`.role_menu
-where menu_id = (select id from `cvconnect-user-service`.menus where code = 'DASHBOARD')
-and role_id in (select id from `cvconnect-user-service`.roles where member_type = 'ORGANIZATION');
-update `cvconnect-user-service`.menus
-set label = 'Doanh nghiệp'
-where code = 'ORG';
+# delete from `cvconnect-user-service`.menus
+# where code = 'REPORT_ORG_CANDIDATE' or code = 'REPORT_ORG_JOB_AD' or code = 'REPORT_JOB_AD' or code = 'REPORT_CANDIDATE';
+# update `cvconnect-user-service`.menus
+# set code = 'DASHBOARD', label = 'Dashboard', url = '/system-admin/dashboard', for_member_type = 'MANAGEMENT'
+# where code = 'REPORT';
+# insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, for_member_type, created_by) values
+# (28, 'DASHBOARD_ORG', 'Dashboard', 'material-symbols:dashboard-2-outline', '/org/dashboard', null, 10, 'ORGANIZATION', 'admin');
+# delete from `cvconnect-user-service`.role_menu
+# where menu_id = (select id from `cvconnect-user-service`.menus where code = 'DASHBOARD')
+# and role_id in (select id from `cvconnect-user-service`.roles where member_type = 'ORGANIZATION');
+# update `cvconnect-user-service`.menus
+# set label = 'Doanh nghiệp'
+# where code = 'ORG';
 
 #----------------------------------------------------------------------------------------------------------------------#
 
@@ -558,9 +560,6 @@ where code = 'ORG';
 # update `cvconnect-notify-service`.placeholders
 # set label = 'Ngày làm bài thi/phỏng vấn'
 # where code = '${examDate}';
-#
-# INSERT INTO `cvconnect-notify-service`.email_config (id, host, port, email, password, is_ssl, protocol, org_id, is_active, is_deleted, created_at, updated_at, created_by, updated_by)
-# VALUES (2, 'smtp-relay.brevo.com', 587, '784652002@smtp-brevo.com', '', 0, 'smtp', 4, 1, 0, '2025-08-31 15:04:40', null, 'admin', null);
 #
 # alter table `cvconnect-notify-service`.email_templates
 # modify column body TEXT NOT NULL;

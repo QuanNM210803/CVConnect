@@ -23,6 +23,7 @@ import nmquan.commonlib.utils.PageUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,7 @@ public class ConversationServiceImpl implements ConversationService {
     private RestTemplateClient restTemplateClient;
     @Autowired
     private MongoQueryService mongoQueryService;
+    @Lazy
     @Autowired
     private SocketHandler socketHandler;
 
@@ -190,8 +192,10 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public IDResponse<String> newMessage(ChatMessageRequest request) {
-        Long userId = WebUtils.getCurrentUserId();
+    public IDResponse<String> newMessage(ChatMessageRequest request, Long userId) {
+        if(userId == null) {
+            userId = WebUtils.getCurrentUserId();
+        }
         Conversation conversation = conversationRepository.findByJobAdIdAndCandidateId(request.getJobAdId(), request.getCandidateId());
         if(ObjectUtils.isEmpty(conversation) || !conversation.getParticipantIds().contains(userId)) {
             throw new AppException(CommonErrorCode.DATA_NOT_FOUND);

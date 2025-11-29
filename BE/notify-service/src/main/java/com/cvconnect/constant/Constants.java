@@ -16,6 +16,7 @@ public class Constants {
         public static final String UNREAD_NOTIFY = "unread_notify";
         public static final String NEW_CONVERSATION = "new_conversation";
         public static final String READ_ALL_MESSAGES = "read_all_messages";
+        public static final String RECEIVE_MESSAGE = "receive_message";
         public static final String NEW_MESSAGE = "new_message";
     }
 

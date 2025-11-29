@@ -25,9 +25,9 @@ echo "Create Network if not exists"
 docker network inspect cvconnect-network >/dev/null 2>&1 || docker network create cvconnect-network
 
 echo "Run New Containers"
-docker run -d --name $API_GATEWAY_IMAGE --network cvconnect-network -p 8888:8888 $DOCKER_USERNAME/$API_GATEWAY_IMAGE:latest
-docker run -d --name $USER_SERVICE_IMAGE --network cvconnect-network -p 8180:8180 $DOCKER_USERNAME/$USER_SERVICE_IMAGE:latest
-docker run -d --name $NOTIFY_SERVICE_IMAGE --network cvconnect-network -p 8181:8181 $DOCKER_USERNAME/$NOTIFY_SERVICE_IMAGE:latest
-docker run -d --name $CORE_SERVICE_IMAGE --network cvconnect-network -p 8182:8182 $DOCKER_USERNAME/$CORE_SERVICE_IMAGE:latest
+docker run -d --name $API_GATEWAY_IMAGE --network cvconnect-network --env-file /home/vclong2003/quannm32/config/cvconnect.env -p 8888:8888 $DOCKER_USERNAME/$API_GATEWAY_IMAGE:latest
+docker run -d --name $USER_SERVICE_IMAGE --network cvconnect-network --env-file /home/vclong2003/quannm32/config/cvconnect.env -p 8180:8180 $DOCKER_USERNAME/$USER_SERVICE_IMAGE:latest
+docker run -d --name $NOTIFY_SERVICE_IMAGE --network cvconnect-network --env-file /home/vclong2003/quannm32/config/cvconnect.env -p 8181:8181 $DOCKER_USERNAME/$NOTIFY_SERVICE_IMAGE:latest
+docker run -d --name $CORE_SERVICE_IMAGE --network cvconnect-network --env-file /home/vclong2003/quannm32/config/cvconnect.env -p 8182:8182 $DOCKER_USERNAME/$CORE_SERVICE_IMAGE:latest
 
 echo "Deployment Completed"

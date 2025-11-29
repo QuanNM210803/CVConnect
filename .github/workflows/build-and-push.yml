@@ -24,6 +24,7 @@ jobs:
       DB_MYSQL_HOST: mysql-cvconnect
       COLLECTION_HOST: mongodb-cvconnect
       COLLECTION_PORT: 27017
+      FRONTEND_URL: http://vclab.tech
 
     steps:
       - name: Checkout code
@@ -71,6 +72,7 @@ jobs:
             --build-arg PORT_CORE_SERVICE=${{ env.PORT_CORE_SERVICE }} \
             --build-arg HOST_SOCKET=${{ env.HOST_SOCKET }} \
             --build-arg PORT_SOCKET=${{ env.PORT_SOCKET }} \
+            --build-arg FRONTEND_URL=${{ env.FRONTEND_URL }} \
             -t ${{ secrets.DOCKER_USERNAME }}/${{ env.HOST_CORE_SERVICE }}:latest \
             -f core-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.HOST_CORE_SERVICE }}:latest
@@ -89,6 +91,7 @@ jobs:
               --build-arg PORT_CORE_SERVICE=${{ env.PORT_CORE_SERVICE }} \
               --build-arg HOST_SOCKET=${{ env.HOST_SOCKET }} \
               --build-arg PORT_SOCKET=${{ env.PORT_SOCKET }} \
+              --build-arg FRONTEND_URL=${{ env.FRONTEND_URL }} \
               -t ${{ secrets.DOCKER_USERNAME }}/${{ env.HOST_USER_SERVICE }}:latest \
               -f user-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.HOST_USER_SERVICE }}:latest
@@ -107,6 +110,7 @@ jobs:
               --build-arg PORT_CORE_SERVICE=${{ env.PORT_CORE_SERVICE }} \
               --build-arg HOST_SOCKET=${{ env.HOST_SOCKET }} \
               --build-arg PORT_SOCKET=${{ env.PORT_SOCKET }} \
+              --build-arg FRONTEND_URL=${{ env.FRONTEND_URL }} \
               -t ${{ secrets.DOCKER_USERNAME }}/${{ env.HOST_NOTIFY_SERVICE }}:latest \
               -f notify-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.HOST_NOTIFY_SERVICE }}:latest

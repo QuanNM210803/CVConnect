@@ -28,6 +28,8 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+  config:
+    import: optional:file:../.env
 
 server:
   port: ${PORT_CORE_SERVICE:8082}
@@ -59,7 +61,7 @@ jwt:
   secret-internal: LmJHf7e5q3k8nPz9u2y4rXw6vT1sQ0aC3eFhJgKpR0tY=
 
 frontend:
-  url: http://localhost:3000
+  url: ${FRONTEND_URL:http://localhost:3000}
 
 open-api:
   url-gateway-localhost: http://localhost:8888/api/v1${server.servlet.context-path}
@@ -74,6 +76,6 @@ kafka:
     send-email: send-email-topic
 
 cloudinary:
-  cloud-name: ${CLOUDINARY_CLOUD_NAME:daygzzzwz}
-  api-key: ${CLOUDINARY_API_KEY:921412528497573}
-  api-secret: ${CLOUDINARY_API_SECRET:0An0NPKxg-EMdd-Kd_lRKGQkVDw}
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}

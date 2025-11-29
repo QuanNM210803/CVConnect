@@ -19,5 +19,5 @@ public interface ConversationService {
     FilterResponse<ConversationDto> getMyConversationsWithFilter(MyConversationWithFilter filter);
     ConversationDto getChatMessages(ChatMessageFilter filter);
     void readAllMessages(ConversationRequest request);
-    IDResponse<String> newMessage(ChatMessageRequest request);
+    IDResponse<String> newMessage(ChatMessageRequest request, Long userId);
 }
