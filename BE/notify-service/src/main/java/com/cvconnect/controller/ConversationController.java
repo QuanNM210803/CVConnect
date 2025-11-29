@@ -87,7 +87,7 @@ public class ConversationController {
     @PostMapping("/new-message")
     @Operation(summary = "New message in conversation")
     public ResponseEntity<Response<IDResponse<String>>> newMessageInConversation(@Valid @RequestBody ChatMessageRequest request) {
-        return ResponseUtils.success(conversationService.newMessage(request));
+        return ResponseUtils.success(conversationService.newMessage(request, null));
     }
 
 }

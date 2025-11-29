@@ -32,6 +32,8 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       group-id: notify-service
+  config:
+    import: optional:file:../.env
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
@@ -71,7 +73,7 @@ jwt:
   secret-internal: LmJHf7e5q3k8nPz9u2y4rXw6vT1sQ0aC3eFhJgKpR0tY=
 
 frontend:
-  url: http://localhost:3000
+  url: ${FRONTEND_URL:http://localhost:3000}
 
 open-api:
   url-gateway-localhost: http://localhost:8888/api/v1${server.servlet.context-path}
