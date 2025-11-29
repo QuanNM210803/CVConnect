@@ -413,6 +413,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void retrieveAdminSystemRole(Long userId) {
+        Long currentUserId = WebUtils.getCurrentUserId();
         RoleDto roleSystemAdmin = roleService.getRoleByCode(Constants.RoleCode.SYSTEM_ADMIN);
         if(roleSystemAdmin == null) {
             throw new AppException(CommonErrorCode.ERROR);
@@ -424,6 +425,9 @@ public class UserServiceImpl implements UserService {
         RoleUserDto roleUserDto = roleUserService.findByUserIdAndRoleId(userId, roleSystemAdmin.getId());
         if(roleUserDto == null) {
             throw new AppException(UserErrorCode.USER_DOES_NOT_HAVE_ROLE);
+        }
+        if(userId.equals(currentUserId)) {
+            throw new AppException(UserErrorCode.CANNOT_REMOVE_OWN_SYSTEM_ADMIN_ROLE);
         }
         roleUserService.deleteByUserIdAndRoleIds(userId, List.of(roleUserDto.getId()));
 

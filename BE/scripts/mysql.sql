@@ -380,6 +380,9 @@ insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id
 delete from `cvconnect-user-service`.role_menu
 where menu_id = (select id from `cvconnect-user-service`.menus where code = 'DASHBOARD')
 and role_id in (select id from `cvconnect-user-service`.roles where member_type = 'ORGANIZATION');
+update `cvconnect-user-service`.menus
+set label = 'Doanh nghiệp'
+where code = 'ORG';
 
 #----------------------------------------------------------------------------------------------------------------------#
 

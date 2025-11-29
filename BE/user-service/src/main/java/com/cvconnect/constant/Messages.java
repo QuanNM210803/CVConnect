@@ -28,6 +28,7 @@ public class Messages {
     public static final String USER_ALREADY_HAS_ROLE = "user.already.has.role";
     public static final String USER_DOES_NOT_HAVE_ROLE = "user.does.not.have.role";
     public static final String LAST_SYSTEM_ADMIN_CANNOT_BE_REMOVED = "last.system.admin.cannot.be.removed";
+    public static final String CANNOT_REMOVE_OWN_SYSTEM_ADMIN_ROLE = "cannot.remove.own.system.admin.role";
 
     /*
      * Validation messages

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -83,6 +84,7 @@ public interface OrgMemberRepository extends JpaRepository<OrgMember, Long> {
     @Query("select om from OrgMember om where om.userId in :userIds and om.isActive = true")
     List<OrgMember> findByUserIdInAndIsActiveTrue(List<Long> userIds);
 
+    @Transactional
     @Modifying
     @Query("UPDATE OrgMember om SET om.isActive = :isActive WHERE om.orgId IN :orgIds")
     void updateAccountStatusByOrgIds(List<Long> orgIds, Boolean isActive);
@@ -96,6 +98,7 @@ public interface OrgMemberRepository extends JpaRepository<OrgMember, Long> {
     """)
     List<Long> findAccountAdminByOrgIds(List<Long> orgIds);
 
+    @Transactional
     @Modifying
     @Query("UPDATE OrgMember om SET om.isActive = :isActive WHERE om.userId IN :userIds")
     void updateAccountOrgAdminStatusByOrgIds(List<Long> userIds, Boolean isActive);
