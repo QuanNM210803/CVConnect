@@ -44,7 +44,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,8 +69,6 @@ public class OrgMemberServiceImpl implements OrgMemberService {
     private ServiceUtils serviceUtils;
     @Autowired
     private KafkaUtils kafkaUtils;
-    @Autowired
-    private LocalizationUtils localizationUtils;
     @Value("${frontend.url}")
     private String FRONTEND_URL;
 
@@ -401,9 +398,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
                 .map(OrgMemberDto::getUserId)
                 .toList();
         Map<Long, List<RoleDto>> userRoles = roleService.getRolesByUserIds(userIds);
-        orgMemberDtos.forEach(orgMemberDto -> {
-            orgMemberDto.setRoles(userRoles.get(orgMemberDto.getUserId()));
-        });
+        orgMemberDtos.forEach(orgMemberDto -> orgMemberDto.setRoles(userRoles.get(orgMemberDto.getUserId())));
 
         return PageUtils.toFilterResponse(orgMemberDtoPage, orgMemberDtos);
     }

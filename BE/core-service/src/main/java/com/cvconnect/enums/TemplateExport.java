@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum TemplateExport {
-    ORG_EXPORT_TEMPLATE("Danh sách doanh nghiệp.xlsx", "org-export-template.xlsx")
+    ORG_EXPORT_TEMPLATE("Danh sách doanh nghiệp.xlsx", "export/org-export-template.xlsx")
     ;
 
     private final String fileName;

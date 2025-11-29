@@ -370,6 +370,20 @@
 # alter table `cvconnect-user-service`.menus
 # drop column is_show;
 
+delete from `cvconnect-user-service`.menus
+where code = 'REPORT_ORG_CANDIDATE' or code = 'REPORT_ORG_JOB_AD' or code = 'REPORT_JOB_AD' or code = 'REPORT_CANDIDATE';
+update `cvconnect-user-service`.menus
+set code = 'DASHBOARD', label = 'Dashboard', url = '/system-admin/dashboard', for_member_type = 'MANAGEMENT'
+where code = 'REPORT';
+insert into `cvconnect-user-service`.menus(id, code, label, icon, url, parent_id, sort_order, for_member_type, created_by) values
+(28, 'DASHBOARD_ORG', 'Dashboard', 'material-symbols:dashboard-2-outline', '/org/dashboard', null, 10, 'ORGANIZATION', 'admin');
+delete from `cvconnect-user-service`.role_menu
+where menu_id = (select id from `cvconnect-user-service`.menus where code = 'DASHBOARD')
+and role_id in (select id from `cvconnect-user-service`.roles where member_type = 'ORGANIZATION');
+update `cvconnect-user-service`.menus
+set label = 'Doanh nghiệp'
+where code = 'ORG';
+
 #----------------------------------------------------------------------------------------------------------------------#
 
 # create database if not exists `cvconnect-notify-service`;
