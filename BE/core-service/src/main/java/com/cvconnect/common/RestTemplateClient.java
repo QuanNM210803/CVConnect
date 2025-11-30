@@ -1,5 +1,6 @@
 package com.cvconnect.common;
 
+import com.cvconnect.dto.dashboard.admin.DashboardFilter;
 import com.cvconnect.dto.internal.response.ConversationDto;
 import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
@@ -132,6 +133,15 @@ public class RestTemplateClient {
                 new ParameterizedTypeReference<Response<Void>>() {},
                 request
         );
+    }
+
+    public Long numberOfNewCandidate(DashboardFilter filter){
+        Response<Long> response =  restTemplateService.postMethodRestTemplate(
+                SERVER_USER_SERVICE + "/candidate/internal/number-of-new-candidate",
+                new ParameterizedTypeReference<Response<Long>>() {},
+                filter
+        );
+        return response.getData();
     }
 
 }

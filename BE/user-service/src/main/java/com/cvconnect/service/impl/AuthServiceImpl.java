@@ -519,11 +519,7 @@ public class AuthServiceImpl implements AuthService {
 
     private OrgMemberDto createOrgMemberForUser(Long userId, Long roleSystemAdminId, Long roleCandidateId){
         if(roleCandidateId != null){
-            RoleUserDto roleUserDtoCandidate = RoleUserDto.builder()
-                    .userId(userId)
-                    .roleId(roleCandidateId)
-                    .build();
-            roleUserService.createRoleUser(roleUserDtoCandidate);
+            this.createCandidateForUser(userId, roleCandidateId);
         }
 
         RoleUserDto roleUserDto = RoleUserDto.builder()

@@ -1048,6 +1048,10 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
 
     private JobAdDto validateJobAd(Long jobAdId) {
         JobAdDto jobAdDto = jobAdService.findById(jobAdId);
+        Long userOrgId = WebUtils.getCurrentOrgId();
+        if(jobAdDto.getOrgId().equals(userOrgId)){
+            throw new AppException(CoreErrorCode.CANNOT_APPLY_OWN_ORG_JOB_AD);
+        }
         if(ObjectUtils.isEmpty(jobAdDto)){
             throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
         }

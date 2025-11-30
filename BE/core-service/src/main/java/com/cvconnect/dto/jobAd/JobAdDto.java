@@ -1,6 +1,7 @@
 package com.cvconnect.dto.jobAd;
 
 import com.cvconnect.dto.internal.response.UserDto;
+import com.cvconnect.dto.org.OrgDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -70,4 +71,7 @@ public class JobAdDto extends BaseDto<Instant> {
     private String departmentName;
     private String departmentCode;
     private UserDto hrContact;
+    private OrgDto org;
+    private Long numberOfApplications;
+    private Long numberOfViews;
 }

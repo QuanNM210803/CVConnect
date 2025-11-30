@@ -36,4 +36,5 @@ public interface JobAdCandidateProjection extends BaseRepositoryDto {
     Long getLevelId();
     String getLevelName();
     String getTitle();
+    Long getNumOfApply();
 }
