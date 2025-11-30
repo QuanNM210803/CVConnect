@@ -360,7 +360,6 @@
 --
 -- INSERT INTO careers(code, name, created_by) VALUES
 -- -- Công nghệ thông tin tổng quát
--- ('IT_General', 'Công nghệ Thông tin', 'admin'),
 -- ('IT_Software', 'Kỹ sư phần mềm', 'admin'),
 --
 -- -- Lập trình theo mảng
