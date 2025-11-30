@@ -2,7 +2,7 @@ spring:
   application:
     name: notify-service
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:3306/cvconnect-notify-service
+    url: jdbc:mysql://${DB_MYSQL_HOST:localhost}:3306/cvconnect-notify-service
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
