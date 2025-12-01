@@ -11,14 +11,39 @@ import java.util.Objects;
 public class CookieUtils {
     private static final String NAME_COOKIE_REFRESH_TOKEN = "refreshToken";
 
+//    public static void setRefreshTokenCookie(String refreshToken, int JWT_REFRESHABLE_DURATION, HttpServletResponse httpServletResponse){
+//        ResponseCookie responseCookie = ResponseCookie
+//                .from(NAME_COOKIE_REFRESH_TOKEN, refreshToken)
+//                .secure(false)
+//                .httpOnly(true)
+//                .path("/")
+//                .maxAge(JWT_REFRESHABLE_DURATION)
+//                .sameSite("Lax")
+//                .build();
+//        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+//    }
+//
+//    public static void deleteRefreshTokenCookie(HttpServletResponse httpServletResponse){
+//        ResponseCookie responseCookie = ResponseCookie
+//                .from(NAME_COOKIE_REFRESH_TOKEN, null)
+//                .secure(false)
+//                .httpOnly(true)
+//                .path("/")
+//                .maxAge(0)
+//                .sameSite("Lax")
+//                .build();
+//        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+//    }
+
     public static void setRefreshTokenCookie(String refreshToken, int JWT_REFRESHABLE_DURATION, HttpServletResponse httpServletResponse){
         ResponseCookie responseCookie = ResponseCookie
                 .from(NAME_COOKIE_REFRESH_TOKEN, refreshToken)
-                .secure(false)
+                .secure(true)
                 .httpOnly(true)
                 .path("/")
+                .domain(".vclab.tech")
                 .maxAge(JWT_REFRESHABLE_DURATION)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
     }
@@ -26,11 +51,12 @@ public class CookieUtils {
     public static void deleteRefreshTokenCookie(HttpServletResponse httpServletResponse){
         ResponseCookie responseCookie = ResponseCookie
                 .from(NAME_COOKIE_REFRESH_TOKEN, null)
-                .secure(false)
+                .secure(true)
                 .httpOnly(true)
                 .path("/")
+                .domain(".vclab.tech")
                 .maxAge(0)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
     }
