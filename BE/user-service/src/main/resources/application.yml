@@ -40,6 +40,9 @@ server:
   port: ${PORT_USER_SERVICE:8080}
   servlet:
     context-path: /user
+    session:
+      cookie:
+        path: /
   host_redis: ${REDIS_HOST:localhost}
   port_redis: 6379
   email-admin : nnmhqn2003@gmail.com

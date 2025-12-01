@@ -1,12 +1,4 @@
 name: build-and-push.yml
-#          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_CORE_SERVICE }}:latest -f core-service/Dockerfile .
-#          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_CORE_SERVICE }}:latest
-#
-#          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_USER_SERVICE }}:latest -f user-service/Dockerfile .
-#          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_USER_SERVICE }}:latest
-#
-#          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_NOTIFY_SERVICE }}:latest -f notify-service/Dockerfile .
-#          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_NOTIFY_SERVICE }}:latest
 on:
   push:
     branches:
@@ -35,5 +27,14 @@ jobs:
       - name: Build & Push Docker Image
         run: |
           cd BE
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_CORE_SERVICE }}:latest -f core-service/Dockerfile .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_CORE_SERVICE }}:latest
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_USER_SERVICE }}:latest -f user-service/Dockerfile .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_USER_SERVICE }}:latest
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_NOTIFY_SERVICE }}:latest -f notify-service/Dockerfile .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_NOTIFY_SERVICE }}:latest
+          
           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_API_GATEWAY }}:latest -f api-gateway/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_API_GATEWAY }}:latest
