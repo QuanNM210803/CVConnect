@@ -379,7 +379,7 @@ public class UserServiceImpl implements UserService {
         OrgMemberDto orgMemberDto = orgMemberService.getOrgMemberForSystemAdmin(userId);
         userDto.setOrgMember(orgMemberDto);
 
-        return userDto;
+        return userDto.configResponse();
     }
 
     @Override
@@ -431,7 +431,7 @@ public class UserServiceImpl implements UserService {
         }
         roleUserService.deleteByUserIdAndRoleIds(userId, List.of(roleUserDto.getId()));
 
-        boolean checkRoleSystemAdminExists = roleUserService.existsUserActiveByRoleId(roleUserDto.getId());
+        boolean checkRoleSystemAdminExists = roleUserService.existsUserActiveByRoleId(roleUserDto.getRoleId());
         if(!checkRoleSystemAdminExists) {
             throw new AppException(UserErrorCode.LAST_SYSTEM_ADMIN_CANNOT_BE_REMOVED);
         }
