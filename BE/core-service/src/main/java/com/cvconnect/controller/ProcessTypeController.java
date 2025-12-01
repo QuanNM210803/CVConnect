@@ -41,7 +41,7 @@ public class ProcessTypeController {
 
     @GetMapping("/get-all")
     @Operation(summary = "Get all process type")
-    @PreAuthorize("hasAnyAuthority('PROCESS_TYPE:VIEW', 'ORG_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('PROCESS_TYPE:VIEW', 'ORGANIZATION')")
     public ResponseEntity<Response<List<ProcessTypeDto>>> getAllProcessType() {
         return ResponseUtils.success(processTypeService.getAllProcessType());
     }
