@@ -947,6 +947,7 @@ public class JobAdServiceImpl implements JobAdService {
         response.setDueDate(jobAd.getDueDate());
         response.setDueDateStr(this.convertDueDateToString(jobAd.getDueDate()));
         response.setQuantity(jobAd.getQuantity());
+        response.setJobAdStatus(jobAd.getJobAdStatus());
         if(jobAd.getSalaryFrom() != null && jobAd.getSalaryTo() != null){
             response.setSalaryStr(this.convertSalaryToString(jobAd.getSalaryFrom(), jobAd.getSalaryTo()));
         } else {
