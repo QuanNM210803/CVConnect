@@ -5,6 +5,7 @@ import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.service.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.Response;
 import nmquan.commonlib.utils.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,5 +78,26 @@ public class DashboardController {
     @Operation(summary = "Get job ad featured for system admin")
     public ResponseEntity<Response<List<JobAdDto>>> getJobAdFeatured(@Valid @ModelAttribute DashboardFilter filter) {
         return ResponseUtils.success(dashboardService.getJobAdFeatured(filter));
+    }
+
+    @GetMapping("/system-admin/new-org-by-time")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN')")
+    @Operation(summary = "Get new organization by time for system admin")
+    public ResponseEntity<Response<List<DashboardNewOrgByTimeDto>>> getNewOrgByTime(@Valid @ModelAttribute DashboardFilter filter) {
+        return ResponseUtils.success(dashboardService.getNewOrgByTime(filter));
+    }
+
+    @GetMapping("/system-admin/staff-size")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN')")
+    @Operation(summary = "Get organization staff size for system admin")
+    public ResponseEntity<Response<List<DashboardOrgStaffSizeDto>>> getOrgStaffSize() {
+        return ResponseUtils.success(dashboardService.getOrgStaffSize());
+    }
+
+    @GetMapping("/system-admin/organization-featured")
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN')")
+    @Operation(summary = "Get organization featured for system admin")
+    public ResponseEntity<Response<FilterResponse<DashboardOrgFeaturedDto>>> getOrgFeatured(@Valid @ModelAttribute DashboardFilter filter) {
+        return ResponseUtils.success(dashboardService.getOrgFeatured(filter));
     }
 }

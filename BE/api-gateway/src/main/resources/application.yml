@@ -15,8 +15,6 @@ app:
 spring:
   application:
     name: api-gateway
-  config:
-    import: optional:file:../.env
   cloud:
     gateway:
       routes:
@@ -42,6 +40,10 @@ spring:
           uri: ws://${server.host_socket}:${server.port_socket}
           predicates:
             - Path=/socket/**
+        - id: oauth-callback
+          uri: http://${server.host_user_service}:${server.port_user_service}
+          predicates:
+            - Path=${app.api-prefix}/user/login/oauth2/code/**
 
 springdoc:
   swagger-ui:

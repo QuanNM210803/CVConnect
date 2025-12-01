@@ -24,8 +24,6 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       group-id: user-service
-  config:
-    import: optional:file:../.env
   security:
     oauth2:
       client:
@@ -36,7 +34,7 @@ spring:
             scope:
               - email
               - profile
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "${BE_URL:http://localhost:8888}/api/v1${server.servlet.context-path}/login/oauth2/code/{registrationId}"
 
 server:
   port: ${PORT_USER_SERVICE:8080}
