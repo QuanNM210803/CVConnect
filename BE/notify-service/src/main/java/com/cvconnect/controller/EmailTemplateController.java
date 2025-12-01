@@ -38,7 +38,7 @@ public class EmailTemplateController {
 
     @GetMapping("/filter")
     @Operation(summary = "Filter Email Templates")
-    @PreAuthorize("hasAnyAuthority('EMAIL_TEMPLATE:VIEW')")
+    @PreAuthorize("hasAnyAuthority('EMAIL_TEMPLATE:VIEW', 'ORGANIZATION')")
     public ResponseEntity<Response<FilterResponse<EmailTemplateDto>>> filterEmailTemplates(@Valid @ModelAttribute EmailTemplateFilterRequest request) {
         return ResponseUtils.success(emailTemplateService.filter(request));
     }
