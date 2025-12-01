@@ -177,6 +177,9 @@ public class ConversationServiceImpl implements ConversationService {
         if(ObjectUtils.isEmpty(conversation) || !conversation.getParticipantIds().contains(userId)) {
             throw new AppException(CommonErrorCode.DATA_NOT_FOUND);
         }
+        if(ObjectUtils.isEmpty(conversation.getMessages())) {
+            return;
+        }
         conversationRepository.markAllMessagesAsRead(conversation.getId(), userId);
 
         // socket
@@ -195,8 +198,6 @@ public class ConversationServiceImpl implements ConversationService {
 
     @Override
     public IDResponse<String> newMessage(ChatMessageRequest request, Long userId) {
-        log.info("ChatMessageRequest: {}", request);
-        log.info("UserId: {}", userId);
         if(userId == null) {
             userId = WebUtils.getCurrentUserId();
         }
@@ -220,7 +221,6 @@ public class ConversationServiceImpl implements ConversationService {
 
         // socket
         DataJobAdCandidate dataJobAdCandidate = restTemplateClient.getJobAdCandidateData(request.getJobAdId(), request.getCandidateId());
-        log.info("dataJobAdCandidate: {}", dataJobAdCandidate);
         Map<String, Object> params = new HashMap<>();
         params.put("newMessage", chatMessage);
         params.put("jobAdId", request.getJobAdId());
