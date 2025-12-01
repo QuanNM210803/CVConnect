@@ -1,6 +1,7 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
+import com.cvconnect.dto.attachFile.AttachFileDto;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyProjection;
 import com.cvconnect.dto.career.CareerDto;
 import com.cvconnect.dto.dashboard.DateRange;
@@ -12,13 +13,18 @@ import com.cvconnect.dto.jobAdCandidate.JobAdCandidateProjection;
 import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.entity.JobAd;
+import com.cvconnect.entity.Organization;
 import com.cvconnect.enums.EliminateReasonEnum;
 import com.cvconnect.repository.DashboardRepository;
+import com.cvconnect.service.AttachFileService;
 import com.cvconnect.service.DashboardService;
 import nmquan.commonlib.constant.CommonConstants;
+import nmquan.commonlib.dto.response.FilterResponse;
+import nmquan.commonlib.utils.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -32,6 +38,8 @@ public class DashboardServiceImpl implements DashboardService {
     private DashboardRepository dashboardRepository;
     @Autowired
     private RestTemplateClient restTemplateClient;
+    @Autowired
+    private AttachFileService attachFileService;
 
     @Override
     public DashboardOverviewDto getSystemAdminDashboardOverview(DashboardFilter filter) {
@@ -217,6 +225,7 @@ public class DashboardServiceImpl implements DashboardService {
                                     .build())
                             .numberOfJobAds(numOfJobAds)
                             .avgSalaryStr(avgSalaryStr)
+                            .avgSalary(avgSalary)
                             .build();
                 }).toList();
     }
@@ -250,6 +259,84 @@ public class DashboardServiceImpl implements DashboardService {
                             .numberOfApplications(numberOfApplications)
                             .build();
                 }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DashboardNewOrgByTimeDto> getNewOrgByTime(DashboardFilter filter) {
+        Map<String, DateRange> dateRangeMap = splitByMonth(filter.getStartTime(), filter.getEndTime());
+        List<Organization> organizations = dashboardRepository.getNewOrgByTime(filter);
+
+        List<DashboardNewOrgByTimeDto> response = new ArrayList<>();
+        for(Map.Entry<String, DateRange> entry : dateRangeMap.entrySet()) {
+            String key = entry.getKey();
+            DateRange dateRange = entry.getValue();
+
+            long numberOfOrgs = 0L;
+            for(Organization org : organizations) {
+                if(!org.getCreatedAt().isBefore(dateRange.getStartTime()) &&
+                        !org.getCreatedAt().isAfter(dateRange.getEndTime())) {
+                    numberOfOrgs++;
+                }
+            }
+            response.add(DashboardNewOrgByTimeDto.builder()
+                    .label(key)
+                    .numberOfOrgs(numberOfOrgs)
+                    .build());
+        }
+        return response;
+    }
+
+    @Override
+    public List<DashboardOrgStaffSizeDto> getOrgStaffSize() {
+        List<Object[]> orgStaffSizeData = dashboardRepository.getOrgStaffSize();
+        if (ObjectUtils.isEmpty(orgStaffSizeData)) {
+            return Collections.emptyList();
+        }
+        return orgStaffSizeData.stream()
+                .map(p -> {
+                    String staffSize = (String) p[0];
+                    Long numberOfOrgs = (Long) p[1];
+                    return DashboardOrgStaffSizeDto.builder()
+                            .staffSize(staffSize)
+                            .numberOfOrgs(numberOfOrgs)
+                            .build();
+                }).toList();
+    }
+
+    @Override
+    public FilterResponse<DashboardOrgFeaturedDto> getOrgFeatured(DashboardFilter filter) {
+        filter.setPageIndex(0);
+        filter.setPageSize(10);
+        if (Objects.equals(filter.getSortBy(), CommonConstants.DEFAULT_SORT_BY) ||
+                Objects.equals(filter.getSortBy(), CommonConstants.FALLBACK_SORT_BY)) {
+            filter.setSortBy("numberOfJobAds");
+        }
+        Page<Object[]> orgFeaturedData = dashboardRepository.getOrgFeatured(filter, filter.getPageable());
+        List<DashboardOrgFeaturedDto> orgFeaturedDtos = orgFeaturedData.stream()
+                .map(p -> {
+                    Long orgId = ((Number) p[0]).longValue();
+                    String orgName = (String) p[1];
+                    Long orgLogoId = ((Number) p[2]).longValue();
+                    Long numberOfJobAds = ((Number) p[3]).longValue();
+                    Long numberOfApplications = ((Number) p[4]).longValue();
+                    Long numberOfOnboarded = ((Number) p[5]).longValue();
+                    List<AttachFileDto> attachFiles = attachFileService.getAttachFiles(List.of(orgLogoId));
+                    String orgLogo = null;
+                    if(!ObjectUtils.isEmpty(attachFiles)) {
+                        if(!ObjectUtils.isEmpty(attachFiles.get(0))) {
+                            orgLogo = attachFiles.get(0).getSecureUrl();
+                        }
+                    }
+                    return DashboardOrgFeaturedDto.builder()
+                            .orgId(orgId)
+                            .orgName(orgName)
+                            .orgLogo(orgLogo)
+                            .numberOfJobAds(numberOfJobAds)
+                            .numberOfApplications(numberOfApplications)
+                            .numberOfOnboarded(numberOfOnboarded)
+                            .build();
+                }).toList();
+        return PageUtils.toFilterResponse(orgFeaturedData, orgFeaturedDtos);
     }
 
     public Map<String, DateRange> splitByMonth(Instant startTime, Instant endTime) {

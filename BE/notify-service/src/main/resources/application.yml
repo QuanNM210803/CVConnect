@@ -32,8 +32,6 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       group-id: notify-service
-  config:
-    import: optional:file:../.env
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html

@@ -4,6 +4,7 @@ import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyProjection;
 import com.cvconnect.dto.dashboard.admin.DashboardFilter;
 import com.cvconnect.dto.jobAdCandidate.JobAdCandidateProjection;
 import com.cvconnect.entity.JobAd;
+import com.cvconnect.entity.Organization;
 import nmquan.commonlib.model.BaseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -137,4 +138,59 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
         group by ja.id, ja.title, ja.org_id, o.name, case when jas.view_count is null then 0 else jas.view_count end
     """, nativeQuery = true)
     Page<Object[]> getJobAdFeatured(DashboardFilter filter, Pageable pageable);
+
+    @Query("""
+            select distinct o from Organization o
+            where o.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+    """)
+    List<Organization> getNewOrgByTime(DashboardFilter filter);
+
+    @Query("""
+        select
+            case
+                when o.staffCountFrom is not null and o.staffCountTo is not null then concat(o.staffCountFrom, '-', o.staffCountTo)
+                when o.staffCountFrom is not null and o.staffCountTo is null then concat(o.staffCountFrom, '+')
+                when o.staffCountFrom is null and o.staffCountTo is not null then concat('Up to ', o.staffCountTo)
+                else 'N/A'
+            end as staffSize,
+            count(distinct o.id) as numberOfOrgs
+        from Organization o
+        group by
+            case
+                when o.staffCountFrom is not null and o.staffCountTo is not null then concat(o.staffCountFrom, '-', o.staffCountTo)
+                when o.staffCountFrom is not null and o.staffCountTo is null then concat(o.staffCountFrom, '+')
+                when o.staffCountFrom is null and o.staffCountTo is not null then concat('Up to ', o.staffCountTo)
+                else 'N/A'
+            end
+        order by numberOfOrgs desc
+    """)
+    List<Object[]> getOrgStaffSize();
+
+    @Query(value = """
+        select o.id as id, o.name as orgName, o.logoId as logoId,
+               count(distinct ja.id) as numberOfJobAds,
+               count(distinct jac.id) as numberOfApplications,
+               sum(
+                   case
+                       when jac.candidateStatus IN ('ONBOARDED', 'WAITING_ONBOARDING') then 1
+                       else 0
+                   end
+               ) as numberOfOnboarded
+        from Organization o
+        left join JobAd ja on ja.orgId = o.id
+        left join JobAdCandidate jac on jac.jobAdId = ja.id
+        where (coalesce(:#{#filter.orgId}, null) is null or o.id = :#{#filter.orgId})
+        and ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+        group by o.id, o.name, o.logoId
+    """,
+    countQuery = """
+        select distinct o.id as id
+        from Organization o
+        left join JobAd ja on ja.orgId = o.id
+        left join JobAdCandidate jac on jac.jobAdId = ja.id
+        where (coalesce(:#{#filter.orgId}, null) is null or o.id = :#{#filter.orgId})
+        and ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+        group by o.id, o.name, o.logoId
+    """)
+    Page<Object[]> getOrgFeatured(DashboardFilter filter, Pageable pageable);
 }
