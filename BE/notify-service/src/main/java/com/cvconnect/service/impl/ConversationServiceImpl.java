@@ -13,6 +13,7 @@ import com.cvconnect.repository.ConversationRepository;
 import com.cvconnect.service.ConversationService;
 import com.cvconnect.service.MongoQueryService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import nmquan.commonlib.dto.PageInfo;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.dto.response.IDResponse;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class ConversationServiceImpl implements ConversationService {
     @Autowired
@@ -193,6 +195,8 @@ public class ConversationServiceImpl implements ConversationService {
 
     @Override
     public IDResponse<String> newMessage(ChatMessageRequest request, Long userId) {
+        log.info("ChatMessageRequest: {}", request);
+        log.info("UserId: {}", userId);
         if(userId == null) {
             userId = WebUtils.getCurrentUserId();
         }
@@ -216,6 +220,7 @@ public class ConversationServiceImpl implements ConversationService {
 
         // socket
         DataJobAdCandidate dataJobAdCandidate = restTemplateClient.getJobAdCandidateData(request.getJobAdId(), request.getCandidateId());
+        log.info("dataJobAdCandidate: {}", dataJobAdCandidate);
         Map<String, Object> params = new HashMap<>();
         params.put("newMessage", chatMessage);
         params.put("jobAdId", request.getJobAdId());
