@@ -41,7 +41,7 @@ spring:
           predicates:
             - Path=/socket/**
         - id: oauth-callback
-          uri: http://${server.host_user_service}:${server.port_user_service}
+          uri: ${BE_URL:http://localhost:8080}
           predicates:
             - Path=${app.api-prefix}/user/login/oauth2/code/**
 
