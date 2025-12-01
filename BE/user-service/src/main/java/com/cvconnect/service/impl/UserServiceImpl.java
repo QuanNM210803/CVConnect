@@ -429,7 +429,7 @@ public class UserServiceImpl implements UserService {
         if(userId.equals(currentUserId)) {
             throw new AppException(UserErrorCode.CANNOT_REMOVE_OWN_SYSTEM_ADMIN_ROLE);
         }
-        roleUserService.deleteByUserIdAndRoleIds(userId, List.of(roleUserDto.getId()));
+        roleUserService.deleteByUserIdAndRoleIds(userId, List.of(roleUserDto.getRoleId()));
 
         boolean checkRoleSystemAdminExists = roleUserService.existsUserActiveByRoleId(roleUserDto.getRoleId());
         if(!checkRoleSystemAdminExists) {
