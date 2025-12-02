@@ -146,4 +146,10 @@ public class UserController {
     public ResponseEntity<InputStreamResource> exportUser(@Valid @ModelAttribute UserFilterRequest request) {
         return ResponseUtils.downloadFile(TemplateExport.USER_EXPORT_TEMPLATE.getFileName(), userService.exportUser(request));
     }
+
+    @GetMapping("/my-profiles")
+    @Operation(summary = "Get my profiles")
+    public ResponseEntity<Response<UserDto>> getMyProfiles() {
+        return ResponseUtils.success(userService.getMyProfiles());
+    }
 }

@@ -29,6 +29,8 @@ public class Messages {
     public static final String USER_DOES_NOT_HAVE_ROLE = "user.does.not.have.role";
     public static final String LAST_SYSTEM_ADMIN_CANNOT_BE_REMOVED = "last.system.admin.cannot.be.removed";
     public static final String CANNOT_REMOVE_OWN_SYSTEM_ADMIN_ROLE = "cannot.remove.own.system.admin.role";
+    public static final String USER_NOT_PHONE_NUMBER = "user.not.phone.number";
+    public static final String ORG_ADDRESS_AT_LEAST_ONE = "org.address.at.least.one";
 
     /*
      * Validation messages

@@ -14,4 +14,5 @@ public class DashboardFilter extends FilterRequest {
 
     // job-ad-featured
     private Long orgId;
+    private String orgName;
 }

@@ -71,6 +71,7 @@ public class Messages {
     public static final String JOB_AD_STATUS_CANNOT_REVERT = "job.ad.status.cannot.revert";
     public static final String IS_AUTO_SEND_EMAIL_REQUIRED = "is.auto.send.email.required";
     public static final String CANNOT_APPLY_OWN_ORG_JOB_AD = "cannot.apply.own.org.job.ad";
+    public static final String ORG_ADDRESS_AT_LEAST_ONE = "org.address.at.least.one";
 
     /*
     * Validation Messages

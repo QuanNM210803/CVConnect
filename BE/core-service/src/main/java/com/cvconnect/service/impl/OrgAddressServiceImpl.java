@@ -5,6 +5,7 @@ import com.cvconnect.dto.org.OrgAddressDto;
 import com.cvconnect.dto.org.OrgAddressProjection;
 import com.cvconnect.dto.org.OrgAddressRequest;
 import com.cvconnect.entity.OrganizationAddress;
+import com.cvconnect.enums.CoreErrorCode;
 import com.cvconnect.repository.OrgAddressRepository;
 import com.cvconnect.service.OrgAddressService;
 import nmquan.commonlib.exception.AppException;
@@ -116,6 +117,11 @@ public class OrgAddressServiceImpl implements OrgAddressService {
                     return orgAddress;
                 }).collect(Collectors.toList());
         orgAddressRepository.saveAll(addresses);
+
+        List<OrganizationAddress> orgAddress = orgAddressRepository.findByOrgId(orgId);
+        if(ObjectUtils.isEmpty(orgAddress)){
+            throw new AppException(CoreErrorCode.ORG_ADDRESS_AT_LEAST_ONE);
+        }
     }
 
     @Override
