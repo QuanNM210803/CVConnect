@@ -268,12 +268,16 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setAddress(request.getAddress());
         user.setDateOfBirth(request.getDateOfBirth());
-        user.setIsEmailVerified(false);
+        if(!user.getEmail().equals(request.getEmail())) {
+            user.setIsEmailVerified(false);
+        }
         userRepository.save(user);
 
         // send email require verification
-        UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
-        authService.sendRequestVerifyEmail(userDto);
+        if(!user.getEmail().equals(request.getEmail())) {
+            UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
+            authService.sendRequestVerifyEmail(userDto);
+        }
     }
 
     @Override
@@ -475,6 +479,23 @@ public class UserServiceImpl implements UserService {
         map.put("date", DateUtils.instantToString_HCM(Instant.now(), CommonConstants.DATE_TIME.DD_MM_YYYY_HH_MM));
         ByteArrayOutputStream bytes = ExportUtils.genXlsxFromMap(map, TemplateExport.USER_EXPORT_TEMPLATE.getPath());
         return ExportUtils.toInputStreamResource(bytes);
+    }
+
+    @Override
+    public UserDto getMyProfiles() {
+        Long userId = WebUtils.getCurrentUserId();
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
+        UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
+        List<RoleDto> roleDtos = roleService.getRoleByUserId(userId);
+        userDto.setRoles(roleDtos);
+        if(userDto.getAvatarId() != null){
+            AttachFileDto attachFileDto = restTemplateClient.getAttachFileById(userDto.getAvatarId());
+            userDto.setAvatarUrl(attachFileDto.getSecureUrl());
+        }
+        return userDto.configResponse();
     }
 
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {

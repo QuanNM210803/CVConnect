@@ -179,7 +179,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
         from Organization o
         left join JobAd ja on ja.orgId = o.id
         left join JobAdCandidate jac on jac.jobAdId = ja.id
-        where (coalesce(:#{#filter.orgId}, null) is null or o.id = :#{#filter.orgId})
+        where (:#{#filter.orgName} is null or lower(o.name) like lower(concat('%', :#{#filter.orgName}, '%')))
         and ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
         group by o.id, o.name, o.logoId
     """,
@@ -188,7 +188,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
         from Organization o
         left join JobAd ja on ja.orgId = o.id
         left join JobAdCandidate jac on jac.jobAdId = ja.id
-        where (coalesce(:#{#filter.orgId}, null) is null or o.id = :#{#filter.orgId})
+        where (:#{#filter.orgName} is null or lower(o.name) like lower(concat('%', :#{#filter.orgName}, '%')))
         and ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
         group by o.id, o.name, o.logoId
     """)

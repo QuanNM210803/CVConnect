@@ -36,6 +36,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -509,6 +510,9 @@ public class AuthServiceImpl implements AuthService {
         MultipartFile[] files = new MultipartFile[]{logo};
         if(coverPhoto != null) {
             files = new MultipartFile[]{logo, coverPhoto};
+        }
+        if(ObjectUtils.isEmpty(orgRequest.getAddresses())){
+            throw new AppException(UserErrorCode.ORG_ADDRESS_AT_LEAST_ONE);
         }
         ObjectAndFileRequest<OrganizationRequest> request = ObjectAndFileRequest.<OrganizationRequest>builder()
                 .data(orgRequest)

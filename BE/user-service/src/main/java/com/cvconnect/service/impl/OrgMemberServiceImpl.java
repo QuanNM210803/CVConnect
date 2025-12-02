@@ -268,9 +268,18 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         if(entity == null || !entity.getOrgId().equals(orgId)) {
             throw new AppException(UserErrorCode.USER_NOT_FOUND);
         }
+        UserDto user = userService.findById(request.getUserId());
+        if(user == null) {
+            throw new AppException(UserErrorCode.USER_NOT_FOUND);
+        }
 
         List<Long> roleIdsInReq = request.getRoleIds();
         List<RoleDto> roleDtos = roleService.getRoleByIds(roleIdsInReq);
+        boolean hasRoleHr = roleDtos.stream()
+                .anyMatch(roleDto -> Constants.RoleCode.HR.equals(roleDto.getCode()));
+        if(user.getPhoneNumber() == null && hasRoleHr) {
+            throw new AppException(UserErrorCode.USER_NOT_PHONE_NUMBER);
+        }
         boolean isValid = roleDtos.stream()
                 .allMatch(roleDto -> MemberType.ORGANIZATION.equals(roleDto.getMemberType()));
         if(!isValid || roleDtos.size() != roleIdsInReq.size()) {
