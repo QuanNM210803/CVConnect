@@ -265,7 +265,7 @@
 -- CREATE TABLE IF NOT EXISTS job_ad (
 --     id BIGSERIAL PRIMARY KEY,
 --
---     code VARCHAR(50) UNIQUE NOT NULL,
+--     code VARCHAR(50) NOT NULL,
 --     title VARCHAR(255) NOT NULL,
 --     org_id BIGINT NOT NULL,
 --     position_id BIGINT NOT NULL,
@@ -300,6 +300,8 @@
 --     FOREIGN KEY (position_level_id) REFERENCES position_level (id) ON DELETE CASCADE,
 --     FOREIGN KEY (work_location_id) REFERENCES organization_address (id) ON DELETE CASCADE
 -- );
+-- ALTER TABLE job_ad
+-- ADD CONSTRAINT job_ad_code_key UNIQUE (code, org_id);
 --
 -- ALTER TABLE job_ad
 -- DROP COLUMN IF EXISTS work_location_id;

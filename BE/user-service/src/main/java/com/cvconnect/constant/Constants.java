@@ -33,6 +33,7 @@ public class Constants {
         private Pattern() {}
         public static final String USERNAME = "^[A-Za-z0-9@.]{8,40}$";
         public static final String PASSWORD = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]{8,20}$";
+        public static final String PHONE_NUMBER = "^0\\d{9}$";
     }
 
     public static class NotificationType {
