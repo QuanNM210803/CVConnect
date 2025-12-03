@@ -11,6 +11,7 @@ import com.cvconnect.dto.common.DataReplacePlaceholder;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.internal.response.ConversationDto;
+import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
@@ -453,6 +454,10 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
 
         // send email to candidate
         if(request.isSendEmail()){
+            EmailConfigDto emailConfigDto = restTemplateClient.getEmailConfigByOrg();
+            if(ObjectUtils.isEmpty(emailConfigDto)){
+                throw new AppException(CoreErrorCode.EMAIL_CONFIG_NOT_FOUND);
+            }
             String subject;
             String template;
             List<String> placeholders;
@@ -533,6 +538,10 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         jobAdCandidateRepository.save(jobAdCandidate);
 
         if(request.isSendEmail()){
+            EmailConfigDto emailConfigDto = restTemplateClient.getEmailConfigByOrg();
+            if(ObjectUtils.isEmpty(emailConfigDto)){
+                throw new AppException(CoreErrorCode.EMAIL_CONFIG_NOT_FOUND);
+            }
             String subject;
             String template;
             List<String> placeholders;
@@ -679,6 +688,10 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
     public void sendEmailToCandidate(SendEmailToCandidateRequest request) {
         // validate
         Long orgId = restTemplateClient.validOrgMember();
+        EmailConfigDto emailConfigDto = restTemplateClient.getEmailConfigByOrg();
+        if(ObjectUtils.isEmpty(emailConfigDto)){
+            throw new AppException(CoreErrorCode.EMAIL_CONFIG_NOT_FOUND);
+        }
         JobAdDto jobAd = jobAdService.findById(request.getJobAdId());
         if(ObjectUtils.isEmpty(jobAd)){
             throw new AppException(CoreErrorCode.JOB_AD_NOT_FOUND);
