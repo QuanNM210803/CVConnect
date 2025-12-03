@@ -7,6 +7,7 @@ import com.cvconnect.dto.calendar.*;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.common.DataReplacePlaceholder;
 import com.cvconnect.dto.enums.CalendarTypeDto;
+import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.interviewPanel.InterviewPanelDto;
@@ -124,6 +125,10 @@ public class CalendarServiceImpl implements CalendarService {
         // send email (candidate)
         Map<Long, CandidateInfoApplyDto> candidateInfos = candidateInfoApplyService.getByIds(candidateInfoIds);
         if (request.isSendEmail()) {
+            EmailConfigDto emailConfigDto = restTemplateClient.getEmailConfigByOrg();
+            if (ObjectUtils.isEmpty(emailConfigDto)) {
+                throw new AppException(CoreErrorCode.EMAIL_CONFIG_NOT_FOUND);
+            }
             String subject;
             String template;
             List<String> placeholders;
