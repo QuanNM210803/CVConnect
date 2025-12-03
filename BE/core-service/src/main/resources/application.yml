@@ -53,19 +53,21 @@ springdoc:
     path: /v3/api-docs
 
 jwt:
-  expiration: 86400 # 1 day in seconds
-  secret-key: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
-  refresh-expiration: 604800 # 7 days in seconds
-  secret-internal: LmJHf7e5q3k8nPz9u2y4rXw6vT1sQ0aC3eFhJgKpR0tY=
+  expiration: ${EXPIRATION:86400} # 1 day in seconds
+  secret-key: ${SECRET_KEY:TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=}
+  refresh-expiration: ${REFRESH_EXPIRATION:604800} # 7 days in seconds
+  verify-expiration: ${VERIFY_EXPIRATION:172800} # 2 days in seconds
+  reset-password-expiration: ${RESET_PASSWORD_EXPIRATION:3600} # 1 hour in seconds
+  secret-internal: ${SECRET_INTERNAL:LmJHf7e5q3k8nPz9u2y4rXw6vT1sQ0aC3eFhJgKpR0tY=}
 
 frontend:
   url: ${FRONTEND_URL:http://localhost:3000}
 
 open-api:
   url-gateway-localhost: http://localhost:8888/api/v1${server.servlet.context-path}
-  url-gateway-radmin: http://api.vclab.tech/api/v1${server.servlet.context-path}
+  url-gateway-radmin: ${BE_URL:http://localhost:8888}/api/v1${server.servlet.context-path}
   url-localhost: http://localhost:${server.port}${server.servlet.context-path}
-  url-radmin: http://api.vclab.tech${server.servlet.context-path}
+  url-radmin: ${BE_URL:http://localhost:8888}${server.servlet.context-path}
 
 redis:
   token-key: token
