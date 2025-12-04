@@ -2,6 +2,7 @@ package com.cvconnect.repository;
 
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyProjection;
 import com.cvconnect.dto.dashboard.admin.DashboardFilter;
+import com.cvconnect.dto.dashboard.org.OrgAdminDashboardFilter;
 import com.cvconnect.dto.jobAdCandidate.JobAdCandidateProjection;
 import com.cvconnect.entity.JobAd;
 import com.cvconnect.entity.Organization;
@@ -31,7 +32,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
     @Query("""
             select count(distinct jac) from JobAdCandidate jac
             where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
-            and jac.candidateStatus IN ('ONBOARDED', 'WAITING_ONBOARDING')
+            and jac.candidateStatus IN ('ONBOARDED')
     """)
     Long numberOfOnboard(DashboardFilter filter);
 
@@ -52,7 +53,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
             select distinct jac.id as id, jac.applyDate as applyDate
             from JobAdCandidate jac
             where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
-            and jac.candidateStatus IN ('ONBOARDED', 'WAITING_ONBOARDING')
+            and jac.candidateStatus IN ('ONBOARDED')
     """)
     List<JobAdCandidateProjection> getByOnboard(DashboardFilter filter);
 
@@ -172,7 +173,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
                count(distinct jac.id) as numberOfApplications,
                sum(
                    case
-                       when jac.candidateStatus IN ('ONBOARDED', 'WAITING_ONBOARDING') then 1
+                       when jac.candidateStatus IN ('ONBOARDED') then 1
                        else 0
                    end
                ) as numberOfOnboarded
@@ -193,4 +194,142 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
         group by o.id, o.name, o.logoId
     """)
     Page<Object[]> getOrgFeatured(DashboardFilter filter, Pageable pageable);
+
+    @Query("""
+            select count(distinct ja) from JobAd ja
+            where ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+            and ja.orgId = :#{#filter.orgId}
+    """)
+    Long numberOfJobAds(OrgAdminDashboardFilter filter);
+
+    @Query("""
+            select count(distinct ja) from JobAd ja
+            where ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+            and ja.jobAdStatus = 'OPEN'
+            and ja.orgId = :#{#filter.orgId}
+    """)
+    Long numberOfOpenJobAds(OrgAdminDashboardFilter filter);
+
+    @Query("""
+            select count(distinct jac) from JobAdCandidate jac
+            join JobAd ja on jac.jobAdId = ja.id
+            where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+            and ja.orgId = :#{#filter.orgId}
+    """)
+    Long numberOfApplications(OrgAdminDashboardFilter filter);
+
+    @Query("""
+            select count(distinct jac) from JobAdCandidate jac
+            join JobAd ja on jac.jobAdId = ja.id
+            where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+            and jac.candidateStatus IN ('VIEWED_CV', 'IN_PROGRESS')
+            and ja.orgId = :#{#filter.orgId}
+    """)
+    Long numberOfCandidateInProcess(OrgAdminDashboardFilter filter);
+
+    @Query("""
+            select count(distinct jac) from JobAdCandidate jac
+            join JobAd ja on jac.jobAdId = ja.id
+            where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+            and jac.candidateStatus IN ('ONBOARDED')
+            and ja.orgId = :#{#filter.orgId}
+    """)
+    Long numberOfOnboard(OrgAdminDashboardFilter filter);
+
+    @Query("""
+            select distinct jac.id as id, jac.applyDate as applyDate
+            from JobAdCandidate jac
+            join JobAd ja on jac.jobAdId = ja.id
+            where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+            and ja.orgId = :#{#filter.orgId}
+    """)
+    List<JobAdCandidateProjection> getByApplyDate(OrgAdminDashboardFilter filter);
+
+    @Query("""
+            select distinct jac.id as id, jac.applyDate as applyDate
+            from JobAdCandidate jac
+            join JobAd ja on jac.jobAdId = ja.id
+            where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+            and jac.candidateStatus IN ('ONBOARDED')
+            and ja.orgId = :#{#filter.orgId}
+    """)
+    List<JobAdCandidateProjection> getByOnboard(OrgAdminDashboardFilter filter);
+
+    @Query("""
+        select ja.hrContactId as hrContactId, count(distinct ja.id) as numOfJobAds, count(distinct jac.id) as numOfApplications,
+               sum(
+                   case
+                       when jac.candidateStatus IN ('ONBOARDED') then 1
+                       else 0
+                   end
+               ) as numOfOnboarded
+        from JobAd ja
+        left join JobAdCandidate jac on ja.id = jac.jobAdId
+        where ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+        and ja.orgId = :#{#filter.orgId}
+        group by ja.hrContactId
+        order by numOfJobAds desc
+    """)
+    List<Object[]> getOrgAdminJobAdByHr(OrgAdminDashboardFilter filter);
+
+    @Query("""
+        select d.code as departmentCode, d.name as departmentName,
+               count(distinct ja.id) as numOfJobAds,
+               sum(
+                   case
+                       when jac.candidateStatus IN ('ONBOARDED') then 1
+                       else 0
+                   end
+               ) as numOfOnboarded
+        from Department d
+        join Position p on p.departmentId = d.id
+        join JobAd ja on ja.positionId = p.id
+        left join JobAdCandidate jac on ja.id = jac.jobAdId
+        where ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+        and ja.orgId = :#{#filter.orgId}
+        group by d.code, d.name
+        order by numOfJobAds desc
+    """)
+    List<Object[]> getOrgAdminJobAdByDepartment(OrgAdminDashboardFilter filter);
+
+    @Query("""
+        select case when l.name is null then 'Không xác định' else l.name end as level,
+            count(distinct jac.id) as totalOnboarded
+        from JobAdCandidate jac
+        join CandidateInfoApply cia on cia.id = jac.candidateInfoId
+        join JobAd ja on jac.jobAdId = ja.id
+        left join CandidateSummaryOrg cso on cso.candidateInfoId = cia.id and cso.orgId = ja.orgId
+        left join Level l on l.id = cso.levelId
+        where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+        and jac.candidateStatus IN ('ONBOARDED')
+        and ja.orgId = :#{#filter.orgId}
+        group by case when l.name is null then 'Không xác định' else l.name end
+        order by totalOnboarded desc
+    """)
+    List<Object[]> getOrgAdminPassByLevel(OrgAdminDashboardFilter filter);
+
+    @Query("""
+        select jac.eliminateReasonType as eliminateReasonType, count(distinct jac.id) as numOfApply
+        from JobAdCandidate jac
+        join JobAd ja on jac.jobAdId = ja.id
+        where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+        and jac.candidateStatus = 'REJECTED'
+        and ja.orgId = :#{#filter.orgId}
+        group by jac.eliminateReasonType
+        order by numOfApply desc
+    """)
+    List<JobAdCandidateProjection> getEliminatedReasonData(OrgAdminDashboardFilter filter);
+
+    @Query(value = """
+        select ja.id as id, ja.title as title,
+               case when jas.view_count is null then 0 else jas.view_count end as numberOfViews,
+               count(distinct jac.id) as numberOfApplications
+        from job_ad ja
+        left join job_ad_statistic jas on jas.job_ad_id = ja.id
+        left join job_ad_candidate jac on jac.job_ad_id = ja.id
+        where ja.created_at between :#{#filter.startTime} and :#{#filter.endTime}
+        and ja.org_id = :#{#filter.orgId}
+        group by ja.id, ja.title, case when jas.view_count is null then 0 else jas.view_count end
+    """, nativeQuery = true)
+    Page<Object[]> getJobAdFeatured(OrgAdminDashboardFilter filter, Pageable pageable);
 }
