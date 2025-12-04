@@ -30,7 +30,7 @@ public class EmailTemplateController {
 
     @PostMapping("/create")
     @Operation(summary = "Create Email Template")
-    @PreAuthorize("hasAnyAuthority('EMAIL_TEMPLATE:ADD')")
+    @PreAuthorize("hasAnyAuthority('EMAIL_TEMPLATE:ADD', 'HR')")
     public ResponseEntity<Response<IDResponse<Long>>> createEmailTemplate(@Valid @RequestBody EmailTemplateRequest request) {
         return ResponseUtils.success(emailTemplateService.create(request),
                 localizationUtils.getLocalizedMessage(MessageConstants.CREATE_SUCCESSFULLY));
