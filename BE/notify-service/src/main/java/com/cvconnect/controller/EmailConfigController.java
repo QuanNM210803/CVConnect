@@ -26,7 +26,7 @@ public class EmailConfigController {
 
     @GetMapping("/get-by-org")
     @Operation(summary = "Get email config by organization ID")
-    @PreAuthorize("hasAnyAuthority('ORG_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ORG_ADMIN', 'HR')")
     public ResponseEntity<Response<EmailConfigDto>> getByOrgId() {
         return ResponseUtils.success(emailConfigService.detail());
     }
