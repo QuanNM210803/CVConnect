@@ -48,7 +48,7 @@ public class OrgMemberController {
 
     @GetMapping("/filter")
     @Operation(summary = "Filter organization members")
-    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW')")
+    @PreAuthorize("hasAnyAuthority('ORG_MEMBER:VIEW', 'HR')")
     public ResponseEntity<Response<FilterResponse<OrgMemberDto>>> filterOrgMembers(@Valid @ModelAttribute OrgMemberFilter request) {
         return ResponseUtils.success(orgMemberService.filter(request));
     }
