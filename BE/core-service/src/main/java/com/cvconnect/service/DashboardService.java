@@ -1,6 +1,7 @@
 package com.cvconnect.service;
 
 import com.cvconnect.dto.dashboard.admin.*;
+import com.cvconnect.dto.dashboard.org.*;
 import com.cvconnect.dto.jobAd.JobAdDto;
 import nmquan.commonlib.dto.response.FilterResponse;
 
@@ -18,4 +19,13 @@ public interface DashboardService {
     List<DashboardNewOrgByTimeDto> getNewOrgByTime(DashboardFilter filter);
     List<DashboardOrgStaffSizeDto> getOrgStaffSize();
     FilterResponse<DashboardOrgFeaturedDto> getOrgFeatured(DashboardFilter filter);
+
+    // orgadmin
+    OrgAdminDashboardOverviewDto getOrgAdminDashboardOverview(OrgAdminDashboardFilter filter);
+    List<DashboardPercentPassedDto> getOrgAdminPercentPassed(OrgAdminDashboardFilter filter);
+    List<OrgAdminDashboardJobAdByHrDto> getOrgAdminJobAdByHr(OrgAdminDashboardFilter filter);
+    List<OrgAdminDashboardJobAdByDepartmentDto> getOrgAdminJobAdByDepartment(OrgAdminDashboardFilter filter);
+    List<OrgAdminDashboardPassByLevelDto> getOrgAdminPassByLevel(OrgAdminDashboardFilter filter);
+    List<DashboardEliminatedReasonDto> getOrgAdminPercentEliminatedReason(OrgAdminDashboardFilter filter);
+    List<JobAdDto> getOrgAdminJobAdFeatured(OrgAdminDashboardFilter filter);
 }

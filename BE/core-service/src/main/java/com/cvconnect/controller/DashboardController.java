@@ -1,6 +1,7 @@
 package com.cvconnect.controller;
 
 import com.cvconnect.dto.dashboard.admin.*;
+import com.cvconnect.dto.dashboard.org.*;
 import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.service.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -99,5 +100,54 @@ public class DashboardController {
     @Operation(summary = "Get organization featured for system admin")
     public ResponseEntity<Response<FilterResponse<DashboardOrgFeaturedDto>>> getOrgFeatured(@Valid @ModelAttribute DashboardFilter filter) {
         return ResponseUtils.success(dashboardService.getOrgFeatured(filter));
+    }
+
+    @GetMapping("/org-admin/overview")
+    @PreAuthorize("hasAnyAuthority('ORG_ADMIN')")
+    @Operation(summary = "Get dashboard overview for organization admin")
+    public ResponseEntity<Response<OrgAdminDashboardOverviewDto>> getOrgAdminDashboardOverview(@Valid @ModelAttribute OrgAdminDashboardFilter filter) {
+        return ResponseUtils.success(dashboardService.getOrgAdminDashboardOverview(filter));
+    }
+
+    @GetMapping("/org-admin/percent-passed")
+    @PreAuthorize("hasAnyAuthority('ORG_ADMIN')")
+    @Operation(summary = "Get percent passed for org admin")
+    public ResponseEntity<Response<List<DashboardPercentPassedDto>>> getOrgAdminPercentPassed(@Valid @ModelAttribute OrgAdminDashboardFilter filter) {
+        return ResponseUtils.success(dashboardService.getOrgAdminPercentPassed(filter));
+    }
+
+    @GetMapping("/org-admin/job-ad-by-hr")
+    @PreAuthorize("hasAnyAuthority('ORG_ADMIN')")
+    @Operation(summary = "Get Job ad by HR for org admin")
+    public ResponseEntity<Response<List<OrgAdminDashboardJobAdByHrDto>>> getOrgAdminJobAdByHr(@Valid @ModelAttribute OrgAdminDashboardFilter filter) {
+        return ResponseUtils.success(dashboardService.getOrgAdminJobAdByHr(filter));
+    }
+
+    @GetMapping("/org-admin/job-ad-by-department")
+    @PreAuthorize("hasAnyAuthority('ORG_ADMIN')")
+    @Operation(summary = "Get Job ad by Deparment for org admin")
+    public ResponseEntity<Response<List<OrgAdminDashboardJobAdByDepartmentDto>>> getOrgAdminJobAdByDepartment(@Valid @ModelAttribute OrgAdminDashboardFilter filter) {
+        return ResponseUtils.success(dashboardService.getOrgAdminJobAdByDepartment(filter));
+    }
+
+    @GetMapping("/org-admin/pass-by-level")
+    @PreAuthorize("hasAnyAuthority('ORG_ADMIN')")
+    @Operation(summary = "Get pass by level for org admin")
+    public ResponseEntity<Response<List<OrgAdminDashboardPassByLevelDto>>> getOrgAdminPassByLevel(@Valid @ModelAttribute OrgAdminDashboardFilter filter) {
+        return ResponseUtils.success(dashboardService.getOrgAdminPassByLevel(filter));
+    }
+
+    @GetMapping("/org-admin/eliminated-reason")
+    @PreAuthorize("hasAnyAuthority('ORG_ADMIN')")
+    @Operation(summary = "Percent eliminated reason for org admin")
+    public ResponseEntity<Response<List<DashboardEliminatedReasonDto>>> getOrgAdminPercentEliminatedReason(@Valid @ModelAttribute OrgAdminDashboardFilter filter) {
+        return ResponseUtils.success(dashboardService.getOrgAdminPercentEliminatedReason(filter));
+    }
+
+    @GetMapping("/org-admin/job-ad-featured")
+    @PreAuthorize("hasAnyAuthority('ORG_ADMIN')")
+    @Operation(summary = "Get job ad featured for org admin")
+    public ResponseEntity<Response<List<JobAdDto>>> getOrgAdminJobAdFeatured(@Valid @ModelAttribute OrgAdminDashboardFilter filter) {
+        return ResponseUtils.success(dashboardService.getOrgAdminJobAdFeatured(filter));
     }
 }

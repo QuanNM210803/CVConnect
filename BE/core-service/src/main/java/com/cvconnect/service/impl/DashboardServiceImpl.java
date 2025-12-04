@@ -6,6 +6,7 @@ import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyProjection;
 import com.cvconnect.dto.career.CareerDto;
 import com.cvconnect.dto.dashboard.DateRange;
 import com.cvconnect.dto.dashboard.admin.*;
+import com.cvconnect.dto.dashboard.org.*;
 import com.cvconnect.dto.enums.EliminateReasonEnumDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
@@ -28,6 +29,8 @@ import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -339,6 +342,213 @@ public class DashboardServiceImpl implements DashboardService {
         return PageUtils.toFilterResponse(orgFeaturedData, orgFeaturedDtos);
     }
 
+    @Override
+    public OrgAdminDashboardOverviewDto getOrgAdminDashboardOverview(OrgAdminDashboardFilter filter) {
+        Long orgId = restTemplateClient.validOrgMember();
+        filter.setOrgId(orgId);
+
+        OrgAdminDashboardOverviewDto response = new OrgAdminDashboardOverviewDto();
+
+        Long totalJobAds = dashboardRepository.numberOfJobAds(filter);
+        response.setTotalJobAds(totalJobAds);
+        Long totalOpenJobAds = dashboardRepository.numberOfOpenJobAds(filter);
+        response.setTotalOpenJobAds(totalOpenJobAds);
+        Long totalApplications = dashboardRepository.numberOfApplications(filter);
+        response.setTotalApplications(totalApplications);
+        Long totalCandidateInProcess = dashboardRepository.numberOfCandidateInProcess(filter);
+        response.setTotalCandidateInProcess(totalCandidateInProcess);
+        Long numberOfOnboard = dashboardRepository.numberOfOnboard(filter);
+        double percentPassed = totalApplications == 0 ? 0.0 : (numberOfOnboard.doubleValue() / (double) totalApplications) * 100.0;
+        response.setPercentPassed(Math.round(percentPassed * 100.0) / 100.0);
+
+        // tinh thang truoc neu startTime la ngay dau tien cua thang hien tai
+        ZoneId zone = CommonConstants.ZONE.UTC;
+        LocalDate startDate = filter.getStartTime().atZone(zone).toLocalDate();
+        LocalDate firstDayOfCurrentMonth = LocalDate.now(zone).withDayOfMonth(1);
+        boolean isStartOfCurrentMonth = startDate.isEqual(firstDayOfCurrentMonth);
+        if (isStartOfCurrentMonth) {
+            LocalDate prevStartDate = firstDayOfCurrentMonth.minusMonths(1);
+            LocalDate prevEndDate = firstDayOfCurrentMonth.minusDays(1);
+            Instant prevStartInstant = prevStartDate.atStartOfDay(zone).toInstant();
+            Instant prevEndInstant = prevEndDate.atTime(23, 59, 59).atZone(zone).toInstant();
+            filter.setStartTime(prevStartInstant);
+            filter.setEndTime(prevEndInstant);
+
+            Long prevTotalJobAds = dashboardRepository.numberOfJobAds(filter);
+            response.setIndeTotalJobAds(this.formatInDexChange(totalJobAds, prevTotalJobAds));
+            Long prevTotalApplications = dashboardRepository.numberOfApplications(filter);
+            response.setIndeTotalApplications(this.formatInDexChange(totalApplications, prevTotalApplications));
+            Long prevnNumberOfOnboard = dashboardRepository.numberOfOnboard(filter);
+            double prevPercentPassed = prevTotalApplications == 0 ? 0.0 : (prevnNumberOfOnboard.doubleValue() / (double) prevTotalApplications) * 100.0;
+            response.setIndePercentPassed(this.formatInDexChange(percentPassed, Math.round(prevPercentPassed * 100.0) / 100.0));
+        }
+
+        return response;
+    }
+
+    @Override
+    public List<DashboardPercentPassedDto> getOrgAdminPercentPassed(OrgAdminDashboardFilter filter) {
+        Long orgId = restTemplateClient.validOrgMember();
+        filter.setOrgId(orgId);
+        Map<String, DateRange> dateRangeMap = splitByMonth(filter.getStartTime(), filter.getEndTime());
+        List<JobAdCandidateProjection> applyDateData = dashboardRepository.getByApplyDate(filter);
+        List<JobAdCandidateProjection> onboardDateData = dashboardRepository.getByOnboard(filter);
+
+        List<DashboardPercentPassedDto> response = new ArrayList<>();
+        for(Map.Entry<String, DateRange> entry : dateRangeMap.entrySet()) {
+            String key = entry.getKey();
+            DateRange dateRange = entry.getValue();
+
+            long applyCount = 0L;
+            Long onboardCount = 0L;
+            for(JobAdCandidateProjection projection : applyDateData) {
+                if(!projection.getApplyDate().isBefore(dateRange.getStartTime()) &&
+                        !projection.getApplyDate().isAfter(dateRange.getEndTime())) {
+                    applyCount++;
+                }
+            }
+            for(JobAdCandidateProjection projection : onboardDateData) {
+                if(!projection.getApplyDate().isBefore(dateRange.getStartTime()) &&
+                        !projection.getApplyDate().isAfter(dateRange.getEndTime())) {
+                    onboardCount++;
+                }
+            }
+            double percentPassed = applyCount == 0 ? 0.0 : (onboardCount.doubleValue() / (double) applyCount) * 100.0;
+            response.add(DashboardPercentPassedDto.builder()
+                    .label(key)
+                    .numberOfApplications(applyCount)
+                    .numberOfPassed(onboardCount)
+                    .percent(Math.round(percentPassed * 100.0) / 100.0)
+                    .build());
+        }
+        return response;
+    }
+
+    @Override
+    public List<OrgAdminDashboardJobAdByHrDto> getOrgAdminJobAdByHr(OrgAdminDashboardFilter filter) {
+        Long orgId = restTemplateClient.validOrgMember();
+        filter.setOrgId(orgId);
+        List<Object[]> jobAdByHrData = dashboardRepository.getOrgAdminJobAdByHr(filter);
+        List<Long> hrIds = jobAdByHrData.stream()
+                .map(p -> ((Number) p[0]).longValue())
+                .toList();
+        Map<Long, UserDto> hrIdNameMap = restTemplateClient.getUsersByIds(hrIds);
+        return jobAdByHrData.stream()
+                .map(p -> {
+                    Long hrId = ((Number) p[0]).longValue();
+                    Long jobAdCount = ((Number) p[1]).longValue();
+                    Long totalApplications = ((Number) p[2]).longValue();
+                    Long totalOnboarded = ((Number) p[3]).longValue();
+                    return OrgAdminDashboardJobAdByHrDto.builder()
+                            .hrName(hrIdNameMap.get(hrId) != null ?
+                                    hrIdNameMap.get(hrId).getFullName() : "N/A")
+                            .jobAdCount(jobAdCount)
+                            .totalApplications(totalApplications)
+                            .totalOnboarded(totalOnboarded)
+                            .build();
+                }).toList();
+    }
+
+    @Override
+    public List<OrgAdminDashboardJobAdByDepartmentDto> getOrgAdminJobAdByDepartment(OrgAdminDashboardFilter filter) {
+        Long orgId = restTemplateClient.validOrgMember();
+        filter.setOrgId(orgId);
+        List<Object[]> jobAdByDepartmentData = dashboardRepository.getOrgAdminJobAdByDepartment(filter);
+        return jobAdByDepartmentData.stream()
+                .map(p -> {
+                    String departmentCode = (String) p[0];
+                    String departmentName = (String) p[1];
+                    Long jobAdCount = ((Number) p[2]).longValue();
+                    Long totalOnboarded = ((Number) p[3]).longValue();
+                    return OrgAdminDashboardJobAdByDepartmentDto.builder()
+                            .departmentCode(departmentCode)
+                            .departmentName(departmentName)
+                            .jobAdCount(jobAdCount)
+                            .totalOnboarded(totalOnboarded)
+                            .build();
+                }).toList();
+    }
+
+    @Override
+    public List<OrgAdminDashboardPassByLevelDto> getOrgAdminPassByLevel(OrgAdminDashboardFilter filter) {
+        Long orgId = restTemplateClient.validOrgMember();
+        filter.setOrgId(orgId);
+
+        List<Object[]> passByLevelData = dashboardRepository.getOrgAdminPassByLevel(filter);
+        return passByLevelData.stream()
+                .map(p -> {
+                    String levelName = (String) p[0];
+                    Long totalOnboarded = ((Number) p[1]).longValue();
+                    return OrgAdminDashboardPassByLevelDto.builder()
+                            .level(levelName)
+                            .totalOnboarded(totalOnboarded)
+                            .build();
+                }).toList();
+    }
+
+    @Override
+    public List<DashboardEliminatedReasonDto> getOrgAdminPercentEliminatedReason(OrgAdminDashboardFilter filter) {
+        Long orgId = restTemplateClient.validOrgMember();
+        filter.setOrgId(orgId);
+        List<JobAdCandidateProjection> eliminatedData = dashboardRepository.getEliminatedReasonData(filter)
+                .stream()
+                .filter(p -> p.getEliminateReasonType() != null)
+                .toList();
+
+        int numOfReasons = 0;
+        List<DashboardEliminatedReasonDto> response = new ArrayList<>();
+        for(JobAdCandidateProjection projection : eliminatedData) {
+            EliminateReasonEnumDto reasonEnum = EliminateReasonEnum.getEliminateReasonEnumDto(projection.getEliminateReasonType());
+            response.add(DashboardEliminatedReasonDto.builder()
+                    .eliminateReason(reasonEnum)
+                    .numberOfEliminated(projection.getNumOfApply())
+                    .build());
+            numOfReasons++;
+            if(numOfReasons == 7){
+                DashboardEliminatedReasonDto other = new DashboardEliminatedReasonDto();
+                other.setEliminateReason(EliminateReasonEnumDto.builder()
+                        .description("Các lý do khác")
+                        .build());
+                other.setNumberOfEliminated(0L);
+                for(int i = 7; i < eliminatedData.size(); i++) {
+                    projection = eliminatedData.get(i);
+                    other.setNumberOfEliminated(other.getNumberOfEliminated() + projection.getNumOfApply());
+                }
+                if(other.getNumberOfEliminated() > 0) {
+                    response.add(other);
+                }
+                break;
+            }
+        }
+        return response;
+    }
+
+    @Override
+    public List<JobAdDto> getOrgAdminJobAdFeatured(OrgAdminDashboardFilter filter) {
+        Long orgId = restTemplateClient.validOrgMember();
+        filter.setOrgId(orgId);
+        filter.setPageIndex(0);
+        filter.setPageSize(10);
+        if (Objects.equals(filter.getSortBy(), CommonConstants.DEFAULT_SORT_BY) ||
+                Objects.equals(filter.getSortBy(), CommonConstants.FALLBACK_SORT_BY)) {
+            filter.setSortBy("numberOfApplications");
+        }
+        Page<Object[]> jobAdFeaturedData = dashboardRepository.getJobAdFeatured(filter, filter.getPageable());
+        return jobAdFeaturedData.stream()
+                .map(p -> {
+                    Long id = ((Number) p[0]).longValue();
+                    String title = (String) p[1];
+                    Long numberOfViews = ((Number) p[2]).longValue();
+                    Long numberOfApplications = ((Number) p[3]).longValue();
+                    return JobAdDto.builder()
+                            .id(id)
+                            .title(title)
+                            .numberOfViews(numberOfViews)
+                            .numberOfApplications(numberOfApplications)
+                            .build();
+                }).collect(Collectors.toList());
+    }
+
     public Map<String, DateRange> splitByMonth(Instant startTime, Instant endTime) {
         Map<String, DateRange> result = new LinkedHashMap<>();
 
@@ -359,6 +569,15 @@ public class DashboardServiceImpl implements DashboardService {
             pointer = pointer.plusMonths(1);
         }
         return result;
+    }
+
+    private String formatInDexChange(Number current, Number previous) {
+        if (previous == null || previous.doubleValue() == 0) {
+            return null;
+        }
+        double change = ((current.doubleValue() - previous.doubleValue()) / previous.doubleValue()) * 100.0;
+        change = Math.round(change * 100.0) / 100.0;
+        return (change >= 0 ? "+" : "") + change + "% so với tháng trước";
     }
 
 }
