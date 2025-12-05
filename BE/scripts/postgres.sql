@@ -146,7 +146,7 @@
 -- ('INTERVIEW', 'Phỏng vấn', 4, true, 'admin'),
 -- ('OFFER', 'Đề nghị làm việc', 5, true, 'admin'),
 -- ('ONBOARD', 'Onboard', 6, true, 'admin');
-
+--
 -- CREATE TABLE IF NOT EXISTS level (
 --     id BIGSERIAL PRIMARY KEY,
 --
@@ -171,7 +171,7 @@
 -- ('BRANCH_HEAD', 'Trưởng/Phó chi nhánh', true, 'admin'),
 -- ('VICE_DIRECTOR', 'Phó Giám đốc', true, 'admin'),
 -- ('DIRECTOR', 'Giám đốc', true, 'admin');
-
+--
 -- CREATE TABLE IF NOT EXISTS department (
 --     id BIGSERIAL PRIMARY KEY,
 --
@@ -189,7 +189,7 @@
 --     FOREIGN KEY (org_id) REFERENCES organization (id) ON DELETE CASCADE,
 --     CONSTRAINT uq_department_org_code UNIQUE (org_id, code)
 -- );
-
+--
 -- CREATE TABLE IF NOT EXISTS position (
 --     id BIGSERIAL PRIMARY KEY,
 --
@@ -244,22 +244,19 @@
 --     FOREIGN KEY (position_id) REFERENCES position (id) ON DELETE CASCADE,
 --     FOREIGN KEY (process_type_id) REFERENCES process_type (id) ON DELETE CASCADE
 -- );
-
--- CREATE TABLE IF NOT EXISTS industry_sub (
+--
+-- CREATE TABLE IF NOT EXISTS careers (
 --     id BIGSERIAL PRIMARY KEY,
 --
 --     code VARCHAR(50) UNIQUE NOT NULL,
 --     name VARCHAR(255) NOT NULL,
---     industry_id BIGINT NOT NULL,
 --
 --     is_active BOOLEAN DEFAULT TRUE,
 --     is_deleted BOOLEAN DEFAULT FALSE,
 --     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 --     updated_at TIMESTAMP WITHOUT TIME ZONE,
 --     created_by VARCHAR(100),
---     updated_by VARCHAR(100),
---
---     FOREIGN KEY (industry_id) REFERENCES industry (id) ON DELETE CASCADE
+--     updated_by VARCHAR(100)
 -- );
 --
 -- CREATE TABLE IF NOT EXISTS job_ad (
@@ -323,10 +320,10 @@
 --     FOREIGN KEY (work_location_id) REFERENCES organization_address (id) ON DELETE CASCADE
 -- );
 --
--- CREATE TABLE IF NOT EXISTS job_ad_industry_sub (
+-- CREATE TABLE IF NOT EXISTS job_ad_career (
 --     id BIGSERIAL PRIMARY KEY,
 --
---     industry_sub_id BIGINT NOT NULL,
+--     career_id BIGINT NOT NULL,
 --     job_ad_id BIGINT NOT NULL,
 --
 --     is_active BOOLEAN DEFAULT TRUE,
@@ -336,9 +333,9 @@
 --     created_by VARCHAR(100),
 --     updated_by VARCHAR(100),
 --
---     FOREIGN KEY (industry_sub_id) REFERENCES industry_sub (id) ON DELETE CASCADE,
+--     FOREIGN KEY (career_id) REFERENCES careers (id) ON DELETE CASCADE,
 --     FOREIGN KEY (job_ad_id) REFERENCES job_ad (id) ON DELETE CASCADE,
---     UNIQUE (industry_sub_id, job_ad_id)
+--     UNIQUE (career_id, job_ad_id)
 -- );
 --
 -- CREATE TABLE IF NOT EXISTS job_ad_process (
@@ -483,7 +480,7 @@
 --
 -- alter table job_ad
 -- add column if not exists is_remote BOOLEAN DEFAULT FALSE;
-
+--
 -- alter table job_ad
 -- drop column position_level_id;
 --
@@ -509,16 +506,6 @@
 -- alter table job_ad
 -- add column is_all_level BOOLEAN DEFAULT FALSE;
 --
--- alter table industry_sub
--- drop column industry_id;
---
--- alter table job_ad_industry_sub
--- rename column industry_sub_id to career_id;
---
--- ALTER TABLE industry_sub RENAME TO careers;
---
--- alter table job_ad_industry_sub rename to job_ad_career;
-
 -- CREATE TABLE IF NOT EXISTS candidate_summary_hr (
 --     id BIGSERIAL PRIMARY KEY,
 --
@@ -689,7 +676,7 @@
 --
 -- alter table job_ad
 -- add column key_code_internal VARCHAR(100);
-
+--
 -- CREATE EXTENSION IF NOT EXISTS pg_trgm;
 --
 -- CREATE OR REPLACE FUNCTION FUNC_FILTER_JOB_AD_OUTSIDE(
