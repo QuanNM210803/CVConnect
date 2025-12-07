@@ -108,15 +108,17 @@ public class RoleServiceImpl implements RoleService {
     public IDResponse<Long> updateRoles(RoleRequest request) {
         Role role = roleRepository.findById(request.getId())
                 .orElseThrow(() -> new AppException(UserErrorCode.ROLE_NOT_FOUND));
-        Role roleCheckExists = roleRepository.findByCode(request.getCode());
-        if(roleCheckExists != null && !Objects.equals(roleCheckExists.getId(), request.getId())) {
-            throw new AppException(UserErrorCode.ROLE_CODE_EXISTED);
+        boolean isImportant = Constants.RoleCode.getAllRoleCodes().contains(role.getCode());
+        if(!isImportant) {
+            Role roleCheckExists = roleRepository.findByCode(request.getCode());
+            if(roleCheckExists != null && !Objects.equals(roleCheckExists.getId(), request.getId())) {
+                throw new AppException(UserErrorCode.ROLE_CODE_EXISTED);
+            }
+            role.setCode(request.getCode());
+            role.setMemberType(request.getMemberType());
         }
-        role.setCode(request.getCode());
         role.setName(request.getName());
-        role.setMemberType(request.getMemberType());
         roleRepository.save(role);
-
         roleMenuService.deleteByRoleId(role.getId());
         this.saveRoleMenus(role, request.getRoleMenus());
 
