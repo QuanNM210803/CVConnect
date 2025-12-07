@@ -4,6 +4,7 @@ import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.roleUser.RoleUserDto;
 import com.cvconnect.dto.candidate.CandidateDto;
 import com.cvconnect.dto.role.RoleDto;
+import com.cvconnect.dto.user.UserDto;
 import com.cvconnect.entity.User;
 import com.cvconnect.enums.AccessMethod;
 import com.cvconnect.repository.UserRepository;
@@ -12,6 +13,7 @@ import com.cvconnect.service.RoleService;
 import com.cvconnect.service.RoleUserService;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
+import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -78,13 +80,14 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                     return userRepository.save(existingUser);
                 })
                 .orElseGet(() -> {
-                    User newUser = new User();
-                    newUser.setUsername(email);
-                    newUser.setEmail(email);
-                    newUser.setFullName(name);
-                    newUser.setAccessMethod(AccessMethod.GOOGLE.name());
-                    newUser.setIsEmailVerified(true);
-                    userRepository.save(newUser);
+                    UserDto userDto = UserDto.builder()
+                            .username(email)
+                            .email(email)
+                            .fullName(name)
+                            .accessMethod(AccessMethod.GOOGLE.name())
+                            .isEmailVerified(true)
+                            .build();
+                    User newUser = userRepository.save(ObjectMapperUtils.convertToObject(userDto, User.class));
 
                     RoleUserDto roleUserDto = RoleUserDto.builder()
                             .userId(newUser.getId())
