@@ -25,7 +25,7 @@ public class UserUpdateRequest {
     @NotBlank(message = Messages.REGISTER_FULL_NAME_REQUIRE)
     private String fullName;
 
-    @Pattern(regexp = Constants.Pattern.PHONE_NUMBER)
+    @Pattern(regexp = Constants.Pattern.PHONE_NUMBER, message = Messages.REGISTER_PHONE_INVALID)
     private String phoneNumber;
     private String address;
     private LocalDate dateOfBirth;
