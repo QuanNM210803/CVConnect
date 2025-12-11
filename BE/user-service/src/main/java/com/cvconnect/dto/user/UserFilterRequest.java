@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import nmquan.commonlib.dto.request.FilterRequest;
 
 import java.time.Instant;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -23,8 +23,8 @@ public class UserFilterRequest extends FilterRequest {
     private String email;
     private String fullName;
     private String phoneNumber;
-    private Date dateOfBirthStart;
-    private Date dateOfBirthEnd;
+    private LocalDate dateOfBirthStart;
+    private LocalDate dateOfBirthEnd;
     private AccessMethod accessMethod;
     private Boolean isEmailVerified;
     private Boolean isActive;
