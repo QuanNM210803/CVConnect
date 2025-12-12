@@ -69,6 +69,13 @@ public class UserController {
         return ResponseUtils.success(userService.getByIds(userIds));
     }
 
+    @InternalRequest
+    @GetMapping("/internal/get-by-role-code-org-id/{roleCode}/{orgId}")
+    @Operation(summary = "Get users by role code for organization members")
+    public ResponseEntity<Response<List<UserDto>>> getUsersByRoleCodeOrgId(@PathVariable String roleCode, @PathVariable Long orgId) {
+        return ResponseUtils.success(userService.getUsersByRoleCodeOrg(roleCode, orgId));
+    }
+
     @PutMapping("/role-default/{roleId}")
     @Operation(summary = "Set default role for users")
     public ResponseEntity<Response<Void>> setDefaultRole(@PathVariable Long roleId) {

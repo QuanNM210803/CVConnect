@@ -6,6 +6,7 @@ import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.calendar.*;
 import com.cvconnect.dto.candidateInfoApply.CandidateInfoApplyDto;
 import com.cvconnect.dto.common.DataReplacePlaceholder;
+import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.enums.CalendarTypeDto;
 import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
@@ -17,6 +18,7 @@ import com.cvconnect.dto.org.OrgAddressDto;
 import com.cvconnect.entity.Calendar;
 import com.cvconnect.enums.CalendarType;
 import com.cvconnect.enums.CoreErrorCode;
+import com.cvconnect.enums.NotifyTemplate;
 import com.cvconnect.enums.ProcessTypeEnum;
 import com.cvconnect.repository.CalendarRepository;
 import com.cvconnect.service.*;
@@ -27,6 +29,7 @@ import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.DateUtils;
+import nmquan.commonlib.utils.KafkaUtils;
 import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,6 +69,8 @@ public class CalendarServiceImpl implements CalendarService {
     private JobAdCandidateService jobAdCandidateService;
     @Autowired
     private OrgAddressService orgAddressService;
+    @Autowired
+    private KafkaUtils kafkaUtils;
 
     @Override
     @Transactional
@@ -187,7 +192,35 @@ public class CalendarServiceImpl implements CalendarService {
             }
         }
 
-        // todo: send notify (to interviewer)
+        // send notify (to interviewer)
+        JobAdDto jobAdDto = jobAdService.findByJobAdProcessId(request.getJobAdProcessId());
+        if(joinSameTime){
+            String timeRange = this.formatTimeRange(calendar.getDate(), calendar.getTimeFrom(), calendar.getDurationMinutes());
+            NotifyTemplate template = NotifyTemplate.CREATED_SCHEDULED;
+            NotificationDto notifyDto = NotificationDto.builder()
+                    .title(String.format(template.getTitle(), jobAdDto.getTitle()))
+                    .message(String.format(template.getMessage(), request.getCalendarType().getDisplayName(), timeRange))
+                    .type(Constants.NotificationType.USER)
+                    .redirectUrl(Constants.Path.ORG_CALENDAR)
+                    .senderId(userId)
+                    .receiverIds(request.getParticipantIds())
+                    .build();
+            kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
+        } else {
+            for(CalendarCandidateInfoDto candidateInfo : calendarCandidates) {
+                String timeRange = this.formatTimeRange(candidateInfo.getDate(), candidateInfo.getTimeFrom(), candidateInfo.getTimeTo());
+                NotifyTemplate template = NotifyTemplate.CREATED_SCHEDULED;
+                NotificationDto notifyDto = NotificationDto.builder()
+                        .title(String.format(template.getTitle(), jobAdDto.getTitle()))
+                        .message(String.format(template.getMessage(), request.getCalendarType().getDisplayName(), timeRange))
+                        .type(Constants.NotificationType.USER)
+                        .redirectUrl(Constants.Path.ORG_CALENDAR)
+                        .senderId(userId)
+                        .receiverIds(request.getParticipantIds())
+                        .build();
+                kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
+            }
+        }
 
         return IDResponse.<Long>builder()
                 .id(calendar.getId())
@@ -580,4 +613,28 @@ public class CalendarServiceImpl implements CalendarService {
             throw new AppException(CoreErrorCode.CANDIDATE_INFO_EXISTS_NOT_IN_PROCESS);
         }
     }
+
+    private String formatTimeRange(LocalDate date, LocalTime startTime, int duration) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        LocalTime endTime = startTime.plusMinutes(duration);
+        return String.format(
+                "ngày %s từ %s đến %s",
+                date.format(dateFormatter),
+                startTime.format(timeFormatter),
+                endTime.format(timeFormatter)
+        );
+    }
+
+    private String formatTimeRange(LocalDate date, LocalTime startTime, LocalTime endTime) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        return String.format(
+                "ngày %s từ %s đến %s",
+                date.format(dateFormatter),
+                startTime.format(timeFormatter),
+                endTime.format(timeFormatter)
+        );
+    }
+
 }

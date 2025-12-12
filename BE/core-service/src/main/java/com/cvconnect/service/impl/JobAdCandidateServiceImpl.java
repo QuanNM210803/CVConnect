@@ -20,6 +20,7 @@ import com.cvconnect.dto.jobAdCandidate.*;
 import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
+import com.cvconnect.entity.CandidateInfoApply;
 import com.cvconnect.entity.JobAdCandidate;
 import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdCandidateRepository;
@@ -33,6 +34,7 @@ import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.*;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -370,6 +372,18 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 if(jobAdCandidateDto.getJobAd().getHrContactId().equals(currentUserId) &&
                         CandidateStatus.APPLIED.name().equals(jobAdCandidateDto.getCandidateStatus())){
                     jobAdCandidateRepository.updateCandidateStatus(jobAdCandidateDto.getId(), CandidateStatus.VIEWED_CV.name());
+
+                    // send notify to candidate
+                    NotifyTemplate template = NotifyTemplate.HR_VIEWED_CANDIDATE_PROFILE;
+                    NotificationDto notificationDto = NotificationDto.builder()
+                            .title(String.format(template.getTitle(), jobAdCandidateDto.getJobAd().getTitle()))
+                            .message(String.format(template.getMessage()))
+                            .type(Constants.NotificationType.USER)
+                            .redirectUrl(Constants.Path.CANDIDATE_MESSAGE_CHAT + "?id=" + jobAdCandidateDto.getId())
+                            .senderId(jobAdCandidateDto.getJobAd().getHrContactId())
+                            .receiverIds(List.of(projection.getCandidateId()))
+                            .build();
+                    kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
                 }
             }
         }
@@ -451,6 +465,36 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             }
         }
         jobAdProcessCandidateService.create(dtos);
+
+        // send notify to candidate
+        JobAdDto jd = jobAdService.findById(jobAdCandidate.getJobAdId());
+        CandidateInfoApplyDto candidateInfoApplyDto = candidateInfoApplyService.getById(jobAdCandidate.getCandidateInfoId());
+        NotifyTemplate notifyTemplate = NotifyTemplate.CHANGE_CANDIDATE_PROCESS;
+        NotificationDto notificationDto = NotificationDto.builder()
+                .title(String.format(notifyTemplate.getTitle(), jd.getTitle()))
+                .message(String.format(notifyTemplate.getMessage(), jobAdProcessDto.getName()))
+                .type(Constants.NotificationType.USER)
+                .redirectUrl(Constants.Path.CANDIDATE_MESSAGE_CHAT + "?id=" + jobAdCandidate.getId())
+                .senderId(hrContactId)
+                .receiverIds(List.of(candidateInfoApplyDto.getCandidateId()))
+                .build();
+        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
+
+        // if onboard process, send notify to org admin
+        if(ProcessTypeEnum.ONBOARD.name().equals(processTypeDto.getCode())){
+            UserDto hrContact = restTemplateClient.getUser(hrContactId);
+            List<UserDto> orgAdmin =  restTemplateClient.getUserByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, orgId);
+            NotifyTemplate templateOnboard = NotifyTemplate.CHANGE_PROCESS_ONBOARD;
+            NotificationDto notifyDto = NotificationDto.builder()
+                    .title(String.format(templateOnboard.getTitle(), jd.getTitle()))
+                    .message(String.format(templateOnboard.getMessage(), hrContact.getFullName(), candidateInfoApplyDto.getFullName()))
+                    .type(Constants.NotificationType.USER)
+                    .redirectUrl(Constants.Path.CANDIDATE_DETAIL + candidateInfoApplyDto.getId())
+                    .senderId(hrContactId)
+                    .receiverIds(orgAdmin.stream().map(UserDto::getId).toList())
+                    .build();
+            kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
+        }
 
         // send email to candidate
         if(request.isSendEmail()){
@@ -537,6 +581,34 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         jobAdCandidate.setEliminateDate(ZonedDateTime.now(CommonConstants.ZONE.UTC).toInstant());
         jobAdCandidateRepository.save(jobAdCandidate);
 
+        // send notify to candidate
+        JobAdDto jd = jobAdService.findById(jobAdCandidate.getJobAdId());
+        CandidateInfoApplyDto candidateInfoApplyDto = candidateInfoApplyService.getById(jobAdCandidate.getCandidateInfoId());
+        NotifyTemplate notifyTemplate = NotifyTemplate.ELIMINATE_CANDIDATE;
+        NotificationDto notificationDto = NotificationDto.builder()
+                .title(String.format(notifyTemplate.getTitle(), jd.getTitle()))
+                .message(String.format(notifyTemplate.getMessage()))
+                .type(Constants.NotificationType.USER)
+                .redirectUrl(Constants.Path.CANDIDATE_MESSAGE_CHAT + "?id=" + jobAdCandidate.getId())
+                .senderId(hrContactId)
+                .receiverIds(List.of(candidateInfoApplyDto.getCandidateId()))
+                .build();
+        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
+
+        // send notify to org admin
+        UserDto hrContact = restTemplateClient.getUser(hrContactId);
+        List<UserDto> orgAdmin = restTemplateClient.getUserByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, orgId);
+        NotifyTemplate templateOnboard = NotifyTemplate.ELIMINATE_CANDIDATE_NOTIFY_ORG_ADMIN;
+        NotificationDto notifyDto = NotificationDto.builder()
+                .title(String.format(templateOnboard.getTitle(), jd.getTitle()))
+                .message(String.format(templateOnboard.getMessage(), hrContact.getFullName(), candidateInfoApplyDto.getFullName()))
+                .type(Constants.NotificationType.USER)
+                .redirectUrl(Constants.Path.CANDIDATE_DETAIL + candidateInfoApplyDto.getId())
+                .senderId(hrContactId)
+                .receiverIds(orgAdmin.stream().map(UserDto::getId).toList())
+                .build();
+        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
+
         if(request.isSendEmail()){
             EmailConfigDto emailConfigDto = restTemplateClient.getEmailConfigByOrg();
             if(ObjectUtils.isEmpty(emailConfigDto)){
@@ -565,7 +637,6 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
 
             // get data to replace placeholder
             CandidateInfoApplyDto candidateInfo = candidateInfoApplyService.getById(jobAdCandidate.getCandidateInfoId());
-            UserDto hrContact = restTemplateClient.getUser(hrContactId);
             JobAdDto jobAd = jobAdService.findById(jobAdCandidate.getJobAdId());
             if(ObjectUtils.isEmpty(hrContact) || ObjectUtils.isEmpty(candidateInfo) || ObjectUtils.isEmpty(jobAd)){
                 throw new AppException(CommonErrorCode.ERROR);
@@ -631,6 +702,21 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
 
         jobAdCandidate.setOnboardDate(request.getNewOnboardDate());
         jobAdCandidateRepository.save(jobAdCandidate);
+
+        // send notify to candidate
+        JobAdDto jd = jobAdService.findById(jobAdCandidate.getJobAdId());
+        CandidateInfoApplyDto candidateInfoApplyDto = candidateInfoApplyService.getById(jobAdCandidate.getCandidateInfoId());
+        String formattedOnboardDate = DateUtils.instantToString_HCM(jobAdCandidate.getOnboardDate(), CommonConstants.DATE_TIME.DD_MM_YYYY_HYPHEN);
+        NotifyTemplate notifyTemplate = NotifyTemplate.CHANGE_ONBOARD_DATE;
+        NotificationDto notificationDto = NotificationDto.builder()
+                .title(String.format(notifyTemplate.getTitle(), jd.getTitle()))
+                .message(String.format(notifyTemplate.getMessage(), formattedOnboardDate))
+                .type(Constants.NotificationType.USER)
+                .redirectUrl(Constants.Path.CANDIDATE_MESSAGE_CHAT + "?id=" + jobAdCandidate.getId())
+                .senderId(hrContactId)
+                .receiverIds(List.of(candidateInfoApplyDto.getCandidateId()))
+                .build();
+        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
     }
 
     @Override

@@ -44,12 +44,15 @@ public class Constants {
 
     public static class Path {
         private Path() {}
+        public static final String HOME = "/";
+        public static final String HOME_ORG = "/org-info";
         public static final String VERIFY_EMAIL = "/account/verify-email";
         public static final String RESET_PASSWORD = "/account/recovery";
         public static final String INVITE_JOIN_ORG = "/invite-join-org";
         public static final String LOGIN_ERROR = "/auth/login?error=true";
         public static final String ORG_MEMBER = "/org-admin/org-member";
         public static final String LOGIN_SUCCESS_METHOD = "?method=google";
+        public static final String ORG_LIST = "/system-admin/organizations";
     }
 
     public static class KafkaTopic {

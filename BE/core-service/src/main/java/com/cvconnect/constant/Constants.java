@@ -42,8 +42,13 @@ public class Constants {
 
     public static class Path {
         private Path() {}
+        public static final String HOME = "/";
+        public static final String HOME_ORG = "/org-info";
         public static final String JOB_AD = "/org/job-ad";
         public static final String JOB_AD_CANDIDATE_DETAIL = "/org/candidate/detail";
+        public static final String CANDIDATE_MESSAGE_CHAT = "/message";
+        public static final String CANDIDATE_DETAIL = "/org/candidate/detail/";
+        public static final String ORG_CALENDAR = "/org/calendar";
     }
 
     public static class KafkaTopic {
