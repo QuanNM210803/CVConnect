@@ -73,7 +73,15 @@ public class Messages {
     /*
     * Notification messages
     * */
-    public static final String NEW_MEMBER_JOINED_ORG_TITLE = "Doanh nghiệp của bạn có thành viên mới";
+    public static final String NEW_MEMBER_JOINED_ORG_TITLE = "<strong>Doanh nghiệp của bạn có thành viên mới</strong>";
     public static final String NEW_MEMBER_JOINED_ORG_MESSAGE = "<strong>%s</strong> đã tham gia doanh nghiệp với vai trò <strong>%s</strong>";
+    public static final String NEW_ORGANIZATION_CREATED_TITLE = "<strong>Doanh nghiệp mới được tạo</strong>";
+    public static final String NEW_ORGANIZATION_CREATED_MESSAGE = "Doanh nghiệp <strong>%s</strong> vừa được tạo bởi <strong>%s</strong>";
+    public static final String REJECTED_INVITE_JOIN_ORG_TITLE = "<strong>Từ chối Lời mời tham gia doanh nghiệp</strong>";
+    public static final String REJECTED_INVITE_JOIN_ORG_MESSAGE = "<strong>%s</strong> đã từ chối lời mời tham gia doanh nghiệp của bạn.";
+    public static final String ACTIVE_ORG_MEMBER_TITLE = "<strong>Tài khoản thành viên doanh nghiệp của bạn đã được kích hoạt trở lại</strong>";
+    public static final String ACTIVE_ORG_MEMBER_MESSAGE = "Tài khoản thành viên trong doanh nghiệp <strong>%s</strong> của bạn đã được kích hoạt trở lại.";
+    public static final String DEACTIVE_ORG_MEMBER_TITLE = "<strong>Tài khoản thành viên doanh nghiệp của bạn đã bị khóa</strong>";
+    public static final String DEACTIVE_ORG_MEMBER_MESSAGE = "Tài khoản thành viên trong doanh nghiệp <strong>%s</strong> của bạn đã bị khóa.";
 }
 

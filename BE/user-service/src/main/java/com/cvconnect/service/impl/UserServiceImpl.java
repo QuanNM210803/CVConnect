@@ -498,6 +498,19 @@ public class UserServiceImpl implements UserService {
         return userDto.configResponse();
     }
 
+    @Override
+    public List<UserDto> findAllSystemAdmin() {
+        String roleCode = Constants.RoleCode.SYSTEM_ADMIN;
+        List<User> users = userRepository.getUsersByRoleCode(roleCode, true);
+        if(ObjectUtils.isEmpty(users)){
+            return List.of();
+        }
+        List<UserDto> userDtos = ObjectMapperUtils.convertToList(users, UserDto.class);
+        return userDtos.stream()
+                .map(UserDto::configResponse)
+                .toList();
+    }
+
     private <T> UserDetailDto<T> getUserDetail(Long userId, Long roleId) {
         RoleUserDto roleUserDto = roleUserService.findByUserIdAndRoleId(userId, roleId);
         if(roleUserDto == null) {

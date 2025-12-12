@@ -32,6 +32,7 @@ import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.*;
+import org.apache.xmlbeans.impl.xb.xsdschema.ListDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -186,32 +187,48 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         inviteJoinOrgDto.setStatus(replyStatus.name());
         inviteJoinOrgService.create(List.of(inviteJoinOrgDto));
 
-        OrgMember newOrgMember = new OrgMember();
-        newOrgMember.setOrgId(inviteJoinOrgDto.getOrgId());
-        newOrgMember.setUserId(inviteJoinOrgDto.getUserId());
-        newOrgMember.setInviter(inviteJoinOrgDto.getCreatedBy());
-        orgMemberRepository.save(newOrgMember);
+        if(InviteJoinStatus.REJECTED.equals(replyStatus)) {
+            // send notification to org-admin
+            UserDto inviteFrom = userService.findByUsername(inviteJoinOrgDto.getCreatedBy());
+            UserDto inviteTo = userService.findById(inviteJoinOrgDto.getUserId());
+            NotifyTemplate template = NotifyTemplate.REJECTED_INVITE_JOIN_ORG;
+            NotificationDto notificationDto = NotificationDto.builder()
+                    .title(String.format(template.getTitle()))
+                    .message(String.format(template.getMessage(), inviteTo.getFullName()))
+                    .type(Constants.NotificationType.USER)
+                    .redirectUrl(Constants.Path.ORG_MEMBER)
+                    .senderId(inviteJoinOrgDto.getUserId())
+                    .receiverIds(List.of(inviteFrom.getId()))
+                    .build();
+            kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
+        } else if(InviteJoinStatus.ACCEPTED.equals(replyStatus)) {
+            OrgMember newOrgMember = new OrgMember();
+            newOrgMember.setOrgId(inviteJoinOrgDto.getOrgId());
+            newOrgMember.setUserId(inviteJoinOrgDto.getUserId());
+            newOrgMember.setInviter(inviteJoinOrgDto.getCreatedBy());
+            orgMemberRepository.save(newOrgMember);
 
-        RoleUserDto roleUserDto = RoleUserDto.builder()
-                .roleId(inviteJoinOrgDto.getRoleId())
-                .userId(inviteJoinOrgDto.getUserId())
-                .build();
-        roleUserService.createRoleUser(roleUserDto);
+            RoleUserDto roleUserDto = RoleUserDto.builder()
+                    .roleId(inviteJoinOrgDto.getRoleId())
+                    .userId(inviteJoinOrgDto.getUserId())
+                    .build();
+            roleUserService.createRoleUser(roleUserDto);
 
-        // send notification to org-admin
-        UserDto userDto = userService.findById(inviteJoinOrgDto.getUserId());
-        RoleDto roleDto = roleService.getRoleById(inviteJoinOrgDto.getRoleId());
-        List<UserDto> orgAdmin = userService.getUsersByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, inviteJoinOrgDto.getOrgId());
-        NotifyTemplate template = NotifyTemplate.NEW_MEMBER_JOINED_ORG;
-        NotificationDto notificationDto = NotificationDto.builder()
-                .title(String.format(template.getTitle()))
-                .message(String.format(template.getMessage(), userDto.getFullName(), roleDto.getName()))
-                .type(Constants.NotificationType.USER)
-                .redirectUrl(Constants.Path.ORG_MEMBER + "?mode=view&targetId=" + inviteJoinOrgDto.getUserId())
-                .senderId(inviteJoinOrgDto.getUserId())
-                .receiverIds(orgAdmin.stream().map(UserDto::getId).toList())
-                .build();
-        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
+            // send notification to org-admin
+            UserDto userDto = userService.findById(inviteJoinOrgDto.getUserId());
+            RoleDto roleDto = roleService.getRoleById(inviteJoinOrgDto.getRoleId());
+            List<UserDto> orgAdmin = userService.getUsersByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, inviteJoinOrgDto.getOrgId());
+            NotifyTemplate template = NotifyTemplate.NEW_MEMBER_JOINED_ORG;
+            NotificationDto notificationDto = NotificationDto.builder()
+                    .title(String.format(template.getTitle()))
+                    .message(String.format(template.getMessage(), userDto.getFullName(), roleDto.getName()))
+                    .type(Constants.NotificationType.USER)
+                    .redirectUrl(Constants.Path.ORG_MEMBER + "?mode=view&targetId=" + inviteJoinOrgDto.getUserId())
+                    .senderId(inviteJoinOrgDto.getUserId())
+                    .receiverIds(orgAdmin.stream().map(UserDto::getId).toList())
+                    .build();
+            kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
+        }
     }
 
     @Override
@@ -329,6 +346,19 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         if(!existsOrgAdmin) {
             throw new AppException(UserErrorCode.ORG_MUST_HAVE_AT_LEAST_ONE_ADMIN);
         }
+
+        // send notify
+        OrgDto orgDto = restTemplateClient.getOrgById(orgId);
+        NotifyTemplate template = request.getActive() ? NotifyTemplate.ACTIVE_ORG_MEMBER : NotifyTemplate.DEACTIVE_ORG_MEMBER;
+        NotificationDto notificationDto = NotificationDto.builder()
+                .title(String.format(template.getTitle()))
+                .message(String.format(template.getMessage(), orgDto.getName()))
+                .type(Constants.NotificationType.USER)
+                .redirectUrl(request.getActive() ? Constants.Path.HOME_ORG : Constants.Path.HOME)
+                .senderId(WebUtils.getCurrentUserId())
+                .receiverIds(request.getIds())
+                .build();
+        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
     }
 
     @Override

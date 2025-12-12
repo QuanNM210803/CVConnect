@@ -37,4 +37,5 @@ public interface UserService {
     void retrieveAdminSystemRole(Long userId);
     InputStreamResource exportUser(UserFilterRequest filter);
     UserDto getMyProfiles();
+    List<UserDto> findAllSystemAdmin();
 }

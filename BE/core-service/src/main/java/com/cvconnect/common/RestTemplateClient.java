@@ -144,4 +144,14 @@ public class RestTemplateClient {
         return response.getData();
     }
 
+    public List<UserDto> getUserByRoleCodeOrg(String roleCode, Long orgId) {
+        Response<List<UserDto>> response = restTemplateService.getMethodRestTemplate(
+                SERVER_USER_SERVICE + "/user/internal/get-by-role-code-org-id/{roleCode}/{orgId}",
+                new ParameterizedTypeReference<Response<List<UserDto>>>() {},
+                roleCode,
+                orgId
+        );
+        return response.getData();
+    }
+
 }

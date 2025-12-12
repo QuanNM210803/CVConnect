@@ -134,4 +134,22 @@ public class Messages {
     public static final String JOB_AD_CREATED_MESSAGE = "Bạn đã được chỉ định làm người liên hệ cho tin tuyển dụng <strong>%s</strong>";
     public static final String CANDIDATE_APPLY_JOB_AD_TITLE = "<strong>Ứng viên mới ứng tuyển</strong>";
     public static final String CANDIDATE_APPLY_JOB_AD_MESSAGE = "<strong>%s</strong> đã ứng tuyển vào tin tuyển dụng <strong>%s</strong>";
+    public static final String HR_VIEWED_CANDIDATE_PROFILE_TITLE = "<strong>Tin tuyển dụng: %s</strong>";
+    public static final String HR_VIEWED_CANDIDATE_PROFILE_MESSAGE = "Nhà tuyển dụng đã xem hồ sơ của bạn";
+    public static final String CHANGE_CANDIDATE_PROCESS_TITLE = "<strong>Tin tuyển dụng: %s</strong>";
+    public static final String CHANGE_CANDIDATE_PROCESS_MESSAGE = "Hồ sơ của bạn đã được chuyển đến vòng <strong>%s</strong>";
+    public static final String ELIMINATE_CANDIDATE_TITLE = "<strong>Tin tuyển dụng: %s</strong>";
+    public static final String ELIMINATE_CANDIDATE_MESSAGE = "Hồ sơ của bạn không được tiếp tục trong quá trình tuyển dụng.";
+    public static final String CHANGE_ONBOARD_DATE_TITLE = "<strong>Tin tuyển dụng: %s</strong>";
+    public static final String CHANGE_ONBOARD_DATE_MESSAGE = "Ngày bắt đầu làm việc của bạn đã được thay đổi đến <strong>%s</strong>";
+    public static final String CHANGE_PROCESS_ONBOARD_TITLE = "<strong>Tin tuyển dụng: %s</strong>";
+    public static final String CHANGE_PROCESS_ONBOARD_MESSAGE = "<strong>%s</strong> đã chuyển ứng viên <strong>%s</strong> tới vòng Onboard.";
+    public static final String ELIMINATE_CANDIDATE_NOTIFY_ORG_ADMIN_TITLE = "<strong>Tin tuyển dụng: %s</strong>";
+    public static final String ELIMINATE_CANDIDATE_NOTIFY_ORG_ADMIN_MESSAGE = "<strong>%s</strong> đã loại ứng viên <strong>%s</strong> khỏi quá trình tuyển dụng";
+    public static final String ORG_DEACTIVATE_NOTIFICATION_TITLE = "<strong>Doanh nghiệp của bạn đã bị vô hiệu hóa</strong>";
+    public static final String ORG_DEACTIVATE_NOTIFICATION_MESSAGE = "Doanh nghiệp <strong>%s</strong> của bạn đã bị vô hiệu hóa. Vui lòng liên hệ bộ phận hỗ trợ để biết thêm chi tiết.";
+    public static final String ORG_ACTIVATE_NOTIFICATION_TITLE = "<strong>Doanh nghiệp của bạn đã được kích hoạt trở lại</strong>";
+    public static final String ORG_ACTIVATE_NOTIFICATION_MESSAGE = "Doanh nghiệp <strong>%s</strong> của bạn đã được kích hoạt lại. Vui lòng đăng nhập lại để tiếp tục sử dụng.";
+    public static final String CREATED_SCHEDULED_TITLE = "<strong>Bạn có lịch hẹn mới trong tin tuyển dụng %s</strong>";
+    public static final String CREATED_SCHEDULED_MESSAGE = "Lịch hẹn <strong>%s</strong> đã được tạo vào <strong>%s</strong>";
 }

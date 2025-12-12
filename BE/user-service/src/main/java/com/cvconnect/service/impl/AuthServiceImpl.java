@@ -1,8 +1,10 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
+import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.common.TokenInfo;
 import com.cvconnect.dto.orgMember.OrgMemberDto;
+import com.cvconnect.enums.NotifyTemplate;
 import com.cvconnect.utils.JwtUtils;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.auth.*;
@@ -26,6 +28,7 @@ import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.exception.ErrorCode;
 import nmquan.commonlib.model.JwtUser;
 import nmquan.commonlib.service.SendEmailService;
+import nmquan.commonlib.utils.KafkaUtils;
 import nmquan.commonlib.utils.LocalizationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,6 +74,8 @@ public class AuthServiceImpl implements AuthService {
     private RestTemplateClient restTemplateClient;
     @Autowired
     private OrgMemberService orgMemberService;
+    @Autowired
+    private KafkaUtils kafkaUtils;
 
     @Value("${jwt.refresh-expiration}")
     private int JWT_REFRESHABLE_DURATION;
@@ -248,6 +253,8 @@ public class AuthServiceImpl implements AuthService {
         if(roleOrgAdmin == null) {
             throw new AppException(CommonErrorCode.ERROR);
         }
+        List<UserDto> orgAdmins = userService.findAllSystemAdmin();
+        List<Long> systemAdminIds = orgAdmins.stream().map(UserDto::getId).toList();
 
         if(existsByEmail == null) {
             // create account org-admin
@@ -274,6 +281,18 @@ public class AuthServiceImpl implements AuthService {
             // update orgId for org-admin
             saved.setOrgId(orgResponse.getId());
             orgMemberService.createOrgMember(saved);
+
+            // send notify to system-admin
+            NotifyTemplate template = NotifyTemplate.NEW_ORGANIZATION_CREATED;
+            NotificationDto notificationDto = NotificationDto.builder()
+                    .title(String.format(template.getTitle()))
+                    .message(String.format(template.getMessage(), request.getOrganization().getName(), userDto.getFullName()))
+                    .type(Constants.NotificationType.USER)
+                    .redirectUrl(Constants.Path.ORG_LIST + "?targetId=" + orgResponse.getId())
+                    .senderId(userDto.getId())
+                    .receiverIds(systemAdminIds)
+                    .build();
+            kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
 
             // send email require verification
             String token = jwtUtils.generateTokenVerifyEmail();
@@ -328,6 +347,18 @@ public class AuthServiceImpl implements AuthService {
             // update orgId for org-admin
             saved.setOrgId(orgResponse.getId());
             orgMemberService.createOrgMember(saved);
+
+            // send notify to system-admin
+            NotifyTemplate template = NotifyTemplate.NEW_ORGANIZATION_CREATED;
+            NotificationDto notificationDto = NotificationDto.builder()
+                    .title(String.format(template.getTitle()))
+                    .message(String.format(template.getMessage(), request.getOrganization().getName(), existsByEmail.getFullName()))
+                    .type(Constants.NotificationType.USER)
+                    .redirectUrl(Constants.Path.ORG_LIST + "?targetId=" + orgResponse.getId())
+                    .senderId(existsByEmail.getId())
+                    .receiverIds(systemAdminIds)
+                    .build();
+            kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
 
             return RegisterOrgAdminResponse.builder()
                     .id(existsByEmail.getId())

@@ -109,4 +109,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     )
     Page<UserProjection> filter(UserFilterRequest request, Pageable pageable);
 
+    @Query("SELECT DISTINCT u FROM User u " +
+            "JOIN RoleUser ru ON u.id = ru.userId " +
+            "JOIN Role r ON ru.roleId = r.id " +
+            "WHERE r.code = :roleCode and (:active IS NULL OR u.isActive = :active)"
+    )
+    List<User> getUsersByRoleCode(String roleCode, Boolean active);
+
 }
