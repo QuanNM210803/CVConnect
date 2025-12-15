@@ -4,7 +4,7 @@ import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.common.TokenInfo;
 import com.cvconnect.dto.orgMember.OrgMemberDto;
-import com.cvconnect.enums.NotifyTemplate;
+import com.cvconnect.enums.*;
 import com.cvconnect.utils.JwtUtils;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.auth.*;
@@ -12,9 +12,6 @@ import com.cvconnect.dto.candidate.CandidateDto;
 import com.cvconnect.dto.role.RoleDto;
 import com.cvconnect.dto.roleUser.RoleUserDto;
 import com.cvconnect.dto.user.UserDto;
-import com.cvconnect.enums.AccessMethod;
-import com.cvconnect.enums.TokenType;
-import com.cvconnect.enums.UserErrorCode;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.CookieUtils;
 import com.cvconnect.utils.RedisUtils;
@@ -291,6 +288,7 @@ public class AuthServiceImpl implements AuthService {
                     .redirectUrl(Constants.Path.ORG_LIST + "?targetId=" + orgResponse.getId())
                     .senderId(userDto.getId())
                     .receiverIds(systemAdminIds)
+                    .receiverType(MemberType.MANAGEMENT.getName())
                     .build();
             kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
 
@@ -357,6 +355,7 @@ public class AuthServiceImpl implements AuthService {
                     .redirectUrl(Constants.Path.ORG_LIST + "?targetId=" + orgResponse.getId())
                     .senderId(existsByEmail.getId())
                     .receiverIds(systemAdminIds)
+                    .receiverType(MemberType.MANAGEMENT.getName())
                     .build();
             kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
 

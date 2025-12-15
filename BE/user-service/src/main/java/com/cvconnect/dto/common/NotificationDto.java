@@ -18,6 +18,7 @@ public class NotificationDto {
     private String message;
     private Long senderId;
     private Long receiverId;
+    private String receiverType;
     private String type;
     private String redirectUrl;
     private Boolean isRead;

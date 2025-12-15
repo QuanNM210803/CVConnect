@@ -16,10 +16,7 @@ import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.dto.jobAd.JobAdProcessDto;
 import com.cvconnect.dto.org.OrgAddressDto;
 import com.cvconnect.entity.Calendar;
-import com.cvconnect.enums.CalendarType;
-import com.cvconnect.enums.CoreErrorCode;
-import com.cvconnect.enums.NotifyTemplate;
-import com.cvconnect.enums.ProcessTypeEnum;
+import com.cvconnect.enums.*;
 import com.cvconnect.repository.CalendarRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.CoreServiceUtils;
@@ -204,6 +201,7 @@ public class CalendarServiceImpl implements CalendarService {
                     .redirectUrl(Constants.Path.ORG_CALENDAR)
                     .senderId(userId)
                     .receiverIds(request.getParticipantIds())
+                    .receiverType(MemberType.ORGANIZATION.getName())
                     .build();
             kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
         } else {
@@ -217,6 +215,7 @@ public class CalendarServiceImpl implements CalendarService {
                         .redirectUrl(Constants.Path.ORG_CALENDAR)
                         .senderId(userId)
                         .receiverIds(request.getParticipantIds())
+                        .receiverType(MemberType.ORGANIZATION.getName())
                         .build();
                 kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
             }
