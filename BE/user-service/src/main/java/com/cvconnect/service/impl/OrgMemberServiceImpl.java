@@ -199,6 +199,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
                     .redirectUrl(Constants.Path.ORG_MEMBER)
                     .senderId(inviteJoinOrgDto.getUserId())
                     .receiverIds(List.of(inviteFrom.getId()))
+                    .receiverType(MemberType.ORGANIZATION.getName())
                     .build();
             kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
         } else if(InviteJoinStatus.ACCEPTED.equals(replyStatus)) {
@@ -226,6 +227,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
                     .redirectUrl(Constants.Path.ORG_MEMBER + "?mode=view&targetId=" + inviteJoinOrgDto.getUserId())
                     .senderId(inviteJoinOrgDto.getUserId())
                     .receiverIds(orgAdmin.stream().map(UserDto::getId).toList())
+                    .receiverType(MemberType.ORGANIZATION.getName())
                     .build();
             kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
         }
@@ -357,6 +359,7 @@ public class OrgMemberServiceImpl implements OrgMemberService {
                 .redirectUrl(request.getActive() ? Constants.Path.HOME_ORG : Constants.Path.HOME)
                 .senderId(WebUtils.getCurrentUserId())
                 .receiverIds(request.getIds())
+                .receiverType(MemberType.ORGANIZATION.getName())
                 .build();
         kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
     }

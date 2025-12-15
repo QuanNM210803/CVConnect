@@ -7,10 +7,8 @@ import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.ChatMessageRequest;
-import com.cvconnect.dto.SocketSessionDto;
 import com.cvconnect.enums.RoomSocketType;
 import com.cvconnect.service.ConversationService;
-import com.cvconnect.service.SocketSessionService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.validation.ConstraintViolation;
@@ -24,7 +22,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -35,7 +32,6 @@ import java.util.UUID;
 public class SocketHandler {
     private final SocketIOServer server;
 
-    private final SocketSessionService socketSessionService;
     private final ConversationService conversationService;
     private final Validator validator;
 
@@ -47,12 +43,6 @@ public class SocketHandler {
         try{
             String token = client.getHandshakeData().getSingleUrlParam("token");
             JwtUser jwtUser = JwtUtils.validate(token, SECRET_KEY);
-            SocketSessionDto socketSession = SocketSessionDto.builder()
-                    .sessionId(client.getSessionId().toString())
-                    .userId(Long.valueOf(jwtUser.getUser().get("id").toString()))
-                    .createdAt(Instant.now())
-                    .build();
-            socketSessionService.createSocketSession(socketSession);
             client.joinRoom(RoomSocketType.USER.getPrefix() + jwtUser.getUser().get("id").toString());
 
             log.info("Client connected: {}", client.getSessionId());
@@ -65,7 +55,6 @@ public class SocketHandler {
     @OnDisconnect
     public void onDisconnect(SocketIOClient client) {
         log.info("Client disconnected: {}", client.getSessionId());
-        socketSessionService.deleteSocketSession(client.getSessionId().toString());
     }
 
     @PostConstruct

@@ -176,6 +176,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 .message(String.format(template.getMessage(), candidateInfoApplyDto.getFullName(), jobAdDto.getTitle()))
                 .senderId(userId)
                 .receiverIds(List.of(jobAdDto.getHrContactId()))
+                .receiverType(MemberType.ORGANIZATION.getName())
                 .type(Constants.NotificationType.USER)
                 .redirectUrl(Constants.Path.JOB_AD_CANDIDATE_DETAIL + "/" + candidateInfoApplyId)
                 .build();
@@ -382,6 +383,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                             .redirectUrl(Constants.Path.CANDIDATE_MESSAGE_CHAT + "?id=" + jobAdCandidateDto.getId())
                             .senderId(jobAdCandidateDto.getJobAd().getHrContactId())
                             .receiverIds(List.of(projection.getCandidateId()))
+                            .receiverType(MemberType.CANDIDATE.getName())
                             .build();
                     kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
                 }
@@ -477,6 +479,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 .redirectUrl(Constants.Path.CANDIDATE_MESSAGE_CHAT + "?id=" + jobAdCandidate.getId())
                 .senderId(hrContactId)
                 .receiverIds(List.of(candidateInfoApplyDto.getCandidateId()))
+                .receiverType(MemberType.CANDIDATE.getName())
                 .build();
         kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
 
@@ -492,6 +495,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                     .redirectUrl(Constants.Path.CANDIDATE_DETAIL + candidateInfoApplyDto.getId())
                     .senderId(hrContactId)
                     .receiverIds(orgAdmin.stream().map(UserDto::getId).toList())
+                    .receiverType(MemberType.ORGANIZATION.getName())
                     .build();
             kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
         }
@@ -592,6 +596,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 .redirectUrl(Constants.Path.CANDIDATE_MESSAGE_CHAT + "?id=" + jobAdCandidate.getId())
                 .senderId(hrContactId)
                 .receiverIds(List.of(candidateInfoApplyDto.getCandidateId()))
+                .receiverType(MemberType.CANDIDATE.getName())
                 .build();
         kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
 
@@ -606,6 +611,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 .redirectUrl(Constants.Path.CANDIDATE_DETAIL + candidateInfoApplyDto.getId())
                 .senderId(hrContactId)
                 .receiverIds(orgAdmin.stream().map(UserDto::getId).toList())
+                .receiverType(MemberType.ORGANIZATION.getName())
                 .build();
         kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
 
@@ -715,6 +721,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                 .redirectUrl(Constants.Path.CANDIDATE_MESSAGE_CHAT + "?id=" + jobAdCandidate.getId())
                 .senderId(hrContactId)
                 .receiverIds(List.of(candidateInfoApplyDto.getCandidateId()))
+                .receiverType(MemberType.CANDIDATE.getName())
                 .build();
         kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
     }

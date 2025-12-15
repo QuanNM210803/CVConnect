@@ -10,6 +10,7 @@ import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.dto.org.*;
 import com.cvconnect.entity.Organization;
 import com.cvconnect.enums.CoreErrorCode;
+import com.cvconnect.enums.MemberType;
 import com.cvconnect.enums.NotifyTemplate;
 import com.cvconnect.enums.TemplateExport;
 import com.cvconnect.repository.OrgRepository;
@@ -428,7 +429,7 @@ public class OrgServiceImpl implements OrgService {
         // update accounts status
         restTemplateClient.updateAccountStatusByOrgIds(request);
 
-        // send notification
+        // send notification to org admin
         Map<Long, Organization> orgMap = orgRepository.findAllById(request.getIds()).stream()
                 .collect(Collectors.toMap(Organization::getId, org -> org));
         if(request.getActive()){
@@ -442,6 +443,7 @@ public class OrgServiceImpl implements OrgService {
                         .redirectUrl(Constants.Path.HOME_ORG)
                         .senderId(WebUtils.getCurrentUserId())
                         .receiverIds(orgAdmins.stream().map(UserDto::getId).toList())
+                        .receiverType(MemberType.ORGANIZATION.getName())
                         .build();
                 kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
             }
@@ -452,11 +454,12 @@ public class OrgServiceImpl implements OrgService {
                 NotificationDto notifyDto = NotificationDto.builder()
                         .title(String.format(template.getTitle()))
                         .message(String.format(template.getMessage(), org.getName()))
-                                .type(Constants.NotificationType.USER)
-                                .redirectUrl(Constants.Path.HOME)
-                                .senderId(WebUtils.getCurrentUserId())
-                                .receiverIds(orgAdmins.stream().map(UserDto::getId).toList())
-                                .build();
+                        .type(Constants.NotificationType.USER)
+                        .redirectUrl(Constants.Path.HOME)
+                        .senderId(WebUtils.getCurrentUserId())
+                        .receiverIds(orgAdmins.stream().map(UserDto::getId).toList())
+                        .receiverType(MemberType.ORGANIZATION.getName())
+                        .build();
                 kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
             }
         }

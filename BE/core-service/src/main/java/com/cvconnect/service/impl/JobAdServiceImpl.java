@@ -179,6 +179,7 @@ public class JobAdServiceImpl implements JobAdService {
                 .message(String.format(template.getMessage(), jobAd.getTitle()))
                 .senderId(WebUtils.getCurrentUserId())
                 .receiverIds(List.of(jobAd.getHrContactId()))
+                .receiverType(MemberType.ORGANIZATION.getName())
                 .type(Constants.NotificationType.USER)
                 .redirectUrl(Constants.Path.JOB_AD + "?mode=view&targetId=" + jobAd.getId())
                 .build();

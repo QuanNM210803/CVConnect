@@ -9,7 +9,6 @@ import com.cvconnect.enums.RoomSocketType;
 import com.cvconnect.repository.NotificationRepository;
 import com.cvconnect.service.MongoQueryService;
 import com.cvconnect.service.NotificationService;
-import com.cvconnect.service.SocketSessionService;
 import nmquan.commonlib.dto.response.FilterResponse;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
@@ -30,8 +29,6 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
-    @Autowired
-    private SocketSessionService socketSessionService;
     @Autowired
     private MongoQueryService mongoQueryService;
     @Autowired
