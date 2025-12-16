@@ -1,5 +1,6 @@
 package com.cvconnect.common;
 
+import com.cvconnect.dto.failedRollback.FailedRollbackOrgCreation;
 import com.cvconnect.dto.internal.response.AttachFileDto;
 import com.cvconnect.dto.auth.OrganizationRequest;
 import com.cvconnect.dto.internal.response.OrgDto;
@@ -67,6 +68,15 @@ public class RestTemplateClient {
                 SERVER_CORE_SERVICE + "/attach-file/internal/delete-by-ids",
                 new ParameterizedTypeReference<Response<Void>>() {},
                 ids
+        );
+    }
+
+    // rollback org creation
+    public void deleteOrg(FailedRollbackOrgCreation payload) {
+        restTemplateService.postMethodRestTemplate(
+                SERVER_CORE_SERVICE + "/org/internal/delete",
+                new ParameterizedTypeReference<Response<Void>>() {},
+                payload
         );
     }
 
