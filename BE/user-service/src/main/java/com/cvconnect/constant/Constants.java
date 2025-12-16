@@ -59,4 +59,12 @@ public class Constants {
         private KafkaTopic() {}
         public static final String NOTIFICATION = "notification-topic";
     }
+
+    public static class BeanName {
+        public static final String TASK_SCHEDULER = "taskScheduler";
+    }
+
+    public static class JobName {
+        public static final String FAILED_ROLLBACK_RETRY = "failed_rollback_retry";
+    }
 }

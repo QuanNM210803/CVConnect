@@ -1,5 +1,6 @@
 package com.cvconnect.controller;
 
+import com.cvconnect.dto.org.FailedRollbackOrgCreation;
 import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.org.OrgFilterRequest;
 import com.cvconnect.dto.org.OrganizationRequest;
@@ -8,7 +9,6 @@ import com.cvconnect.service.OrgService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import nmquan.commonlib.annotation.InternalRequest;
-import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.constant.MessageConstants;
 import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
 import nmquan.commonlib.dto.response.FilterResponse;
@@ -121,5 +121,13 @@ public class OrgController {
     @PreAuthorize("hasAnyAuthority('ORG:VIEW', 'SYSTEM_ADMIN')")
     public ResponseEntity<Response<OrgDto>> getOrgDetails(@PathVariable Long orgId) {
         return ResponseUtils.success(orgService.getOrgDetails(orgId));
+    }
+
+    @PostMapping("/internal/delete")
+    @InternalRequest
+    @Operation(summary = "Delete Organization by id")
+    public ResponseEntity<Response<Void>> deleteOrg(@RequestBody FailedRollbackOrgCreation payload) {
+        orgService.deleteOrg(payload);
+        return ResponseUtils.success(null);
     }
 }

@@ -1,5 +1,6 @@
 package com.cvconnect.service;
 
+import com.cvconnect.dto.org.FailedRollbackOrgCreation;
 import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.org.OrgFilterRequest;
 import com.cvconnect.dto.org.OrganizationRequest;
@@ -27,4 +28,5 @@ public interface OrgService {
     InputStreamResource exportOrg(OrgFilterRequest request);
     void changeStatusActive(ChangeStatusActiveRequest request);
     OrgDto getOrgDetails(Long orgId);
+    void deleteOrg(FailedRollbackOrgCreation payload);
 }

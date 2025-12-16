@@ -3,6 +3,8 @@ package com.cvconnect.service.impl;
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.dto.common.NotificationDto;
 import com.cvconnect.dto.common.TokenInfo;
+import com.cvconnect.dto.failedRollback.FailedRollbackDto;
+import com.cvconnect.dto.failedRollback.FailedRollbackOrgCreation;
 import com.cvconnect.dto.orgMember.OrgMemberDto;
 import com.cvconnect.enums.*;
 import com.cvconnect.utils.JwtUtils;
@@ -27,6 +29,7 @@ import nmquan.commonlib.model.JwtUser;
 import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.KafkaUtils;
 import nmquan.commonlib.utils.LocalizationUtils;
+import nmquan.commonlib.utils.ObjectMapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -73,6 +76,8 @@ public class AuthServiceImpl implements AuthService {
     private OrgMemberService orgMemberService;
     @Autowired
     private KafkaUtils kafkaUtils;
+    @Autowired
+    private FailedRollbackService failedRollbackService;
 
     @Value("${jwt.refresh-expiration}")
     private int JWT_REFRESHABLE_DURATION;
@@ -254,116 +259,161 @@ public class AuthServiceImpl implements AuthService {
         List<Long> systemAdminIds = orgAdmins.stream().map(UserDto::getId).toList();
 
         if(existsByEmail == null) {
-            // create account org-admin
-            UserDto userDto = UserDto.builder()
-                    .username(request.getUsername())
-                    .password(passwordEncoder.encode(request.getPassword()))
-                    .email(request.getEmail())
-                    .fullName(request.getFullName())
-                    .accessMethod(AccessMethod.LOCAL.name())
-                    .isEmailVerified(false)
-                    .build();
-            userDto = userService.create(userDto);
+            Long orgId = null;
+            try{
+                // create account org-admin
+                UserDto userDto = UserDto.builder()
+                        .username(request.getUsername())
+                        .password(passwordEncoder.encode(request.getPassword()))
+                        .email(request.getEmail())
+                        .fullName(request.getFullName())
+                        .accessMethod(AccessMethod.LOCAL.name())
+                        .isEmailVerified(false)
+                        .build();
+                userDto = userService.create(userDto);
 
-            RoleDto roleCandidate = roleService.getRoleByCode(Constants.RoleCode.CANDIDATE);
-            if(roleCandidate == null){
-                throw new AppException(UserErrorCode.ROLE_NOT_FOUND);
+                RoleDto roleCandidate = roleService.getRoleByCode(Constants.RoleCode.CANDIDATE);
+                if(roleCandidate == null){
+                    throw new AppException(UserErrorCode.ROLE_NOT_FOUND);
+                }
+
+                // create organization
+                request.getOrganization().setCreatedBy(request.getUsername());
+                IDResponse<Long> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
+                orgId = orgResponse.getId();
+
+                // create org-member as org-admin
+                this.createOrgMemberForUser(userDto.getId(), roleOrgAdmin.getId(), roleCandidate.getId(), orgId);
+
+                // send notify to system-admin
+                NotifyTemplate template = NotifyTemplate.NEW_ORGANIZATION_CREATED;
+                NotificationDto notificationDto = NotificationDto.builder()
+                        .title(String.format(template.getTitle()))
+                        .message(String.format(template.getMessage(), request.getOrganization().getName(), userDto.getFullName()))
+                        .type(Constants.NotificationType.USER)
+                        .redirectUrl(Constants.Path.ORG_LIST + "?targetId=" + orgResponse.getId())
+                        .senderId(userDto.getId())
+                        .receiverIds(systemAdminIds)
+                        .receiverType(MemberType.MANAGEMENT.getName())
+                        .build();
+                kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
+
+                // send email require verification
+                String token = jwtUtils.generateTokenVerifyEmail();
+                Map<String, String> dataPlaceHolders = new HashMap<>();
+                dataPlaceHolders.put("orgName", request.getOrganization().getName());
+                dataPlaceHolders.put("verifyUrl", FRONTEND_URL + Constants.Path.VERIFY_EMAIL + "?token=" + token);
+                dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
+                sendEmailService.sendEmailWithTemplate(
+                        List.of(userDto.getEmail()),
+                        null,
+                        EmailTemplateEnum.VERIFY_ORG_EMAIL,
+                        dataPlaceHolders
+                );
+                this.saveToken(userDto.getId(), TokenType.VERIFY_EMAIL, token, JWT_VERIFY_EMAIL_DURATION);
+
+                return RegisterOrgAdminResponse.builder()
+                        .id(userDto.getId())
+                        .username(userDto.getUsername())
+                        .needVerifyEmail(true)
+                        .duration((long) JWT_VERIFY_EMAIL_DURATION)
+                        .build();
+            } catch (Exception exception){
+                FailedRollbackOrgCreation payload = FailedRollbackOrgCreation.builder()
+                        .orgId(orgId)
+                        .build();
+                try{
+                    if(orgId != null){
+                        restTemplateClient.deleteOrg(payload);
+                    }
+                } catch (Exception e){
+                    failedRollbackService.save(
+                            FailedRollbackDto.builder()
+                                    .type(FailedRollbackType.ORG_CREATION.getType())
+                                    .payload(ObjectMapperUtils.convertToJson(payload))
+                                    .errorMessage(e.getMessage())
+                                    .status(false)
+                                    .retryCount(0)
+                                    .build()
+                    );
+                } finally {
+                    throw exception;
+                }
             }
-            OrgMemberDto saved = this.createOrgMemberForUser(userDto.getId(), roleOrgAdmin.getId(), roleCandidate.getId());
-
-            // create organization
-            request.getOrganization().setCreatedBy(request.getUsername());
-            IDResponse<Long> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
-
-            // update orgId for org-admin
-            saved.setOrgId(orgResponse.getId());
-            orgMemberService.createOrgMember(saved);
-
-            // send notify to system-admin
-            NotifyTemplate template = NotifyTemplate.NEW_ORGANIZATION_CREATED;
-            NotificationDto notificationDto = NotificationDto.builder()
-                    .title(String.format(template.getTitle()))
-                    .message(String.format(template.getMessage(), request.getOrganization().getName(), userDto.getFullName()))
-                    .type(Constants.NotificationType.USER)
-                    .redirectUrl(Constants.Path.ORG_LIST + "?targetId=" + orgResponse.getId())
-                    .senderId(userDto.getId())
-                    .receiverIds(systemAdminIds)
-                    .receiverType(MemberType.MANAGEMENT.getName())
-                    .build();
-            kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
-
-            // send email require verification
-            String token = jwtUtils.generateTokenVerifyEmail();
-            Map<String, String> dataPlaceHolders = new HashMap<>();
-            dataPlaceHolders.put("orgName", request.getOrganization().getName());
-            dataPlaceHolders.put("verifyUrl", FRONTEND_URL + Constants.Path.VERIFY_EMAIL + "?token=" + token);
-            dataPlaceHolders.put("year", String.valueOf(LocalDate.now().getYear()));
-            sendEmailService.sendEmailWithTemplate(
-                    List.of(userDto.getEmail()),
-                    null,
-                    EmailTemplateEnum.VERIFY_ORG_EMAIL,
-                    dataPlaceHolders
-            );
-            this.saveToken(userDto.getId(), TokenType.VERIFY_EMAIL, token, JWT_VERIFY_EMAIL_DURATION);
-
-            return RegisterOrgAdminResponse.builder()
-                    .id(userDto.getId())
-                    .username(userDto.getUsername())
-                    .needVerifyEmail(true)
-                    .duration((long) JWT_VERIFY_EMAIL_DURATION)
-                    .build();
         } else {
             /*
              * Only update when created from OAuth2 and not have password and not registered as org-member
              * */
-            if(existsByEmail.getPassword() != null){
-                throw new AppException(UserErrorCode.EMAIL_EXISTS);
+            Long orgId = null;
+            try{
+                if(existsByEmail.getPassword() != null){
+                    throw new AppException(UserErrorCode.EMAIL_EXISTS);
+                }
+                List<String> providers = new ArrayList<>(Arrays.asList(existsByEmail.getAccessMethod().split(",")));
+                if (providers.contains(AccessMethod.LOCAL.name())) {
+                    throw new AppException(UserErrorCode.EMAIL_EXISTS);
+                }
+                providers.add(AccessMethod.LOCAL.name());
+
+                boolean existsOrgMember = orgMemberService.existsByUserId(existsByEmail.getId());
+                if(existsOrgMember) {
+                    throw new AppException(UserErrorCode.ACCOUNT_REGISTERED_AS_ORG_MEMBER);
+                }
+
+                // create account org-admin
+                existsByEmail.setUsername(request.getUsername());
+                existsByEmail.setPassword(passwordEncoder.encode(request.getPassword()));
+                existsByEmail.setFullName(request.getFullName());
+                existsByEmail.setAccessMethod(String.join(",", providers));
+                userService.create(existsByEmail);
+
+                // create organization
+                request.getOrganization().setCreatedBy(request.getUsername());
+                IDResponse<Long> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
+
+                // create org-member as org-admin
+                this.createOrgMemberForUser(existsByEmail.getId(), roleOrgAdmin.getId(), null, orgResponse.getId());
+
+                // send notify to system-admin
+                NotifyTemplate template = NotifyTemplate.NEW_ORGANIZATION_CREATED;
+                NotificationDto notificationDto = NotificationDto.builder()
+                        .title(String.format(template.getTitle()))
+                        .message(String.format(template.getMessage(), request.getOrganization().getName(), existsByEmail.getFullName()))
+                        .type(Constants.NotificationType.USER)
+                        .redirectUrl(Constants.Path.ORG_LIST + "?targetId=" + orgResponse.getId())
+                        .senderId(existsByEmail.getId())
+                        .receiverIds(systemAdminIds)
+                        .receiverType(MemberType.MANAGEMENT.getName())
+                        .build();
+                kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
+
+                return RegisterOrgAdminResponse.builder()
+                        .id(existsByEmail.getId())
+                        .username(existsByEmail.getUsername())
+                        .needVerifyEmail(false)
+                        .build();
+            } catch (Exception exception){
+                FailedRollbackOrgCreation payload = FailedRollbackOrgCreation.builder()
+                        .orgId(orgId)
+                        .build();
+                try{
+                    if(orgId != null){
+                        restTemplateClient.deleteOrg(payload);
+                    }
+                } catch (Exception e){
+                    failedRollbackService.save(
+                            FailedRollbackDto.builder()
+                                    .type(FailedRollbackType.ORG_CREATION.getType())
+                                    .payload(ObjectMapperUtils.convertToJson(payload))
+                                    .errorMessage(e.getMessage())
+                                    .status(false)
+                                    .retryCount(0)
+                                    .build()
+                    );
+                } finally {
+                    throw exception;
+                }
             }
-            List<String> providers = new ArrayList<>(Arrays.asList(existsByEmail.getAccessMethod().split(",")));
-            if (providers.contains(AccessMethod.LOCAL.name())) {
-                throw new AppException(UserErrorCode.EMAIL_EXISTS);
-            }
-            providers.add(AccessMethod.LOCAL.name());
-
-            boolean existsOrgMember = orgMemberService.existsByUserId(existsByEmail.getId());
-            if(existsOrgMember) {
-                throw new AppException(UserErrorCode.ACCOUNT_REGISTERED_AS_ORG_MEMBER);
-            }
-
-            // create account org-admin
-            existsByEmail.setUsername(request.getUsername());
-            existsByEmail.setPassword(passwordEncoder.encode(request.getPassword()));
-            existsByEmail.setFullName(request.getFullName());
-            existsByEmail.setAccessMethod(String.join(",", providers));
-            userService.create(existsByEmail);
-            OrgMemberDto saved = this.createOrgMemberForUser(existsByEmail.getId(), roleOrgAdmin.getId(), null);
-
-            // create organization
-            request.getOrganization().setCreatedBy(request.getUsername());
-            IDResponse<Long> orgResponse = this.createOrg(request.getOrganization(), logo, coverPhoto);
-
-            // update orgId for org-admin
-            saved.setOrgId(orgResponse.getId());
-            orgMemberService.createOrgMember(saved);
-
-            // send notify to system-admin
-            NotifyTemplate template = NotifyTemplate.NEW_ORGANIZATION_CREATED;
-            NotificationDto notificationDto = NotificationDto.builder()
-                    .title(String.format(template.getTitle()))
-                    .message(String.format(template.getMessage(), request.getOrganization().getName(), existsByEmail.getFullName()))
-                    .type(Constants.NotificationType.USER)
-                    .redirectUrl(Constants.Path.ORG_LIST + "?targetId=" + orgResponse.getId())
-                    .senderId(existsByEmail.getId())
-                    .receiverIds(systemAdminIds)
-                    .receiverType(MemberType.MANAGEMENT.getName())
-                    .build();
-            kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
-
-            return RegisterOrgAdminResponse.builder()
-                    .id(existsByEmail.getId())
-                    .username(existsByEmail.getUsername())
-                    .needVerifyEmail(false)
-                    .build();
         }
     }
 
@@ -551,7 +601,7 @@ public class AuthServiceImpl implements AuthService {
         return restTemplateClient.createOrg(request);
     }
 
-    private OrgMemberDto createOrgMemberForUser(Long userId, Long roleSystemAdminId, Long roleCandidateId){
+    private OrgMemberDto createOrgMemberForUser(Long userId, Long roleSystemAdminId, Long roleCandidateId, Long orgId){
         if(roleCandidateId != null){
             this.createCandidateForUser(userId, roleCandidateId);
         }
@@ -564,7 +614,7 @@ public class AuthServiceImpl implements AuthService {
 
         OrgMemberDto orgMemberDto = OrgMemberDto.builder()
                 .userId(userId)
-                .orgId(0L)
+                .orgId(orgId)
                 .build();
         return orgMemberService.createOrgMember(orgMemberDto);
     }

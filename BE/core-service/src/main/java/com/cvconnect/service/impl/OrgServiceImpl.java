@@ -469,4 +469,29 @@ public class OrgServiceImpl implements OrgService {
     public OrgDto getOrgDetails(Long orgId) {
         return this.getOrgInfoOutside(orgId);
     }
+
+    @Override
+    @Transactional
+    public void deleteOrg(FailedRollbackOrgCreation payload) {
+        Organization org = orgRepository.findById(payload.getOrgId()).orElse(null);
+        if(ObjectUtils.isEmpty(org)) {
+            return;
+        }
+        orgRepository.delete(org);
+
+        // delete attach files
+        List<Long> attachFileIds = new ArrayList<>();
+        if(org.getLogoId() != null) {
+            attachFileIds.add(org.getLogoId());
+        }
+        if(org.getCoverPhotoId() != null) {
+            attachFileIds.add(org.getCoverPhotoId());
+        }
+        if(!attachFileIds.isEmpty()) {
+            attachFileService.deleteByIds(attachFileIds);
+        }
+
+        // delete org industries -- on delete cascade in db
+        // delete org addresses -- on delete cascade in db
+    }
 }
