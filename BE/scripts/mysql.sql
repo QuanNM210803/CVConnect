@@ -384,50 +384,50 @@
 # update `cvconnect-user-service`.menus
 # set label = 'Doanh nghiệp'
 # where code = 'ORG';
-
-create table if not exists `cvconnect-user-service`.`failed_rollback` (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    type VARCHAR(100) NOT NULL,
-    payload TEXT NOT NULL,
-    error_message TEXT,
-    status TINYINT(1) DEFAULT 0,
-    retry_count INT DEFAULT 0,
-
-    `is_active` TINYINT(1) DEFAULT 1,
-    `is_deleted` TINYINT(1) DEFAULT 0,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME,
-    `created_by` VARCHAR(100),
-    `updated_by` VARCHAR(100)
-);
-
-CREATE TABLE IF NOT EXISTS `cvconnect-user-service`.job_config (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-
-    `job_name` VARCHAR(100) NOT NULL UNIQUE,
-    `schedule_type` VARCHAR(50) NOT NULL,
-    `expression` VARCHAR(100) NOT NULL,
-    `description` VARCHAR(500),
-
-    `is_active` TINYINT(1) DEFAULT 1,
-    `is_deleted` TINYINT(1) DEFAULT 0,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME,
-    `created_by` VARCHAR(100),
-    `updated_by` VARCHAR(100)
-);
-
-CREATE TABLE IF NOT EXISTS `cvconnect-user-service`.shedlock (
-    name VARCHAR(64) NOT NULL,
-    lock_until DATETIME NOT NULL,
-    locked_at DATETIME NOT NULL,
-    locked_by VARCHAR(255) NOT NULL,
-    PRIMARY KEY (name)
-);
-
-insert into `cvconnect-user-service`.job_config
-(job_name, schedule_type, expression, description, created_by) values
-('failed_rollback_retry', 'FIXED_RATE', '600', 'Chạy lại Rollback data', 'admin');
+#
+# create table if not exists `cvconnect-user-service`.`failed_rollback` (
+#     id BIGINT PRIMARY KEY AUTO_INCREMENT,
+#     type VARCHAR(100) NOT NULL,
+#     payload TEXT NOT NULL,
+#     error_message TEXT,
+#     status TINYINT(1) DEFAULT 0,
+#     retry_count INT DEFAULT 0,
+#
+#     `is_active` TINYINT(1) DEFAULT 1,
+#     `is_deleted` TINYINT(1) DEFAULT 0,
+#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     `updated_at` DATETIME,
+#     `created_by` VARCHAR(100),
+#     `updated_by` VARCHAR(100)
+# );
+#
+# CREATE TABLE IF NOT EXISTS `cvconnect-user-service`.job_config (
+#     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+#
+#     `job_name` VARCHAR(100) NOT NULL UNIQUE,
+#     `schedule_type` VARCHAR(50) NOT NULL,
+#     `expression` VARCHAR(100) NOT NULL,
+#     `description` VARCHAR(500),
+#
+#     `is_active` TINYINT(1) DEFAULT 1,
+#     `is_deleted` TINYINT(1) DEFAULT 0,
+#     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     `updated_at` DATETIME,
+#     `created_by` VARCHAR(100),
+#     `updated_by` VARCHAR(100)
+# );
+#
+# CREATE TABLE IF NOT EXISTS `cvconnect-user-service`.shedlock (
+#     name VARCHAR(64) NOT NULL,
+#     lock_until DATETIME NOT NULL,
+#     locked_at DATETIME NOT NULL,
+#     locked_by VARCHAR(255) NOT NULL,
+#     PRIMARY KEY (name)
+# );
+#
+# insert into `cvconnect-user-service`.job_config
+# (job_name, schedule_type, expression, description, created_by) values
+# ('failed_rollback_retry', 'FIXED_RATE', '600', 'Chạy lại Rollback data', 'admin');
 
 #----------------------------------------------------------------------------------------------------------------------#
 
