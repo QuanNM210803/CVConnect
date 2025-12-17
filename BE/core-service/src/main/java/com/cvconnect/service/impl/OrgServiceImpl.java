@@ -4,15 +4,14 @@ import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.attachFile.AttachFileDto;
 import com.cvconnect.dto.common.NotificationDto;
+import com.cvconnect.dto.failedRollback.FailedRollbackDto;
+import com.cvconnect.dto.failedRollback.FailedRollbackUpdateAccountStatus;
 import com.cvconnect.dto.industry.IndustryDto;
 import com.cvconnect.dto.internal.response.UserDto;
 import com.cvconnect.dto.jobAd.JobAdDto;
 import com.cvconnect.dto.org.*;
 import com.cvconnect.entity.Organization;
-import com.cvconnect.enums.CoreErrorCode;
-import com.cvconnect.enums.MemberType;
-import com.cvconnect.enums.NotifyTemplate;
-import com.cvconnect.enums.TemplateExport;
+import com.cvconnect.enums.*;
 import com.cvconnect.repository.OrgRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.CoreServiceUtils;
@@ -29,15 +28,18 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,6 +61,8 @@ public class OrgServiceImpl implements OrgService {
     private JobAdService jobAdService;
     @Autowired
     private KafkaUtils kafkaUtils;
+    @Autowired
+    private FailedRollbackService failedRollbackService;
 
     @Override
     @Transactional
@@ -421,46 +425,69 @@ public class OrgServiceImpl implements OrgService {
     @Override
     @Transactional
     public void changeStatusActive(ChangeStatusActiveRequest request) {
-        orgRepository.updateStatus(request.getIds(), request.getActive());
+        boolean isUpdateAccount = false;
+        Instant updatedAt = ZonedDateTime.now(CommonConstants.ZONE.HCM).toInstant();
+        try{
+            orgRepository.updateStatus(request.getIds(), request.getActive());
 
-        // update job ads status
-        jobAdService.updateJobAdStatusByOrgIds(request.getIds(), request.getActive());
+            // update job ads status
+            jobAdService.updateJobAdStatusByOrgIds(request.getIds(), request.getActive());
 
-        // update accounts status
-        restTemplateClient.updateAccountStatusByOrgIds(request);
+            // update accounts status
+            restTemplateClient.updateAccountStatusByOrgIds(request);
+            isUpdateAccount = true;
 
-        // send notification to org admin
-        Map<Long, Organization> orgMap = orgRepository.findAllById(request.getIds()).stream()
-                .collect(Collectors.toMap(Organization::getId, org -> org));
-        if(request.getActive()){
-            for(Organization org : orgMap.values()){
-                List<UserDto> orgAdmins = restTemplateClient.getUserByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, org.getId());
-                NotifyTemplate template = NotifyTemplate.ORG_ACTIVATE_NOTIFICATION;
+            // send notification to org admin
+            Map<Long, Organization> orgMap = orgRepository.findAllById(request.getIds()).stream()
+                    .collect(Collectors.toMap(Organization::getId, Function.identity()));
+
+            NotifyTemplate template = request.getActive()
+                    ? NotifyTemplate.ORG_ACTIVATE_NOTIFICATION
+                    : NotifyTemplate.ORG_DEACTIVATE_NOTIFICATION;
+            String redirectUrl = request.getActive()
+                    ? Constants.Path.HOME_ORG
+                    : Constants.Path.HOME;
+            Long senderId = WebUtils.getCurrentUserId();
+
+            for (Organization org : orgMap.values()) {
+                List<UserDto> orgAdmins = restTemplateClient
+                        .getUserByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, org.getId());
+                if (CollectionUtils.isEmpty(orgAdmins)) {
+                    continue;
+                }
                 NotificationDto notifyDto = NotificationDto.builder()
-                        .title(String.format(template.getTitle()))
+                        .title(template.getTitle())
                         .message(String.format(template.getMessage(), org.getName()))
                         .type(Constants.NotificationType.USER)
-                        .redirectUrl(Constants.Path.HOME_ORG)
-                        .senderId(WebUtils.getCurrentUserId())
+                        .redirectUrl(redirectUrl)
+                        .senderId(senderId)
                         .receiverIds(orgAdmins.stream().map(UserDto::getId).toList())
                         .receiverType(MemberType.ORGANIZATION.getName())
                         .build();
                 kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
             }
-        } else {
-            for(Organization org : orgMap.values()){
-                List<UserDto> orgAdmins = restTemplateClient.getUserByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, org.getId());
-                NotifyTemplate template = NotifyTemplate.ORG_DEACTIVATE_NOTIFICATION;
-                NotificationDto notifyDto = NotificationDto.builder()
-                        .title(String.format(template.getTitle()))
-                        .message(String.format(template.getMessage(), org.getName()))
-                        .type(Constants.NotificationType.USER)
-                        .redirectUrl(Constants.Path.HOME)
-                        .senderId(WebUtils.getCurrentUserId())
-                        .receiverIds(orgAdmins.stream().map(UserDto::getId).toList())
-                        .receiverType(MemberType.ORGANIZATION.getName())
-                        .build();
-                kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
+        } catch (Exception exception){
+            FailedRollbackUpdateAccountStatus payload = FailedRollbackUpdateAccountStatus.builder()
+                    .orgIds(request.getIds())
+                    .active(!request.getActive())
+                    .updatedAt(updatedAt)
+                    .build();
+            try{
+                if(isUpdateAccount){
+                    restTemplateClient.rollbackUpdateAccountStatusByOrgIds(payload);
+                }
+            } catch (Exception e){
+                failedRollbackService.save(
+                        FailedRollbackDto.builder()
+                                .type(FailedRollbackType.UPDATE_ACCOUNT_STATUS.getType())
+                                .payload(ObjectMapperUtils.convertToJson(payload))
+                                .errorMessage(e.getMessage())
+                                .status(false)
+                                .retryCount(0)
+                                .build()
+                );
+            } finally {
+                throw exception;
             }
         }
     }

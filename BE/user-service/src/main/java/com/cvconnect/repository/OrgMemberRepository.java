@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -102,4 +103,9 @@ public interface OrgMemberRepository extends JpaRepository<OrgMember, Long> {
     @Modifying
     @Query("UPDATE OrgMember om SET om.isActive = :isActive WHERE om.userId IN :userIds")
     void updateAccountOrgAdminStatusByOrgIds(List<Long> userIds, Boolean isActive);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE OrgMember om SET om.isActive = :isActive WHERE om.orgId IN :orgIds and om.updatedAt >= :updatedAt")
+    void updateAccountStatusByOrgIdsWithTime(List<Long> orgIds, Boolean isActive, Instant updatedAt);
 }
