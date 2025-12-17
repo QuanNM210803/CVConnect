@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum FailedRollbackType {
     ORG_CREATION("ORG_CREATION"),
+    UPLOAD_FILE("UPLOAD_FILE")
     ;
 
     private final String type;
