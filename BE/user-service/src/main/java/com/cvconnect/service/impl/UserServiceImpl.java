@@ -2,6 +2,8 @@ package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
 import com.cvconnect.constant.Constants;
+import com.cvconnect.dto.failedRollback.FailedRollbackDto;
+import com.cvconnect.dto.failedRollback.FailedRollbackUploadFile;
 import com.cvconnect.dto.internal.response.AttachFileDto;
 import com.cvconnect.dto.orgMember.OrgMemberDto;
 import com.cvconnect.dto.role.RoleDto;
@@ -11,10 +13,7 @@ import com.cvconnect.entity.Candidate;
 import com.cvconnect.entity.ManagementMember;
 import com.cvconnect.entity.OrgMember;
 import com.cvconnect.entity.User;
-import com.cvconnect.enums.AccessMethod;
-import com.cvconnect.enums.MemberType;
-import com.cvconnect.enums.TemplateExport;
-import com.cvconnect.enums.UserErrorCode;
+import com.cvconnect.enums.*;
 import com.cvconnect.repository.UserRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.ServiceUtils;
@@ -74,6 +73,8 @@ public class UserServiceImpl implements UserService {
     @Lazy
     @Autowired
     private AuthService authService;
+    @Autowired
+    private FailedRollbackService failedRollbackService;
 
     private final Map<Class<?>, Function<Long, ?>> fetcherMap = new HashMap<>();
 
@@ -235,19 +236,44 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void updateAvatar(MultipartFile file) {
-        UserServiceUtils.validateImageFileInput(file);
-        Long userId = WebUtils.getCurrentUserId();
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) {
-            throw new AppException(UserErrorCode.USER_NOT_FOUND);
-        }
-        Long oldFileId = user.getAvatarId();
-        Long fileId = restTemplateClient.uploadFile(new MultipartFile[]{file}).get(0);
-        user.setAvatarId(fileId);
-        userRepository.save(user);
-        if(oldFileId != null) {
-            restTemplateClient.deleteAttachFilesByIds(List.of(oldFileId));
+        Long fileId = null;
+        try{
+            UserServiceUtils.validateImageFileInput(file);
+            Long userId = WebUtils.getCurrentUserId();
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                throw new AppException(UserErrorCode.USER_NOT_FOUND);
+            }
+            Long oldFileId = user.getAvatarId();
+            fileId = restTemplateClient.uploadFile(new MultipartFile[]{file}).get(0);
+            user.setAvatarId(fileId);
+            userRepository.save(user);
+            if(oldFileId != null) {
+                restTemplateClient.deleteAttachFilesByIds(List.of(oldFileId));
+            }
+        } catch (Exception exception){
+            FailedRollbackUploadFile payload = FailedRollbackUploadFile.builder()
+                    .attachFileIds(fileId != null ? List.of(fileId) : null)
+                    .build();
+            try{
+                if(payload.getAttachFileIds() != null){
+                    restTemplateClient.deleteAttachFilesByIds(payload.getAttachFileIds());
+                }
+            } catch (Exception e){
+                failedRollbackService.save(
+                        FailedRollbackDto.builder()
+                                .type(FailedRollbackType.UPLOAD_FILE.getType())
+                                .payload(ObjectMapperUtils.convertToJson(payload))
+                                .errorMessage(e.getMessage())
+                                .status(false)
+                                .retryCount(0)
+                                .build()
+                );
+            } finally {
+                throw exception;
+            }
         }
     }
 
