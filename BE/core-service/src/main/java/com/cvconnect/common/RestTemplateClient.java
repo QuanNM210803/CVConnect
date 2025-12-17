@@ -1,6 +1,7 @@
 package com.cvconnect.common;
 
 import com.cvconnect.dto.dashboard.admin.DashboardFilter;
+import com.cvconnect.dto.failedRollback.FailedRollbackUpdateAccountStatus;
 import com.cvconnect.dto.internal.response.ConversationDto;
 import com.cvconnect.dto.internal.response.EmailConfigDto;
 import com.cvconnect.dto.internal.response.EmailTemplateDto;
@@ -130,6 +131,14 @@ public class RestTemplateClient {
     public void updateAccountStatusByOrgIds(ChangeStatusActiveRequest request){
         restTemplateService.postMethodRestTemplate(
                 SERVER_USER_SERVICE + "/org-member/internal/update-account-status-by-org-ids",
+                new ParameterizedTypeReference<Response<Void>>() {},
+                request
+        );
+    }
+
+    public void rollbackUpdateAccountStatusByOrgIds(FailedRollbackUpdateAccountStatus request){
+        restTemplateService.postMethodRestTemplate(
+                SERVER_USER_SERVICE + "/org-member/internal/rollback-update-account-status-by-org-ids",
                 new ParameterizedTypeReference<Response<Void>>() {},
                 request
         );

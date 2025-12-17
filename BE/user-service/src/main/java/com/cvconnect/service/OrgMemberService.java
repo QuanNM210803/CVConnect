@@ -3,6 +3,7 @@ package com.cvconnect.service;
 import com.cvconnect.dto.common.AssignRoleRequest;
 import com.cvconnect.dto.common.InviteUserRequest;
 import com.cvconnect.dto.common.ReplyInviteUserRequest;
+import com.cvconnect.dto.orgMember.FailedRollbackUpdateAccountStatus;
 import com.cvconnect.dto.orgMember.OrgMemberDto;
 import com.cvconnect.dto.orgMember.OrgMemberFilter;
 import nmquan.commonlib.dto.request.ChangeStatusActiveRequest;
@@ -24,6 +25,7 @@ public interface OrgMemberService {
     OrgMemberDto orgMemberInfo(Long userId);
     Boolean checkOrgMember(List<Long> userIds);
     void updateAccountStatusByOrgIds(ChangeStatusActiveRequest request);
+    void rollbackUpdateAccountStatusByOrgIds(FailedRollbackUpdateAccountStatus payload);
     FilterResponse<OrgMemberDto> filterBySystemAdmin(OrgMemberFilter orgMemberFilter);
 
 }

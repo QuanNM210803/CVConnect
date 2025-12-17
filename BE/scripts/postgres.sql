@@ -908,3 +908,47 @@
 --     FOREIGN KEY (job_ad_id) REFERENCES job_ad (id) ON DELETE CASCADE
 --
 -- );
+--
+-- create table if not exists failed_rollback (
+--     id BIGSERIAL PRIMARY KEY,
+--     type VARCHAR(100) NOT NULL,
+--     payload TEXT NOT NULL,
+--     error_message TEXT,
+--     status BOOLEAN DEFAULT FALSE,
+--     retry_count INT DEFAULT 0,
+--
+--     is_active BOOLEAN DEFAULT TRUE,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITHOUT TIME ZONE,
+--     created_by VARCHAR(100),
+--     updated_by VARCHAR(100)
+-- );
+--
+-- CREATE TABLE IF NOT EXISTS job_config (
+--     id BIGSERIAL PRIMARY KEY,
+--
+--     job_name VARCHAR(100) NOT NULL UNIQUE,
+--     schedule_type VARCHAR(50) NOT NULL,
+--     expression VARCHAR(100) NOT NULL,
+--     description VARCHAR(500),
+--
+--     is_active BOOLEAN DEFAULT TRUE,
+--     is_deleted BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITHOUT TIME ZONE,
+--     created_by VARCHAR(100),
+--     updated_by VARCHAR(100)
+-- );
+--
+-- CREATE TABLE IF NOT EXISTS shedlock (
+--     name VARCHAR(64) NOT NULL,
+--     lock_until TIME WITHOUT TIME ZONE NOT NULL,
+--     locked_at TIME WITHOUT TIME ZONE NOT NULL,
+--     locked_by VARCHAR(255) NOT NULL,
+--     PRIMARY KEY (name)
+-- );
+--
+-- insert into job_config
+-- (job_name, schedule_type, expression, description, created_by) values
+-- ('failed_rollback_retry', 'FIXED_RATE', '600', 'Chạy lại Rollback data', 'admin');

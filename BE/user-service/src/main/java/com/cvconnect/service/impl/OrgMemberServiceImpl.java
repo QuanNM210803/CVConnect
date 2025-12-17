@@ -5,6 +5,7 @@ import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.common.AssignRoleRequest;
 import com.cvconnect.dto.common.InviteUserRequest;
 import com.cvconnect.dto.common.NotificationDto;
+import com.cvconnect.dto.orgMember.FailedRollbackUpdateAccountStatus;
 import com.cvconnect.dto.internal.response.AttachFileDto;
 import com.cvconnect.dto.internal.response.OrgDto;
 import com.cvconnect.dto.inviteJoinOrg.InviteJoinOrgDto;
@@ -32,7 +33,6 @@ import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.*;
-import org.apache.xmlbeans.impl.xb.xsdschema.ListDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -409,6 +409,18 @@ public class OrgMemberServiceImpl implements OrgMemberService {
         } else {
             List<Long> userIds = orgMemberRepository.findAccountAdminByOrgIds(request.getIds());
             orgMemberRepository.updateAccountOrgAdminStatusByOrgIds(userIds, true);
+        }
+    }
+
+    @Override
+    public void rollbackUpdateAccountStatusByOrgIds(FailedRollbackUpdateAccountStatus payload) {
+        if(ObjectUtils.isEmpty(payload.getOrgIds())){
+            return;
+        }
+        if(Boolean.TRUE.equals(payload.getActive())){
+            orgMemberRepository.updateAccountStatusByOrgIdsWithTime(payload.getOrgIds(), true, payload.getUpdatedAt());
+        } else {
+            orgMemberRepository.updateAccountStatusByOrgIds(payload.getOrgIds(), false);
         }
     }
 

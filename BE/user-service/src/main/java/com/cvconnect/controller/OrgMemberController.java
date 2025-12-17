@@ -4,6 +4,7 @@ import com.cvconnect.constant.Messages;
 import com.cvconnect.dto.common.AssignRoleRequest;
 import com.cvconnect.dto.common.InviteUserRequest;
 import com.cvconnect.dto.common.ReplyInviteUserRequest;
+import com.cvconnect.dto.orgMember.FailedRollbackUpdateAccountStatus;
 import com.cvconnect.dto.orgMember.OrgMemberDto;
 import com.cvconnect.dto.orgMember.OrgMemberFilter;
 import com.cvconnect.service.OrgMemberService;
@@ -95,6 +96,14 @@ public class OrgMemberController {
     @InternalRequest
     public ResponseEntity<Response<Void>> updateAccountStatusByOrgIds(@Valid @RequestBody ChangeStatusActiveRequest request) {
         orgMemberService.updateAccountStatusByOrgIds(request);
+        return ResponseUtils.success(null);
+    }
+
+    @PostMapping("/internal/rollback-update-account-status-by-org-ids")
+    @Operation(summary = "Internal update account status by organization IDs")
+    @InternalRequest
+    public ResponseEntity<Response<Void>> rollbackUpdateAccountStatusByOrgIds(@Valid @RequestBody FailedRollbackUpdateAccountStatus request) {
+        orgMemberService.rollbackUpdateAccountStatusByOrgIds(request);
         return ResponseUtils.success(null);
     }
 
