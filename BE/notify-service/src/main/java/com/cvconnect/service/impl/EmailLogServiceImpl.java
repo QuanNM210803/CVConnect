@@ -1,12 +1,15 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
+import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.EmailLogDto;
 import com.cvconnect.entity.EmailLog;
 import com.cvconnect.enums.SendEmailStatus;
 import com.cvconnect.repository.EmailLogRepository;
 import com.cvconnect.service.EmailLogService;
+import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.utils.ObjectMapperUtils;
+import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -67,6 +70,10 @@ public class EmailLogServiceImpl implements EmailLogService {
     @Override
     public List<EmailLogDto> getByCandidateInfoId(Long candidateInfoId, Long jobAdId) {
         Long orgId = restTemplateClient.validOrgMember();
+        List<String> roles = WebUtils.getCurrentRole();
+        if(!roles.contains(Constants.RoleCode.HR) && !roles.contains(Constants.RoleCode.ORG_ADMIN)){
+            return List.of();
+        }
         List<EmailLog> emailLogs = emailLogRepository.findByCandidateInfoIdAndOrgId(candidateInfoId, jobAdId);
         if(ObjectUtils.isEmpty(emailLogs)){
             return List.of();
