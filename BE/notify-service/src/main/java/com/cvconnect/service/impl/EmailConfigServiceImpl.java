@@ -8,6 +8,7 @@ import com.cvconnect.entity.EmailConfig;
 import com.cvconnect.enums.NotifyErrorCode;
 import com.cvconnect.repository.EmailConfigRepository;
 import com.cvconnect.service.EmailConfigService;
+import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.WebUtils;
@@ -43,7 +44,7 @@ public class EmailConfigServiceImpl implements EmailConfigService {
     public EmailConfigDto detail() {
         Long orgId = restTemplateClient.validOrgMember();
         List<String> roles = WebUtils.getCurrentRole();
-        if(!roles.contains(Constants.RoleCode.ORG_ADMIN) && !roles.contains(Constants.RoleCode.HR)){
+        if(!roles.contains(CommonConstants.ROLE_INTERNAL) && !roles.contains(Constants.RoleCode.ORG_ADMIN) && !roles.contains(Constants.RoleCode.HR)){
             return null;
         }
         EmailConfig emailConfig = emailConfigRepository.findByOrgId(orgId);
