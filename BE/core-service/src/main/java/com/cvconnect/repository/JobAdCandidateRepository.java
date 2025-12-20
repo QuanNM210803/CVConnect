@@ -75,6 +75,9 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
         join ProcessType as pt on pt.id = jap.processTypeId
         join CandidateInfoApply as cia on cia.id = jac.candidateInfoId
         left join CandidateSummaryOrg as cso on cso.candidateInfoId = cia.id and cso.orgId = :orgId
+        left join CalendarCandidateInfo cci on cci.candidateInfoId = cia.id
+        left join Calendar c on c.id = cci.calendarId
+        left join InterviewPanel ip on ip.calendarId = c.id
         where
         (:#{#request.fullName} is null or lower(cia.fullName) like lower(concat('%', :#{#request.fullName}, '%')))
         and (:#{#request.email} is null or lower(cia.email) like lower(concat('%', :#{#request.email}, '%')))
@@ -87,7 +90,7 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
         and (COALESCE(:#{#request.applyDateEnd}, NULL) IS NULL OR jac.applyDate <= :#{#request.applyDateEnd})
         and (:#{#request.hrContactId} is null or ja.hrContactId = :#{#request.hrContactId})
         and (:#{#candidateInfoIds == null || #candidateInfoIds.isEmpty()} = true or jac.candidateInfoId in :candidateInfoIds)
-        and (:participantId is null or ja.hrContactId = :participantId)
+        and (:participantId is null or ja.hrContactId = :participantId or ip.interviewerId = :participantId)
         and (:orgId is null or ja.orgId = :orgId)
         order by applyDate desc
     """)
