@@ -1,6 +1,7 @@
 package com.cvconnect.service.impl;
 
 import com.cvconnect.common.RestTemplateClient;
+import com.cvconnect.constant.Constants;
 import com.cvconnect.dto.EmailConfigDto;
 import com.cvconnect.dto.EmailConfigRequest;
 import com.cvconnect.entity.EmailConfig;
@@ -9,8 +10,11 @@ import com.cvconnect.repository.EmailConfigRepository;
 import com.cvconnect.service.EmailConfigService;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
+import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class EmailConfigServiceImpl implements EmailConfigService {
@@ -38,6 +42,10 @@ public class EmailConfigServiceImpl implements EmailConfigService {
     @Override
     public EmailConfigDto detail() {
         Long orgId = restTemplateClient.validOrgMember();
+        List<String> roles = WebUtils.getCurrentRole();
+        if(!roles.contains(Constants.RoleCode.ORG_ADMIN) && !roles.contains(Constants.RoleCode.HR)){
+            return null;
+        }
         EmailConfig emailConfig = emailConfigRepository.findByOrgId(orgId);
         if (emailConfig == null) {
             return null;

@@ -58,7 +58,7 @@ public class ConversationServiceImpl implements ConversationService {
             throw new AppException(CommonErrorCode.DATA_NOT_FOUND);
         }
         if(!conversation.getParticipantIds().contains(userId)) {
-            throw new AppException(CommonErrorCode.DATA_NOT_FOUND);
+            return null;
         }
         return ObjectMapperUtils.convertToObject(conversation, ConversationDto.class);
     }
