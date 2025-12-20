@@ -45,7 +45,7 @@ public class EmailTemplateController {
 
     @GetMapping("/detail/{id}")
     @Operation(summary = "Get Email Template Detail")
-    @PreAuthorize("hasAnyAuthority('EMAIL_TEMPLATE:VIEW')")
+    @PreAuthorize("hasAnyAuthority('EMAIL_TEMPLATE:VIEW', 'ORGANIZATION')")
     public ResponseEntity<Response<EmailTemplateDto>> detail(@PathVariable Long id) {
         return ResponseUtils.success(emailTemplateService.detail(id));
     }
