@@ -142,7 +142,7 @@ public interface JobAdCandidateRepository extends JpaRepository<JobAdCandidate, 
         where jac.candidateInfoId = :candidateInfoId
         and (:orgId is null or ja.orgId = :orgId)
         and (:participantId is null or ja.hrContactId = :participantId or ip.interviewerId = :participantId)
-        order by jac.applyDate desc, jap.sortOrder
+        order by applyDate desc
     """)
     List<JobAdCandidateProjection> getJobAdCandidatesByCandidateInfoId(Long candidateInfoId, Long orgId, Long participantId);
 
