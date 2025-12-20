@@ -37,6 +37,7 @@ import nmquan.commonlib.utils.*;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -1075,6 +1076,9 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         }
         if (request.getApplyDateEnd() != null) {
             request.setApplyDateEnd(DateUtils.endOfDay(request.getApplyDateEnd(), CommonConstants.ZONE.UTC));
+        }
+        if(Objects.equals(request.getSortBy(), CommonConstants.DEFAULT_SORT_BY)){
+            request.setSortBy("onboardDate");
         }
         Page<JobAdCandidateProjection> page = jobAdCandidateRepository.getListOfOnboardedCandidates(request, participantId, request.getPageable());
 
