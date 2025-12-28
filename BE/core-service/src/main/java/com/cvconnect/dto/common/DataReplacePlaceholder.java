@@ -26,6 +26,10 @@ public class DataReplacePlaceholder {
     private Long jobAdProcessId;
     private String jobAdProcessName;
 
+    // ${nextRound}
+    private Long nextJobAdProcessId;
+    private String nextJobAdProcessName;
+
     // ${interviewLink}
     private String interviewLink;
 

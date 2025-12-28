@@ -118,6 +118,23 @@ public class ReplacePlaceholder {
                 return jobAdProcessDto != null && jobAdProcessDto.getName() != null
                         ? jobAdProcessDto.getName()
                         : DOT_DOT_DOT;
+            case "${nextRound}":
+                if(isDefault){
+                    return "Phỏng vấn kỹ thuật";
+                }
+                if(baseData == null) {
+                    return DOT_DOT_DOT;
+                }
+                if(baseData.getNextJobAdProcessName() != null){
+                    return baseData.getNextJobAdProcessName();
+                }
+                if(baseData.getNextJobAdProcessId() == null){
+                    return DOT_DOT_DOT;
+                }
+                JobAdProcessDto nextJobAdProcessDto = jobAdProcessService.getById(baseData.getNextJobAdProcessId());
+                return nextJobAdProcessDto != null && nextJobAdProcessDto.getName() != null
+                        ? nextJobAdProcessDto.getName()
+                        : DOT_DOT_DOT;
             case "${interviewLink}":
                 if(isDefault){
                     return "https://meet.google.com/";

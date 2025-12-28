@@ -621,3 +621,8 @@
 #
 # alter table `cvconnect-notify-service`.email_logs
 # add column job_ad_id BIGINT after candidate_info_id;
+# alter table `cvconnect-notify-service`.email_templates
+# add unique code_org_idx (code, org_id);
+#
+# insert into `cvconnect-notify-service`.placeholders(code, label, description, member_type_used, created_by)
+# VALUES ('${nextRound}', 'Tên vòng tiếp theo', null, null, 'admin');

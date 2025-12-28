@@ -952,3 +952,19 @@
 -- insert into job_config
 -- (job_name, schedule_type, expression, description, created_by) values
 -- ('failed_rollback_retry', 'FIXED_RATE', '600', 'Chạy lại Rollback data', 'admin');
+--
+-- alter table organization
+-- add FOREIGN KEY (logo_id) REFERENCES attach_file (id);
+--
+-- alter table organization
+-- add FOREIGN KEY (cover_photo_id) REFERENCES attach_file (id);
+-- ALTER TABLE job_ad_work_location
+-- ADD CONSTRAINT uq_job_ad_work_location_job_ad_id_work_location_id UNIQUE (job_ad_id, work_location_id);
+-- ALTER TABLE job_ad_level
+-- ADD CONSTRAINT uq_job_ad_level_job_ad_id_level_id UNIQUE (job_ad_id, level_id);
+-- ALTER TABLE candidate_summary_org
+-- ADD CONSTRAINT uq_candidate_summary_org_org_id_candidate_info_id UNIQUE (org_id, candidate_info_id);
+-- alter table search_history_outside
+-- alter column keyword set not null;
+-- alter table search_history_outside
+-- alter column user_id set not null;

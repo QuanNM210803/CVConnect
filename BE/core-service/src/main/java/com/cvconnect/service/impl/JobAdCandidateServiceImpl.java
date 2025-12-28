@@ -20,7 +20,6 @@ import com.cvconnect.dto.jobAdCandidate.*;
 import com.cvconnect.dto.level.LevelDto;
 import com.cvconnect.dto.org.OrgDto;
 import com.cvconnect.dto.processType.ProcessTypeDto;
-import com.cvconnect.entity.CandidateInfoApply;
 import com.cvconnect.entity.JobAdCandidate;
 import com.cvconnect.enums.*;
 import com.cvconnect.repository.JobAdCandidateRepository;
@@ -34,10 +33,8 @@ import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.exception.CommonErrorCode;
 import nmquan.commonlib.service.SendEmailService;
 import nmquan.commonlib.utils.*;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -436,6 +433,11 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             throw new AppException(CoreErrorCode.INVALID_PROCESS_TYPE_CHANGE);
         }
 
+        JobAdProcessCandidateDto currentProcess = jobAdProcessCandidateService.getCurrentProcess(jobAdCandidate.getJobAdId(), jobAdCandidate.getCandidateInfoId());
+        if(ObjectUtils.isEmpty(currentProcess)){
+            throw new AppException(CommonErrorCode.ERROR);
+        }
+
         // update job ad candidate status
         JobAdProcessDto jobAdProcessDto = jobAdProcessService.getById(toProcessCandidate.getJobAdProcessId());
         if(ObjectUtils.isEmpty(jobAdProcessDto)){
@@ -468,38 +470,6 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             }
         }
         jobAdProcessCandidateService.create(dtos);
-
-        // send notify to candidate
-        JobAdDto jd = jobAdService.findById(jobAdCandidate.getJobAdId());
-        CandidateInfoApplyDto candidateInfoApplyDto = candidateInfoApplyService.getById(jobAdCandidate.getCandidateInfoId());
-        NotifyTemplate notifyTemplate = NotifyTemplate.CHANGE_CANDIDATE_PROCESS;
-        NotificationDto notificationDto = NotificationDto.builder()
-                .title(String.format(notifyTemplate.getTitle(), jd.getTitle()))
-                .message(String.format(notifyTemplate.getMessage(), jobAdProcessDto.getName()))
-                .type(Constants.NotificationType.USER)
-                .redirectUrl(Constants.Path.CANDIDATE_MESSAGE_CHAT + "?id=" + jobAdCandidate.getId())
-                .senderId(hrContactId)
-                .receiverIds(List.of(candidateInfoApplyDto.getCandidateId()))
-                .receiverType(MemberType.CANDIDATE.getName())
-                .build();
-        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
-
-        // if onboard process, send notify to org admin
-        if(ProcessTypeEnum.ONBOARD.name().equals(processTypeDto.getCode())){
-            UserDto hrContact = restTemplateClient.getUser(hrContactId);
-            List<UserDto> orgAdmin =  restTemplateClient.getUserByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, orgId);
-            NotifyTemplate templateOnboard = NotifyTemplate.CHANGE_PROCESS_ONBOARD;
-            NotificationDto notifyDto = NotificationDto.builder()
-                    .title(String.format(templateOnboard.getTitle(), jd.getTitle()))
-                    .message(String.format(templateOnboard.getMessage(), hrContact.getFullName(), candidateInfoApplyDto.getFullName()))
-                    .type(Constants.NotificationType.USER)
-                    .redirectUrl(Constants.Path.CANDIDATE_DETAIL + candidateInfoApplyDto.getId())
-                    .senderId(hrContactId)
-                    .receiverIds(orgAdmin.stream().map(UserDto::getId).toList())
-                    .receiverType(MemberType.ORGANIZATION.getName())
-                    .build();
-            kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
-        }
 
         // send email to candidate
         if(request.isSendEmail()){
@@ -540,7 +510,8 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             DataReplacePlaceholder dataReplacePlaceholder = DataReplacePlaceholder.builder()
                     .positionId(jobAd.getPositionId())
                     .jobAdName(jobAd.getTitle())
-                    .jobAdProcessName(jobAdProcessDto.getName())
+                    .jobAdProcessName(currentProcess.getProcessName())
+                    .nextJobAdProcessName(jobAdProcessDto.getName())
                     .orgId(jobAd.getOrgId())
                     .candidateName(candidateInfo.getFullName())
                     .hrName(hrContact.getFullName())
@@ -564,6 +535,38 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                     .emailTemplateId(emailTemplateId)
                     .build();
             sendEmailService.sendEmailWithBody(sendEmailDto);
+        }
+
+        // send notify to candidate
+        JobAdDto jd = jobAdService.findById(jobAdCandidate.getJobAdId());
+        CandidateInfoApplyDto candidateInfoApplyDto = candidateInfoApplyService.getById(jobAdCandidate.getCandidateInfoId());
+        NotifyTemplate notifyTemplate = NotifyTemplate.CHANGE_CANDIDATE_PROCESS;
+        NotificationDto notificationDto = NotificationDto.builder()
+                .title(String.format(notifyTemplate.getTitle(), jd.getTitle()))
+                .message(String.format(notifyTemplate.getMessage(), jobAdProcessDto.getName()))
+                .type(Constants.NotificationType.USER)
+                .redirectUrl(Constants.Path.CANDIDATE_MESSAGE_CHAT + "?id=" + jobAdCandidate.getId())
+                .senderId(hrContactId)
+                .receiverIds(List.of(candidateInfoApplyDto.getCandidateId()))
+                .receiverType(MemberType.CANDIDATE.getName())
+                .build();
+        kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notificationDto);
+
+        // if onboard process, send notify to org admin
+        if(ProcessTypeEnum.ONBOARD.name().equals(processTypeDto.getCode())){
+            UserDto hrContact = restTemplateClient.getUser(hrContactId);
+            List<UserDto> orgAdmin =  restTemplateClient.getUserByRoleCodeOrg(Constants.RoleCode.ORG_ADMIN, orgId);
+            NotifyTemplate templateOnboard = NotifyTemplate.CHANGE_PROCESS_ONBOARD;
+            NotificationDto notifyDto = NotificationDto.builder()
+                    .title(String.format(templateOnboard.getTitle(), jd.getTitle()))
+                    .message(String.format(templateOnboard.getMessage(), hrContact.getFullName(), candidateInfoApplyDto.getFullName()))
+                    .type(Constants.NotificationType.USER)
+                    .redirectUrl(Constants.Path.CANDIDATE_DETAIL + candidateInfoApplyDto.getId())
+                    .senderId(hrContactId)
+                    .receiverIds(orgAdmin.stream().map(UserDto::getId).toList())
+                    .receiverType(MemberType.ORGANIZATION.getName())
+                    .build();
+            kafkaUtils.sendWithJson(Constants.KafkaTopic.NOTIFICATION, notifyDto);
         }
     }
 
@@ -648,11 +651,16 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
             if(ObjectUtils.isEmpty(hrContact) || ObjectUtils.isEmpty(candidateInfo) || ObjectUtils.isEmpty(jobAd)){
                 throw new AppException(CommonErrorCode.ERROR);
             }
+            JobAdProcessCandidateDto currentProcess = jobAdProcessCandidateService.getCurrentProcess(jobAdCandidate.getJobAdId(), jobAdCandidate.getCandidateInfoId());
+            if(ObjectUtils.isEmpty(currentProcess)){
+                throw new AppException(CommonErrorCode.ERROR);
+            }
 
             // replace placeholders
             DataReplacePlaceholder dataReplacePlaceholder = DataReplacePlaceholder.builder()
                     .positionId(jobAd.getPositionId())
                     .jobAdName(jobAd.getTitle())
+                    .jobAdProcessName(currentProcess.getProcessName())
                     .orgId(jobAd.getOrgId())
                     .candidateName(candidateInfo.getFullName())
                     .hrName(hrContact.getFullName())
@@ -960,6 +968,11 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                         Function.identity()
                 ));
 
+        List<Long> jobAdCandidateIds = page.getContent().stream()
+                .map(JobAdAppliedProjection::getJobAdCandidateId)
+                .toList();
+        Map<Long, List<JobAdProcessCandidateDto>> jobAdProcessCandidateDtoMap = jobAdProcessCandidateService.getDetailByJobAdCandidateIds(jobAdCandidateIds);
+
         List<JobAdCandidateDto> data = page.getContent().stream()
                 .map(p -> {
                     OrgDto org = orgMap.get(p.getOrgId());
@@ -986,6 +999,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
                                     .name(p.getProcessName())
                                     .transferDate(p.getTransferDate())
                                     .build())
+                            .jobAdProcessCandidates(jobAdProcessCandidateDtoMap.get(p.getJobAdCandidateId()))
                             .jobAd(JobAdDto.builder()
                                     .id(p.getJobAdId())
                                     .title(p.getJobAdTitle())
