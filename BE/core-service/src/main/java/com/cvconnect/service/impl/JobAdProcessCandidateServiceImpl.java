@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class JobAdProcessCandidateServiceImpl implements JobAdProcessCandidateService {
@@ -55,5 +58,19 @@ public class JobAdProcessCandidateServiceImpl implements JobAdProcessCandidateSe
     @Override
     public JobAdProcessCandidateDto getCurrentProcess(Long jobAdId, Long candidateInfoId) {
         return jobAdProcessCandidateRepository.getCurrentProcess(jobAdId, candidateInfoId);
+    }
+
+    @Override
+    public Map<Long, List<JobAdProcessCandidateDto>> getDetailByJobAdCandidateIds(List<Long> jobAdCandidateIds) {
+        List<JobAdProcessCandidateDto> dtos = jobAdProcessCandidateRepository.getDetailByJobAdCandidateIds(jobAdCandidateIds);
+        if(ObjectUtils.isEmpty(dtos)){
+            return Map.of();
+        }
+        return dtos.stream()
+                .collect(Collectors.groupingBy(JobAdProcessCandidateDto::getJobAdCandidateId,
+                        Collectors.collectingAndThen(Collectors.toList(), list -> {
+                            list.sort(Comparator.comparing(JobAdProcessCandidateDto::getSortOrder));
+                            return list;
+                        })));
     }
 }

@@ -162,7 +162,7 @@ public class CalendarServiceImpl implements CalendarService {
                 DataReplacePlaceholder dataReplacePlaceholder = DataReplacePlaceholder.builder()
                         .positionId(jobAd.getPositionId())
                         .jobAdName(jobAd.getTitle())
-                        .jobAdProcessName(ProcessTypeEnum.APPLY.name())
+                        .jobAdProcessId(request.getJobAdProcessId())
                         .interviewLink(request.getMeetingLink())
                         .orgId(orgId)
                         .candidateName(candidateInfo.getFullName())
