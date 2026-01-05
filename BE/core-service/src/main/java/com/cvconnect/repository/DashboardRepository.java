@@ -31,14 +31,14 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
 
     @Query("""
             select count(distinct jac) from JobAdCandidate jac
-            where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+            where jac.onboardDate between :#{#filter.startTime} and :#{#filter.endTime}
             and jac.candidateStatus IN ('ONBOARDED')
     """)
     Long numberOfOnboard(DashboardFilter filter);
 
     @Query("""
             select count(distinct ja) from JobAd ja
-            where ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+            where ja.createdAt <= :#{#filter.endTime} and ja.dueDate >= :#{#filter.startTime}
     """)
     Long numberOfJobAds(DashboardFilter filter);
 
@@ -71,7 +71,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
     @Query("""
         select jac.eliminateReasonType as eliminateReasonType, count(distinct jac.id) as numOfApply
         from JobAdCandidate jac
-        where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+        where jac.eliminateDate between :#{#filter.startTime} and :#{#filter.endTime}
         and jac.candidateStatus = 'REJECTED'
         group by jac.eliminateReasonType
         order by numOfApply desc
@@ -90,13 +90,13 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
             from job_ad ja
             join job_ad_level jal on jal.job_ad_id= ja.id
             join level l on l.id = jal.level_id
-            where ja.created_at between :#{#filter.startTime} and :#{#filter.endTime}
+            where ja.created_at <= :#{#filter.endTime} and ja.due_date >= :#{#filter.startTime}
             and ja.is_all_level = false
             group by l.id, l.name
             union all
             select null as id, 'Tất cả cấp bậc' as name, count(distinct ja.id) as numOfJobAds
             from job_ad ja
-            where ja.created_at between :#{#filter.startTime} and :#{#filter.endTime}
+            where ja.created_at <= :#{#filter.endTime} and ja.due_date >= :#{#filter.startTime}
             and ja.is_all_level = true
             group by ja.is_all_level
         )
@@ -119,7 +119,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
         FROM careers c
         JOIN job_ad_career jac ON c.id = jac.career_id
         JOIN job_ad ja ON ja.id = jac.job_ad_id
-        where ja.created_at between :#{#filter.startTime} and :#{#filter.endTime}
+        where ja.created_at <= :#{#filter.endTime} and ja.due_date >= :#{#filter.startTime}
         GROUP BY c.id, c.name
         ORDER BY numOfJobAds DESC
         LIMIT 15
@@ -134,7 +134,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
         left join job_ad_statistic jas on jas.job_ad_id = ja.id
         left join job_ad_candidate jac on jac.job_ad_id = ja.id
         join organization o on o.id = ja.org_id
-        where ja.created_at between :#{#filter.startTime} and :#{#filter.endTime}
+        where ja.created_at <= :#{#filter.endTime} and ja.due_date >= :#{#filter.startTime}
         and (coalesce(:#{#filter.orgId}, null) is null or ja.org_id = :#{#filter.orgId})
         group by ja.id, ja.title, ja.org_id, o.name, case when jas.view_count is null then 0 else jas.view_count end
     """, nativeQuery = true)
@@ -170,42 +170,46 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
     @Query(value = """
         select o.id as id, o.name as orgName, o.logoId as logoId,
                count(distinct ja.id) as numberOfJobAds,
-               count(distinct jac.id) as numberOfApplications,
                sum(
                    case
-                       when jac.candidateStatus IN ('ONBOARDED') then 1
+                       when jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+                       then 1
+                       else 0
+                   end
+               ) as numberOfApplications,
+               sum(
+                   case
+                       when jac.candidateStatus = 'ONBOARDED' and jac.onboardDate between :#{#filter.startTime} and :#{#filter.endTime}
+                       then 1
                        else 0
                    end
                ) as numberOfOnboarded
         from Organization o
-        left join JobAd ja on ja.orgId = o.id
+        left join JobAd ja on ja.orgId = o.id and ja.createdAt <= :#{#filter.endTime} and ja.dueDate >= :#{#filter.startTime}
         left join JobAdCandidate jac on jac.jobAdId = ja.id
         where (:#{#filter.orgName} is null or lower(o.name) like lower(concat('%', :#{#filter.orgName}, '%')))
-        and ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
         group by o.id, o.name, o.logoId
     """,
     countQuery = """
         select distinct o.id as id
         from Organization o
-        left join JobAd ja on ja.orgId = o.id
+        left join JobAd ja on ja.orgId = o.id and ja.createdAt <= :#{#filter.endTime} and ja.dueDate >= :#{#filter.startTime}
         left join JobAdCandidate jac on jac.jobAdId = ja.id
         where (:#{#filter.orgName} is null or lower(o.name) like lower(concat('%', :#{#filter.orgName}, '%')))
-        and ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
         group by o.id, o.name, o.logoId
     """)
     Page<Object[]> getOrgFeatured(DashboardFilter filter, Pageable pageable);
 
     @Query("""
             select count(distinct ja) from JobAd ja
-            where ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+            where ja.createdAt <= :#{#filter.endTime} and ja.dueDate >= :#{#filter.startTime}
             and ja.orgId = :#{#filter.orgId}
     """)
     Long numberOfJobAds(OrgAdminDashboardFilter filter);
 
     @Query("""
             select count(distinct ja) from JobAd ja
-            where ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
-            and ja.jobAdStatus = 'OPEN'
+            where ja.jobAdStatus = 'OPEN'
             and ja.orgId = :#{#filter.orgId}
     """)
     Long numberOfOpenJobAds(OrgAdminDashboardFilter filter);
@@ -221,8 +225,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
     @Query("""
             select count(distinct jac) from JobAdCandidate jac
             join JobAd ja on jac.jobAdId = ja.id
-            where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
-            and jac.candidateStatus IN ('VIEWED_CV', 'IN_PROGRESS')
+            where jac.candidateStatus IN ('VIEWED_CV', 'IN_PROGRESS')
             and ja.orgId = :#{#filter.orgId}
     """)
     Long numberOfCandidateInProcess(OrgAdminDashboardFilter filter);
@@ -256,16 +259,24 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
     List<JobAdCandidateProjection> getByOnboard(OrgAdminDashboardFilter filter);
 
     @Query("""
-        select ja.hrContactId as hrContactId, count(distinct ja.id) as numOfJobAds, count(distinct jac.id) as numOfApplications,
+        select ja.hrContactId as hrContactId, count(distinct ja.id) as numOfJobAds,
                sum(
                    case
-                       when jac.candidateStatus IN ('ONBOARDED') then 1
+                       when jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+                       then 1
+                       else 0
+                   end
+               ) as numberOfApplications,
+               sum(
+                   case
+                       when jac.candidateStatus IN ('ONBOARDED') and jac.onboardDate between :#{#filter.startTime} and :#{#filter.endTime}
+                       then 1
                        else 0
                    end
                ) as numOfOnboarded
         from JobAd ja
         left join JobAdCandidate jac on ja.id = jac.jobAdId
-        where ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+        where ja.createdAt <= :#{#filter.endTime} and ja.dueDate >= :#{#filter.startTime}
         and ja.orgId = :#{#filter.orgId}
         group by ja.hrContactId
         order by numOfJobAds desc
@@ -277,7 +288,8 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
                count(distinct ja.id) as numOfJobAds,
                sum(
                    case
-                       when jac.candidateStatus IN ('ONBOARDED') then 1
+                       when jac.candidateStatus IN ('ONBOARDED') and jac.onboardDate between :#{#filter.startTime} and :#{#filter.endTime}
+                       then 1
                        else 0
                    end
                ) as numOfOnboarded
@@ -285,7 +297,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
         join Position p on p.departmentId = d.id
         join JobAd ja on ja.positionId = p.id
         left join JobAdCandidate jac on ja.id = jac.jobAdId
-        where ja.createdAt between :#{#filter.startTime} and :#{#filter.endTime}
+        where ja.createdAt <= :#{#filter.endTime} and ja.dueDate >= :#{#filter.startTime}
         and ja.orgId = :#{#filter.orgId}
         group by d.code, d.name
         order by numOfJobAds desc
@@ -312,7 +324,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
         select jac.eliminateReasonType as eliminateReasonType, count(distinct jac.id) as numOfApply
         from JobAdCandidate jac
         join JobAd ja on jac.jobAdId = ja.id
-        where jac.applyDate between :#{#filter.startTime} and :#{#filter.endTime}
+        where jac.eliminateDate between :#{#filter.startTime} and :#{#filter.endTime}
         and jac.candidateStatus = 'REJECTED'
         and ja.orgId = :#{#filter.orgId}
         group by jac.eliminateReasonType
@@ -323,11 +335,17 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
     @Query(value = """
         select ja.id as id, ja.title as title,
                case when jas.view_count is null then 0 else jas.view_count end as numberOfViews,
-               count(distinct jac.id) as numberOfApplications
+               sum(
+                   case
+                       when jac.apply_date between :#{#filter.startTime} and :#{#filter.endTime}
+                       then 1
+                       else 0
+                   end
+               ) as numberOfApplications,
         from job_ad ja
         left join job_ad_statistic jas on jas.job_ad_id = ja.id
         left join job_ad_candidate jac on jac.job_ad_id = ja.id
-        where ja.created_at between :#{#filter.startTime} and :#{#filter.endTime}
+        where ja.created_at <= :#{#filter.endTime} and ja.due_date >= :#{#filter.startTime}
         and ja.org_id = :#{#filter.orgId}
         group by ja.id, ja.title, case when jas.view_count is null then 0 else jas.view_count end
     """, nativeQuery = true)

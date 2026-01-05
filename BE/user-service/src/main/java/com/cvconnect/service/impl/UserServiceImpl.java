@@ -285,8 +285,9 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new AppException(UserErrorCode.USER_NOT_FOUND);
         }
+        String oldEmail = user.getEmail();
         User existsEmailUser = userRepository.findByEmail(request.getEmail()).orElse(null);
-        if (!user.getEmail().equals(request.getEmail()) && !ObjectUtils.isEmpty(existsEmailUser)) {
+        if (!oldEmail.equals(request.getEmail()) && !ObjectUtils.isEmpty(existsEmailUser)) {
             throw new AppException(UserErrorCode.EMAIL_EXISTS);
         }
         user.setEmail(request.getEmail());
@@ -294,13 +295,13 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setAddress(request.getAddress());
         user.setDateOfBirth(request.getDateOfBirth());
-        if(!user.getEmail().equals(request.getEmail())) {
+        if(!oldEmail.equals(request.getEmail())) {
             user.setIsEmailVerified(false);
         }
         userRepository.save(user);
 
         // send email require verification
-        if(!user.getEmail().equals(request.getEmail())) {
+        if(!oldEmail.equals(request.getEmail())) {
             UserDto userDto = ObjectMapperUtils.convertToObject(user, UserDto.class);
             authService.sendRequestVerifyEmail(userDto);
         }
