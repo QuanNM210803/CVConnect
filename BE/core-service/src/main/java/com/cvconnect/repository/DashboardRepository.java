@@ -341,7 +341,7 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
                        then 1
                        else 0
                    end
-               ) as numberOfApplications,
+               ) as numberOfApplications
         from job_ad ja
         left join job_ad_statistic jas on jas.job_ad_id = ja.id
         left join job_ad_candidate jac on jac.job_ad_id = ja.id
