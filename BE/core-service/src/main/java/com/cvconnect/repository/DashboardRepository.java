@@ -333,21 +333,36 @@ public interface DashboardRepository extends JpaRepository<BaseEntity, Long> {
     List<JobAdCandidateProjection> getEliminatedReasonData(OrgAdminDashboardFilter filter);
 
     @Query(value = """
-        select ja.id as id, ja.title as title,
-               case when jas.view_count is null then 0 else jas.view_count end as numberOfViews,
-               sum(
-                   case
-                       when jac.apply_date between :#{#filter.startTime} and :#{#filter.endTime}
-                       then 1
-                       else 0
-                   end
-               ) as numberOfApplications
-        from job_ad ja
-        left join job_ad_statistic jas on jas.job_ad_id = ja.id
-        left join job_ad_candidate jac on jac.job_ad_id = ja.id
-        where ja.created_at <= :#{#filter.endTime} and ja.due_date >= :#{#filter.startTime}
-        and ja.org_id = :#{#filter.orgId}
-        group by ja.id, ja.title, case when jas.view_count is null then 0 else jas.view_count end
-    """, nativeQuery = true)
+        select *
+        from (
+            select
+                ja.id as id,
+                ja.title as title,
+                coalesce(jas.view_count, 0) as numberOfViews,
+                sum(
+                    case
+                        when jac.apply_date between :#{#filter.startTime} and :#{#filter.endTime}
+                        then 1 else 0
+                    end
+                ) as numberOfApplications
+            from job_ad ja
+            left join job_ad_statistic jas on jas.job_ad_id = ja.id
+            left join job_ad_candidate jac on jac.job_ad_id = ja.id
+            where ja.created_at <= :#{#filter.endTime} and ja.due_date >= :#{#filter.startTime}
+            and ja.org_id = :#{#filter.orgId}
+            group by ja.id, ja.title, jas.view_count
+        ) t
+    """,
+    countQuery = """
+        select count(*) from (
+            select ja.id
+            from job_ad ja
+            left join job_ad_candidate jac on jac.job_ad_id = ja.id
+            where ja.created_at <= :#{#filter.endTime} and ja.due_date >= :#{#filter.startTime}
+            and ja.org_id = :#{#filter.orgId}
+            group by ja.id
+        ) c
+    """,
+    nativeQuery = true)
     Page<Object[]> getJobAdFeatured(OrgAdminDashboardFilter filter, Pageable pageable);
 }
