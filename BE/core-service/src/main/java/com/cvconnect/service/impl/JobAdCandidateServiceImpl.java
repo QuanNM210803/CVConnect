@@ -829,7 +829,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
 
         // get data to replace placeholder
         CandidateInfoApplyDto candidateInfo = candidateInfoApplyService.getById(request.getCandidateInfoId());
-        UserDto hrContact = restTemplateClient.getUser(jobAd.getHrContactId());
+        UserDto hrContact = restTemplateClient.getUser(WebUtils.getCurrentUserId());
         JobAdProcessCandidateDto jobAdProcessCandidateDto = jobAdProcessCandidateService.getCurrentProcess(request.getJobAdId(), request.getCandidateInfoId());
         if(ObjectUtils.isEmpty(hrContact) || ObjectUtils.isEmpty(candidateInfo) || ObjectUtils.isEmpty(jobAdProcessCandidateDto)){
             throw new AppException(CommonErrorCode.ERROR);
