@@ -20,6 +20,7 @@ import com.cvconnect.enums.*;
 import com.cvconnect.repository.CalendarRepository;
 import com.cvconnect.service.*;
 import com.cvconnect.utils.CoreServiceUtils;
+import nmquan.commonlib.constant.CommonConstants;
 import nmquan.commonlib.dto.SendEmailDto;
 import nmquan.commonlib.dto.response.IDResponse;
 import nmquan.commonlib.exception.AppException;
@@ -169,8 +170,20 @@ public class CalendarServiceImpl implements CalendarService {
                         .hrName(userDto.getFullName())
                         .hrEmail(userDto.getEmail())
                         .hrPhone(userDto.getPhoneNumber())
-                        .examStartTime(DateUtils.localDateTimeToInstant(LocalDateTime.of(calendarCandidate.getDate(), calendarCandidate.getTimeFrom())))
-                        .examEndTime(DateUtils.localDateTimeToInstant(LocalDateTime.of(calendarCandidate.getDate(), calendarCandidate.getTimeTo())))
+                        .examStartTime(
+                                CoreServiceUtils.convertLocalDateTimeToInstant(
+                                    LocalDateTime.of(calendarCandidate.getDate(), calendarCandidate.getTimeFrom()),
+                                    CommonConstants.ZONE.HCM,
+                                    CommonConstants.ZONE.UTC
+                                )
+                        )
+                        .examEndTime(
+                                CoreServiceUtils.convertLocalDateTimeToInstant(
+                                    LocalDateTime.of(calendarCandidate.getDate(), calendarCandidate.getTimeTo()),
+                                    CommonConstants.ZONE.HCM,
+                                    CommonConstants.ZONE.UTC
+                                )
+                        )
                         .examDuration(request.getDurationMinutes())
                         .locationId(request.getOrgAddressId())
                         .build();
