@@ -69,6 +69,7 @@ public class NotificationServiceImpl implements NotificationService {
             notification.setMessage(notificationDto.getMessage());
             notification.setSenderId(notificationDto.getSenderId());
             notification.setReceiverId(receiverId);
+            notification.setReceiverType(notificationDto.getReceiverType());
             notification.setType(notificationDto.getType());
             notification.setRedirectUrl(notificationDto.getRedirectUrl());
             notification.setIsRead(false);
