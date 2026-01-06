@@ -17,6 +17,7 @@ import nmquan.commonlib.exception.AppException;
 import nmquan.commonlib.utils.DateUtils;
 import nmquan.commonlib.utils.ObjectMapperUtils;
 import nmquan.commonlib.utils.PageUtils;
+import nmquan.commonlib.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -200,6 +201,16 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         if (!emailTemplateDto.getOrgId().equals(orgId)) {
             throw new AppException(NotifyErrorCode.EMAIL_TEMPLATE_NOT_FOUND);
         }
+        Long userId = WebUtils.getCurrentUserId();
+        String fullName = WebUtils.getCurrentFullName();
+        String email = WebUtils.getCurrentEmail();
+        if(dataReplacePlaceholder == null) {
+            dataReplacePlaceholder = new DataReplacePlaceholder();
+        }
+        dataReplacePlaceholder.setHrContactId(userId);
+        dataReplacePlaceholder.setHrName(fullName);
+        dataReplacePlaceholder.setHrEmail(email);
+        dataReplacePlaceholder.setHrPhone(null);
         String bodyPreview = restTemplateClient.previewEmail(emailTemplateDto.getBody(), emailTemplateDto.getPlaceholderCodes(), dataReplacePlaceholder, false);
         emailTemplateDto.setBodyPreview(bodyPreview);
         return emailTemplateDto;
@@ -207,7 +218,18 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
     @Override
     public EmailTemplateDto previewEmail(PreviewEmailWithoutTemplate request) {
-        String bodyPreview = restTemplateClient.previewEmail(request.getBody(), request.getPlaceholderCodes(), request.getDataReplacePlaceholder(), false);
+        DataReplacePlaceholder dataReplacePlaceholder = request.getDataReplacePlaceholder();
+        Long userId = WebUtils.getCurrentUserId();
+        String fullName = WebUtils.getCurrentFullName();
+        String email = WebUtils.getCurrentEmail();
+        if(dataReplacePlaceholder == null) {
+            dataReplacePlaceholder = new DataReplacePlaceholder();
+        }
+        dataReplacePlaceholder.setHrContactId(userId);
+        dataReplacePlaceholder.setHrName(fullName);
+        dataReplacePlaceholder.setHrEmail(email);
+        dataReplacePlaceholder.setHrPhone(null);
+        String bodyPreview = restTemplateClient.previewEmail(request.getBody(), request.getPlaceholderCodes(), dataReplacePlaceholder, false);
         EmailTemplateDto emailTemplateDto = new EmailTemplateDto();
         emailTemplateDto.setSubject(request.getSubject());
         emailTemplateDto.setBodyPreview(bodyPreview);
