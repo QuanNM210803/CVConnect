@@ -19,9 +19,9 @@ public interface CalendarRepository extends JpaRepository<Calendar, Long> {
             cci.timeFrom as timeFrom, cci.timeTo as timeTo from Calendar c
         join CalendarCandidateInfo cci on cci.calendarId = c.id
         join CandidateInfoApply cia on cia.id = cci.candidateInfoId
-        join JobAdCandidate jac on jac.candidateInfoId = cia.id
-        join JobAd ja on ja.id = jac.jobAdId
         join JobAdProcess jap on jap.id = c.jobAdProcessId
+        join JobAd ja on ja.id = jap.jobAdId
+        join JobAdCandidate jac on jac.candidateInfoId = cia.id and jac.jobAdId = ja.id
         join InterviewPanel ip on ip.calendarId = c.id
         where jac.id = :#{#request.jobAdCandidateId}
         and (:creatorId is null or c.creatorId = :creatorId)
