@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 25kzZiaSb9g5CJgrj9yAnsWZRgLtGLgj5pXyPBqYWkWR6Ey0mMOb72IOS1LNLyR
+\restrict ningG6pYwEn2TIgoTqfabXzwnGfYp8EDmeHkispirqValaV4rX5tAgLjIjbRXdu
 
 -- Dumped from database version 14.20 (Debian 14.20-1.pgdg13+1)
 -- Dumped by pg_dump version 14.20 (Debian 14.20-1.pgdg13+1)
@@ -1867,6 +1867,9 @@ COPY public.job_ad_candidate (id, job_ad_id, candidate_info_id, apply_date, cand
 8	2	8	2025-12-24 03:31:26.437603	IN_PROGRESS	\N	\N	t	f	2025-12-24 03:31:26.443808	2026-01-06 14:57:51.393952	tranvy10122000@gmail.com	quannm32	\N	\N
 16	13	11	2026-01-06 17:14:05.563377	VIEWED_CV	\N	\N	t	f	2026-01-06 17:14:05.567226	\N	ntthaovana921dqh@gmail.com	\N	\N	\N
 13	9	1	2025-12-29 06:59:43.585969	VIEWED_CV	\N	\N	t	f	2025-12-29 06:59:43.586954	\N	vclong2003	\N	\N	\N
+17	10	1	2026-01-07 08:55:59.903329	APPLIED	\N	\N	t	f	2026-01-07 08:55:59.910225	\N	vclong2003	\N	\N	\N
+18	13	1	2026-01-07 08:59:10.504376	APPLIED	\N	\N	t	f	2026-01-07 08:59:10.504729	\N	vclong2003	\N	\N	\N
+19	10	4	2026-01-07 09:03:03.114445	VIEWED_CV	\N	\N	t	f	2026-01-07 09:03:03.115046	\N	quannm32	\N	\N	\N
 \.
 
 
@@ -2151,6 +2154,19 @@ COPY public.job_ad_process_candidate (id, job_ad_process_id, job_ad_candidate_id
 76	39	16	\N	f	t	f	2026-01-06 17:14:05.587893	\N	ntthaovana921dqh@gmail.com	\N
 77	40	16	\N	f	t	f	2026-01-06 17:14:05.589177	\N	ntthaovana921dqh@gmail.com	\N
 78	41	16	\N	f	t	f	2026-01-06 17:14:05.590739	\N	ntthaovana921dqh@gmail.com	\N
+79	25	17	2026-01-07 08:55:59.903329	t	t	f	2026-01-07 08:55:59.927702	\N	vclong2003	\N
+80	26	17	\N	f	t	f	2026-01-07 08:55:59.93036	\N	vclong2003	\N
+81	27	17	\N	f	t	f	2026-01-07 08:55:59.931838	\N	vclong2003	\N
+82	28	17	\N	f	t	f	2026-01-07 08:55:59.93329	\N	vclong2003	\N
+83	37	18	2026-01-07 08:59:10.504376	t	t	f	2026-01-07 08:59:10.510503	\N	vclong2003	\N
+84	38	18	\N	f	t	f	2026-01-07 08:59:10.512454	\N	vclong2003	\N
+85	39	18	\N	f	t	f	2026-01-07 08:59:10.514141	\N	vclong2003	\N
+86	40	18	\N	f	t	f	2026-01-07 08:59:10.515981	\N	vclong2003	\N
+87	41	18	\N	f	t	f	2026-01-07 08:59:10.517832	\N	vclong2003	\N
+88	25	19	2026-01-07 09:03:03.114445	t	t	f	2026-01-07 09:03:03.124718	\N	quannm32	\N
+89	26	19	\N	f	t	f	2026-01-07 09:03:03.128074	\N	quannm32	\N
+90	27	19	\N	f	t	f	2026-01-07 09:03:03.131465	\N	quannm32	\N
+91	28	19	\N	f	t	f	2026-01-07 09:03:03.134426	\N	quannm32	\N
 \.
 
 
@@ -2162,15 +2178,16 @@ COPY public.job_ad_statistic (id, job_ad_id, view_count, is_active, is_deleted, 
 7	11	1	t	f	2026-01-06 05:02:27.025522	\N	ANONYMOUS	\N
 1	1	46	t	f	2025-11-30 16:29:18.73387	2026-01-06 05:35:15.83076	ANONYMOUS	ANONYMOUS
 9	16	1	t	f	2026-01-06 08:01:46.100124	\N	ANONYMOUS	\N
-5	9	7	t	f	2025-12-29 04:04:08.171533	2026-01-06 10:06:30.433831	ANONYMOUS	ANONYMOUS
 4	8	12	t	f	2025-12-28 14:53:38.663257	2026-01-06 10:07:08.398671	ANONYMOUS	ANONYMOUS
 11	25	1	t	f	2026-01-06 13:52:32.993526	\N	ANONYMOUS	\N
 8	14	3	t	f	2026-01-06 07:56:43.203995	2026-01-06 13:53:55.269993	ANONYMOUS	ANONYMOUS
 12	21	1	t	f	2026-01-06 13:54:05.376454	\N	ANONYMOUS	\N
-3	7	41	t	f	2025-12-03 03:55:02.571705	2026-01-06 16:50:49.627457	ANONYMOUS	ANONYMOUS
 13	28	1	t	f	2026-01-06 16:51:00.714911	\N	ANONYMOUS	\N
 10	13	2	t	f	2026-01-06 08:04:29.775419	2026-01-06 16:57:51.647577	ANONYMOUS	ANONYMOUS
-6	10	3	t	f	2026-01-05 17:07:05.183727	2026-01-07 02:42:04.193192	ANONYMOUS	ANONYMOUS
+6	10	5	t	f	2026-01-05 17:07:05.183727	2026-01-07 08:55:45.056511	ANONYMOUS	ANONYMOUS
+14	17	1	t	f	2026-01-07 08:57:56.683963	\N	ANONYMOUS	\N
+5	9	8	t	f	2025-12-29 04:04:08.171533	2026-01-07 08:58:55.210626	ANONYMOUS	ANONYMOUS
+3	7	43	t	f	2025-12-03 03:55:02.571705	2026-01-07 09:00:35.382529	ANONYMOUS	ANONYMOUS
 2	2	42	t	f	2025-11-30 16:29:26.899565	2025-12-31 16:02:25.567327	ANONYMOUS	ANONYMOUS
 \.
 
@@ -2502,7 +2519,7 @@ SELECT pg_catalog.setval('public.interview_panel_id_seq', 6, true);
 -- Name: job_ad_candidate_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.job_ad_candidate_id_seq', 16, true);
+SELECT pg_catalog.setval('public.job_ad_candidate_id_seq', 19, true);
 
 
 --
@@ -2530,7 +2547,7 @@ SELECT pg_catalog.setval('public.job_ad_level_id_seq', 34, true);
 -- Name: job_ad_process_candidate_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.job_ad_process_candidate_id_seq', 78, true);
+SELECT pg_catalog.setval('public.job_ad_process_candidate_id_seq', 91, true);
 
 
 --
@@ -2544,7 +2561,7 @@ SELECT pg_catalog.setval('public.job_ad_process_id_seq', 102, true);
 -- Name: job_ad_statistic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.job_ad_statistic_id_seq', 13, true);
+SELECT pg_catalog.setval('public.job_ad_statistic_id_seq', 14, true);
 
 
 --
@@ -3245,5 +3262,5 @@ ALTER TABLE ONLY public.position_process
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 25kzZiaSb9g5CJgrj9yAnsWZRgLtGLgj5pXyPBqYWkWR6Ey0mMOb72IOS1LNLyR
+\unrestrict ningG6pYwEn2TIgoTqfabXzwnGfYp8EDmeHkispirqValaV4rX5tAgLjIjbRXdu
 
