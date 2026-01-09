@@ -316,8 +316,8 @@ public class ReplacePlaceholder {
                     return DOT_DOT_DOT;
                 }
                 OrgAddressDto orgAddressDto = orgAddressService.getById(baseData.getLocationId());
-                return orgAddressDto != null && orgAddressDto.getDetailAddress() != null
-                        ? orgAddressDto.getDetailAddress()
+                return orgAddressDto != null
+                        ? orgAddressService.buildDisplayAddress(orgAddressDto)
                         : DOT_DOT_DOT;
             default:
                 return null;

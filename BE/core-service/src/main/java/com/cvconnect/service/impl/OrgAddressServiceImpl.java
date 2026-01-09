@@ -189,7 +189,8 @@ public class OrgAddressServiceImpl implements OrgAddressService {
                 .collect(Collectors.groupingBy(OrgAddressDto::getOrgId));
     }
 
-    private String buildDisplayAddress(OrgAddressDto dto) {
+    @Override
+    public String buildDisplayAddress(OrgAddressDto dto) {
         StringJoiner addressJoiner = new StringJoiner(", ");
         if (dto.getDetailAddress() != null && !dto.getDetailAddress().isEmpty()) {
             addressJoiner.add(dto.getDetailAddress());

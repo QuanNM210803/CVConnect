@@ -16,5 +16,6 @@ public interface OrgAddressService {
     Map<Long, List<OrgAddressDto>> getOrgAddressByJobAdIds(List<Long> jobAdIds);
     List<OrgAddressDto> getByOrgId(Long orgId);
     Map<Long, List<OrgAddressDto>> getMapOrgAddressByOrgIds(List<Long> orgIds);
+    String buildDisplayAddress(OrgAddressDto dto);
 
 }
