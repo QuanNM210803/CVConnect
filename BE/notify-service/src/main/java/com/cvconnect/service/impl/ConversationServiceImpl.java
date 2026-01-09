@@ -227,6 +227,7 @@ public class ConversationServiceImpl implements ConversationService {
         params.put("title", dataJobAdCandidate.getJobAdTitle());
         params.put("candidateId", request.getCandidateId());
         params.put("fullName", dataJobAdCandidate.getFullName());
+        params.put("candidateInfoId", dataJobAdCandidate.getCandidateInfoId());
         for(Long participantId : conversation.getParticipantIds()) {
             if(!participantId.equals(userId)) {
                 socketHandler.sendEventWithRoom(

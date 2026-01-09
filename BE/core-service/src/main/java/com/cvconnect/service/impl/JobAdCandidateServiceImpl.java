@@ -1136,6 +1136,7 @@ public class JobAdCandidateServiceImpl implements JobAdCandidateService {
         return JobAdCandidateDto.builder()
                 .jobAdTitle(jobAdCandidate.getJobAdTitle())
                 .fullName(jobAdCandidate.getFullName())
+                .candidateInfoId(jobAdCandidate.getCandidateInfoId())
                 .build();
     }
 
