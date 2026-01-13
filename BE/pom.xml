@@ -41,6 +41,7 @@
         <cloudinary.version>1.39.0</cloudinary.version>
         <commons-io.version>2.15.1</commons-io.version>
         <spring-ai.version>1.0.1</spring-ai.version>
+        <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
     </properties>
 
     <dependencyManagement>

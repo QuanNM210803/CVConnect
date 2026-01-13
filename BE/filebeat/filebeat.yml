@@ -1,0 +1,27 @@
+#filebeat.inputs:
+#  - type: log
+#    enabled: true
+#    paths:
+#      - /logs/*.log
+#    json.keys_under_root: true
+#    json.add_error_key: true
+#
+#processors:
+#  - add_host_metadata: {}
+#  - add_docker_metadata: {}
+#
+#output.logstash:
+#  hosts: ["logstash-cvconnect:5044"]
+
+filebeat.inputs:
+  - type: container
+    enabled: true
+    paths:
+      - /var/lib/docker/containers/*/*.log
+
+processors:
+  - add_docker_metadata: {}
+  - add_host_metadata: {}
+
+output.logstash:
+  hosts: ["logstash-cvconnect:5044"]
