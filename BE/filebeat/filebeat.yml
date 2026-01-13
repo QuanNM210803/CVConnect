@@ -1,18 +1,3 @@
-#filebeat.inputs:
-#  - type: log
-#    enabled: true
-#    paths:
-#      - /logs/*.log
-#    json.keys_under_root: true
-#    json.add_error_key: true
-#
-#processors:
-#  - add_host_metadata: {}
-#  - add_docker_metadata: {}
-#
-#output.logstash:
-#  hosts: ["logstash-cvconnect:5044"]
-
 filebeat.inputs:
   - type: container
     enabled: true
@@ -21,7 +6,16 @@ filebeat.inputs:
 
 processors:
   - add_docker_metadata: {}
-  - add_host_metadata: {}
+  - drop_event:
+      when:
+        not:
+          or:
+            - equals:
+                docker.container.name: "user-service-cvconnect"
+            - equals:
+                docker.container.name: "core-service-cvconnect"
+            - equals:
+                docker.container.name: "notify-service-cvconnect"
 
 output.logstash:
   hosts: ["logstash-cvconnect:5044"]
