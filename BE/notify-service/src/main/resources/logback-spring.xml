@@ -22,7 +22,7 @@
             </filter>
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <customFields>
-                    {"service":"${spring.application.name}"}
+                    {"service":"notify-service"}
                 </customFields>
                 <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
                     <maxDepthPerThrowable>8</maxDepthPerThrowable>
