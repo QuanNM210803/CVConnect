@@ -41,7 +41,7 @@ public class CookieUtils {
                 .secure(true)
                 .httpOnly(true)
                 .path("/")
-                .domain(".vclab.tech")
+                .domain(".cvconnect.quannm32.me")
                 .maxAge(JWT_REFRESHABLE_DURATION)
                 .sameSite("None")
                 .build();
@@ -54,7 +54,7 @@ public class CookieUtils {
                 .secure(true)
                 .httpOnly(true)
                 .path("/")
-                .domain(".vclab.tech")
+                .domain(".cvconnect.quannm32.me")
                 .maxAge(0)
                 .sameSite("None")
                 .build();

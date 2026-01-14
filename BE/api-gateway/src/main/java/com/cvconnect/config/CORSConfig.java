@@ -16,8 +16,8 @@ public class CORSConfig {
         corsConfiguration.setAllowedOriginPatterns(List.of(
                 "http://26.223.178.246:3000",
                 "http://localhost:3000",
-                "http://vclab.tech",
-                "https://vclab.tech"
+                "http://cvconnect.quannm32.me",
+                "https://cvconnect.quannm32.me"
         ));
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowedMethods(List.of("*"));
