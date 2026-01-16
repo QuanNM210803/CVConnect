@@ -72,6 +72,9 @@ jobs:
           ssh -o StrictHostKeyChecking=no \
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
 
+            set -e
+            source /home/quannm32/environment/cvconnect.env
+
             docker pull $DOCKER_USERNAME/$HOST_API_GATEWAY:latest
             docker pull $DOCKER_USERNAME/$HOST_CORE_SERVICE:latest
             docker pull $DOCKER_USERNAME/$HOST_USER_SERVICE:latest
