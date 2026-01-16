@@ -1,0 +1,94 @@
+name: build-and-deploy.yml
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create Maven settings.xml
+        run: |
+          cd BE
+          cat << 'EOF' > settings.xml
+          ${{ secrets.MAVEN_SETTINGS_XML }}
+          EOF
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & Push Docker Image
+        run: |
+          cd BE
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_CORE_SERVICE }}:latest -f core-service/Dockerfile .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_CORE_SERVICE }}:latest
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_USER_SERVICE }}:latest -f user-service/Dockerfile .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_USER_SERVICE }}:latest
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_NOTIFY_SERVICE }}:latest -f notify-service/Dockerfile .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_NOTIFY_SERVICE }}:latest
+          
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_API_GATEWAY }}:latest -f api-gateway/Dockerfile .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.HOST_API_GATEWAY }}:latest
+         
+      - name: Install cloudflared
+        run: |
+          curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg \
+            | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+      
+          echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] \
+          https://pkg.cloudflare.com/cloudflared $(lsb_release -cs) main" \
+          | sudo tee /etc/apt/sources.list.d/cloudflared.list
+      
+          sudo apt update
+          sudo apt install -y cloudflared
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          
+          cat <<EOF > ~/.ssh/config
+          Host ${{ secrets.SSH_HOST }}
+          User ${{ secrets.SSH_USER }}
+          IdentityFile ~/.ssh/id_ed25519
+          ProxyCommand cloudflared access ssh --hostname %h
+          EOF
+          
+          chmod 600 ~/.ssh/config
+
+      - name: Deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+
+          docker pull $DOCKER_USERNAME/$HOST_API_GATEWAY:latest
+          docker pull $DOCKER_USERNAME/$HOST_CORE_SERVICE:latest
+          docker pull $DOCKER_USERNAME/$HOST_USER_SERVICE:latest
+          docker pull $DOCKER_USERNAME/$HOST_NOTIFY_SERVICE:latest
+
+          docker stop $HOST_API_GATEWAY || true
+          docker rm $HOST_API_GATEWAY || true
+          docker stop $HOST_CORE_SERVICE || true
+          docker rm $HOST_CORE_SERVICE || true
+          docker stop $HOST_USER_SERVICE || true
+          docker rm $HOST_USER_SERVICE || true
+          docker stop $HOST_NOTIFY_SERVICE || true
+          docker rm $HOST_NOTIFY_SERVICE || true
+
+          docker network inspect common-network >/dev/null 2>&1 || docker network create common-network
+
+          docker run -d --restart=unless-stopped --name $HOST_API_GATEWAY --network common-network --env-file /home/quannm32/environment/cvconnect.env -p 8888:8888 $DOCKER_USERNAME/$HOST_API_GATEWAY:latest
+          docker run -d --restart=unless-stopped --name $HOST_USER_SERVICE --network common-network --env-file /home/quannm32/environment/cvconnect.env -p 8180:8180 $DOCKER_USERNAME/$HOST_USER_SERVICE:latest
+          docker run -d --restart=unless-stopped --name $HOST_NOTIFY_SERVICE --network common-network --env-file /home/quannm32/environment/cvconnect.env -p 8181:8181 $DOCKER_USERNAME/$HOST_NOTIFY_SERVICE:latest
+          docker run -d --restart=unless-stopped --name $HOST_CORE_SERVICE --network common-network --env-file /home/quannm32/environment/cvconnect.env -p 8182:8182 $DOCKER_USERNAME/$HOST_CORE_SERVICE:latest
