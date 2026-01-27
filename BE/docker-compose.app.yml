@@ -1,0 +1,66 @@
+version: '3.8'
+services:
+  user-service-cvconnect:
+    container_name: user-service-cvconnect
+    hostname: user-service-cvconnect
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    image: user-service-cvconnect:latest
+    env_file:
+      - cvconnect.env
+    ports:
+      - '8180:8180'
+    restart: no
+    networks:
+      - cvconnect-network
+
+  notify-service-cvconnect:
+    container_name: notify-service-cvconnect
+    hostname: notify-service-cvconnect
+    build:
+      context: .
+      dockerfile: notify-service/Dockerfile
+    image: notify-service-cvconnect:latest
+    env_file:
+      - cvconnect.env
+    ports:
+      - '8181:8181'
+    restart: no
+    networks:
+      - cvconnect-network
+
+  core-service-cvconnect:
+    container_name: core-service-cvconnect
+    hostname: core-service-cvconnect
+    build:
+      context: .
+      dockerfile: core-service/Dockerfile
+    image: core-service-cvconnect:latest
+    env_file:
+      - cvconnect.env
+    ports:
+      - '8182:8182'
+    restart: no
+    networks:
+      - cvconnect-network
+
+  api-gateway-cvconnect:
+    container_name: api-gateway-cvconnect
+    hostname: api-gateway-cvconnect
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    image: api-gateway-cvconnect:latest
+    env_file:
+      - cvconnect.env
+    ports:
+      - '8888:8888'
+    restart: no
+    networks:
+      - cvconnect-network
+
+networks:
+  cvconnect-network:
+    name: cvconnect-network
+    driver: bridge

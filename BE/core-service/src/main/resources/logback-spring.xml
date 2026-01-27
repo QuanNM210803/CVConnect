@@ -5,7 +5,7 @@
                 <level>INFO</level>
             </filter>
             <encoder>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %level [%X{requestId}] [%X{username}] [%X{method} %X{path}] %logger{36} - %msg%n</pattern>
             </encoder>
         </appender>
         <root level="TRACE">
@@ -14,24 +14,16 @@
     </springProfile>
 
     <springProfile name="prod">
-        <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <appender name="CONSOLE_PROD" class="ch.qos.logback.core.ConsoleAppender">
             <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-                <level>ERROR</level>
-                <onMatch>ACCEPT</onMatch>
-                <onMismatch>DENY</onMismatch>
+                <level>INFO</level>
             </filter>
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <customFields>
-                    {"service":"core-service"}
-                </customFields>
-                <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                    <maxDepthPerThrowable>8</maxDepthPerThrowable>
-                    <rootCauseFirst>true</rootCauseFirst>
-                </throwableConverter>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %level [%X{requestId}] [%X{username}] [%X{method} %X{path}] %logger{36} - %msg%n%ex{10}</pattern>
             </encoder>
         </appender>
         <root level="TRACE">
-            <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="CONSOLE_PROD"/>
         </root>
     </springProfile>
 </configuration>
