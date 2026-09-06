@@ -24,3 +24,4 @@ settings.xml
 .env
 logs
 cvconnect.env
+k8s
